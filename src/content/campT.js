@@ -20,7 +20,7 @@ export const campT = [
     title: 'Phakding: around the rocks',
     prompt: 'The trail bends around boulders 🪨. Walking into one stops your climber, so **the order of your steps matters**.\n\nYou have four moves: `up()`, `down()`, `left()` and `right()`. Each is one square. Follow the snow from the start to the flag, one line per step.',
     map: ['##.F', '##..', '##.#', '...#', 'S###'],
-    starter: '// Lead the climber around the rocks to the flag\nup()\n',
+    starter: '// Lead the climber around the rocks to the flag.\n// One line per step, for example: up()\n\n',
     hints: [
       'From the start, the only snow is straight up. After that, the snow runs right for two squares.',
       'The whole route: up, right, right, up, up, right, up.\n```\nup()\nright()\nright()\nup()\nup()\nright()\nup()\n```',
