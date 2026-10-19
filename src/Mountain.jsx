@@ -40,6 +40,8 @@ export function Mountain({ p, net, openCamp, openSettings, openGuide, openReview
         </div>
         {/* The bar measures the climb from Lukla airport (where the trek starts), not from sea level. */}
         <div className="altbar"><div style={{ width: `${((shownAlt - ALTITUDE[0]) / (SUMMIT - ALTITUDE[0])) * 100}%` }} /></div>
+        {/* Locked until there are 5 learned questions to deal from; shown so it never looks missing. */}
+        {!canDaily && <button className="review-btn daily-btn locked" disabled>☀️ Daily run unlocks after your first Base Camp lesson</button>}
         {canDaily && <button className="review-btn daily-btn" onClick={openDaily}>{dailyDone ? `☀️ Daily run done · best ${p.daily.best}/5 · 🔥${p.daily.count}` : `☀️ Today's daily run${dailyStreak(p) ? ` · keep your 🔥${dailyStreak(p)} going` : ''}`}</button>}
         {due > 0 && <button className="review-btn" onClick={openReview}>🏕️ Review {due} missed question{due > 1 ? 's' : ''}</button>}
         {!net.online && <div className="offline-badge">✈️ Offline mode: everything works, and progress saves on this device.</div>}

@@ -233,6 +233,7 @@ pre.walk div.hl { background: color-mix(in srgb, var(--or) 18%, transparent); bo
 .guide-entry.open { border-color: var(--or); } .guide-entry.locked { opacity: .55; } .guide-more { margin-top: 6px; } .guide-more .md p { font-size: 14px; }
 .review-btn { width: 100%; margin: 6px 0 0; background: linear-gradient(90deg, #12305a, #0f2440); border: 1px solid var(--or); color: var(--hot); border-radius: 12px; padding: 10px; font-weight: 600;
   animation: glow 2.4s ease-in-out infinite; }
+.review-btn.locked { opacity: .55; border-style: dashed; font-weight: 500; animation: none; }
 
 .tl.prompt input::placeholder { color: var(--mut); font-style: italic; }
 .term { height: min(240px, 34dvh); }
