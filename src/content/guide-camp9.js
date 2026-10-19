@@ -404,4 +404,170 @@ export const GUIDE_CAMP9 = {
       phone: 'Tap the icon left of the address in your phone browser to see whether the connection is secure. Full certificate details are easiest to read on a computer.',
     },
   },
+
+  // ─────────────── Keeping a server running ───────────────
+  process: {
+    term: 'Process', short: 'A running program. The computer gives it a number, the process ID, so you can find it, watch it and stop it.',
+    what: "A **program** is a file. When you run it, the computer makes a **process**: the running copy, with its own memory and its own **process ID** (**PID**). `node server.js` starts one process. Run it again and you get a second process with another PID.\n\nA process lives only as long as something keeps it going. Close the terminal that started it and the terminal sends it a hang-up signal, so it ends. Throw an error nobody catches and Node exits. Either way your server goes offline until someone starts it again.",
+    how: "**Look at processes:** `ps aux` lists all of them. `pgrep -a node` lists only the Node ones: the PID, then the command.\n\n**Stop one:** `kill 4127` sends **SIGTERM**, the polite \"please stop\" signal. A program can catch it and tidy up first (see graceful shutdown). Ctrl+C in a terminal sends **SIGINT**, which works the same way. `kill -9 4127` sends **SIGKILL**: the system ends the process on the spot and the program gets no chance to clean up. Use it last.\n\n**Exit codes:** when a process ends it reports a number. `0` means it finished fine. Anything else means failure. Process managers read this number to decide whether to restart it.",
+    usage: [
+      { code: '$ node server.js\nListening on port 3000', note: 'This starts a process. The prompt does not come back, because the terminal is busy running it.' },
+      { code: '$ pgrep -a node\n4127 node server.js', note: 'From a second terminal: the PID is 4127.' },
+      { code: '$ kill 4127', note: 'Asks process 4127 to stop (SIGTERM). A server with no shutdown code simply ends.' },
+      { code: '$ node -e "process.exit(1)"\n$ echo $?\n1', note: 'Every process ends with an exit code. `echo $?` prints the last one. 0 is success, anything else is failure.' },
+    ],
+    uses: ['Finding out whether your server is actually running.', 'Stopping a server that is stuck or that holds a port you need.', 'Reading exit codes to see whether a program succeeded.'],
+    when: ['A server will not start because something else is running, and you need its PID.', 'You want to know what a machine is busy doing.'],
+    whenNot: ["Don't start with `kill -9`. It skips all cleanup, so unsaved work and half-finished requests are lost. Try a plain `kill` first.", "Don't kill a PID you didn't look up. PIDs are reused, and a wrong number stops the wrong program."],
+    mistakes: [
+      { prose: 'Starting a server with `node server.js` over SSH and then closing the session.', why: 'The server ends with the session. For anything that must stay up, run it as a service (see process manager).' },
+      { prose: 'Using `kill -9` as the first move.', why: 'It cannot be caught, so the program cannot close its files or finish its requests. Use plain `kill`, and `-9` only if that fails.' },
+    ],
+    tips: ['`pgrep -a node` is a quick way to see every Node program running.', 'After a crash, the exit code and the last log lines tell you most of the story.'],
+    related: ['process-manager', 'graceful-shutdown', 'port', 'server-logs'],
+  },
+
+  'process-manager': {
+    term: 'Process manager', short: 'A program whose job is to start your program, restart it if it dies, and start it again after a reboot.',
+    what: "A **process manager** (also called a **supervisor**) runs your server for you and keeps it running. On Linux the standard one is **systemd**. Node has its own popular one called **pm2**, and hosting platforms have the same idea built in: if your app exits, the platform starts it again.\n\nWithout one, your server is only as reliable as the terminal you typed it into.",
+    how: "You tell the manager four things: the command to run, the folder to run it in, the environment variables, and a **restart rule**. It then:\n1. Starts your command at boot.\n2. Runs it as a process and watches it.\n3. When the process exits, restarts it according to the rule (`always`, or only `on-failure`, meaning a non-zero exit code or a crash).\n4. Collects everything the process prints into logs.\n\nA restart brings the server back, but it does **not** fix the bug that crashed it. A server that crashes and restarts every few seconds is hiding a real problem, so managers limit restarts: systemd gives up after several quick failures with `Start request repeated too quickly`. Read the logs.",
+    usage: [
+      { code: 'Restart=on-failure\nRestartSec=2', note: 'Two lines from a systemd service file: restart after a crash, waiting 2 seconds each time.' },
+      { code: '$ pm2 start server.js --name summitgear\n$ pm2 logs summitgear', note: 'pm2 is a process manager made for Node. It starts the app, restarts it on a crash and shows its logs. (`pm2 startup` and `pm2 save` bring it back after a reboot.)' },
+      { code: '"scripts": {\n  "start": "node server.js"\n}', note: 'Hosting platforms run your `start` script and restart it for you if it exits. This is why they ask for one.' },
+    ],
+    uses: ['Keeping an API online for weeks without anyone watching it.', 'Bringing a server back after a reboot or a power cut.', 'Restarting after a crash at 3 a.m. while you sleep.'],
+    when: ['Any server that real people depend on.', 'Anything that must survive a reboot.'],
+    whenNot: ["On your laptop while you are still writing the code. Plain `node server.js` and Ctrl+C are easier to see and control.", "Don't use auto-restart to hide a crash you haven't investigated."],
+    mistakes: [
+      { prose: "Setting the rule to restart forever and never looking at the logs.", why: 'The server may crash a hundred times a day and you never know. Check the logs now and then, and set up an uptime check.' },
+      { prose: 'Running the service as the root user.', why: 'A bug or a break-in then has full control of the machine. Use a normal account with only the access the server needs.' },
+    ],
+    tips: ['Test it once on purpose: kill the process and check that it comes back.', 'Pair it with a health check and an uptime monitor so you are told when it does not.'],
+    related: ['process', 'systemd-service', 'health-check', 'deployment'],
+    os: {
+      mac: 'macOS does not use systemd. Its process manager is **launchd**, and you describe a job in a **property list** (`.plist`) file. See the systemd service card for the details. pm2 works the same way on a Mac, and hosting platforms behave the same everywhere.',
+      windows: 'Inside your Ubuntu (WSL) tab, systemd works the same way once it is switched on (see the systemd service card). pm2 also works there. Windows itself has its own service manager, but you do not need it for this camp.',
+    },
+  },
+
+  'systemd-service': {
+    term: 'systemd service', short: 'A small file that tells Linux how to run your server: the command, the folder, the environment and what to do when it stops.',
+    what: "**systemd** is the first program Linux starts when the machine boots, and it starts and watches everything else. A **service** is a text file (a **unit**, ending in `.service`) that describes one program: what command to run, in which folder, with which environment, and what to do when it ends.\n\nWrite one for your API and systemd starts it at boot, restarts it after a crash, and keeps everything it prints in a searchable log called the **journal**. You control services with **`systemctl`** (system control) and read logs with **`journalctl`** (journal control).",
+    how: "**1. The file.** Save it as `/etc/systemd/system/summitgear.service` (needs `sudo`). The lines that matter:\n• `ExecStart=` the command, with the program's full path (`which node`).\n• `WorkingDirectory=` the folder to run in.\n• `Environment=NODE_ENV=production` sets one variable. `EnvironmentFile=/etc/summitgear.env` loads a file of `KEY=value` lines (use it for secrets and `chmod 600` it).\n• `Restart=on-failure` and `RestartSec=2`: restart after an error or crash, after a 2 second pause.\n• `User=` a normal account to run as, instead of root.\n• `WantedBy=multi-user.target` under `[Install]`: start in a normal boot.\n\n**2. Tell systemd.** After creating or editing a unit file, run `sudo systemctl daemon-reload`.\n\n**3. Control it.**\n• `sudo systemctl start summitgear` / `stop` / `restart`\n• `systemctl status summitgear` shows whether it is running, its PID and its last log lines.\n• `sudo systemctl enable summitgear` makes it start at boot. `enable --now` also starts it right away. `disable` undoes it.\n\n**4. Read the logs.** `journalctl -u summitgear -f` follows them live. `journalctl -u summitgear -n 50` shows the last 50 lines. `journalctl -u summitgear --since \"10 minutes ago\"` shows a time window.",
+    usage: [
+      { code: '[Service]\nWorkingDirectory=/srv/summitgear\nEnvironmentFile=/etc/summitgear.env\nExecStart=/usr/bin/node server.js\nRestart=on-failure\nRestartSec=2', note: 'The heart of a service file.' },
+      { code: '$ sudo systemctl daemon-reload\n$ sudo systemctl enable --now summitgear\nCreated symlink /etc/systemd/system/multi-user.target.wants/summitgear.service → /etc/systemd/system/summitgear.service.', note: 'Load the new file, then start the service and make it start at every boot.' },
+      { code: '$ systemctl status summitgear\n● summitgear.service - Summit Gear API\n     Loaded: loaded (/etc/systemd/system/summitgear.service; enabled; preset: enabled)\n     Active: active (running) since Mon 2026-10-19 08:14:02 UTC; 3min 10s ago\n   Main PID: 4127 (node)', note: 'Running, enabled for boot, with its PID. The exact lines vary a little between versions.' },
+      { code: '$ journalctl -u summitgear -f\nOct 19 08:14:02 myserver node[4127]: Listening on port 3000', note: 'Follows the logs live. Press Ctrl+C to stop following. Your `console.log` lines end up here.' },
+      { code: '$ sudo kill -9 4127\n$ pgrep -a node\n4390 /usr/bin/node server.js', note: 'A test: kill the process on purpose. A moment later systemd has started a new one with a new PID.' },
+    ],
+    uses: ['Running an API on a VPS or a home server so that it stays up.', 'Making sure the server comes back after a reboot or a power cut.', 'Collecting logs from every service in one place.'],
+    when: ['A Linux machine must run your server all the time, unattended.'],
+    whenNot: ["On your own computer while developing: `node server.js` and Ctrl+C are simpler.", "Don't run the service as root, and don't put secrets directly in the unit file. Unit files are readable by every user on the machine."],
+    mistakes: [
+      { wrong: 'ExecStart=/usr/local/bin/node server.js   (node is really in /usr/bin)', result: 'Main process exited, code=exited, status=203/EXEC', why: 'systemd could not run a program at that path. Use the exact path from `which node`.' },
+      { wrong: '(edit the unit file, then run) sudo systemctl restart summitgear', result: "Warning: The unit file, source configuration file or drop-ins of summitgear.service changed on disk. Run 'systemctl daemon-reload' to reload units.", why: 'systemd keeps its own copy of the file. Run `sudo systemctl daemon-reload` after every edit, then restart.' },
+      { prose: 'Putting `API_KEY=real-secret-value` in the unit file.', why: 'Anyone with a login on the machine can read it (`systemctl show` prints it too). Put secrets in an `EnvironmentFile` that only root can read.' },
+    ],
+    tips: ['When something is wrong, run `systemctl status summitgear` first, then `journalctl -u summitgear -n 50`.', '`systemd-analyze verify /etc/systemd/system/summitgear.service` checks a unit file for mistakes before you start it.', 'The server needs to read its port from the environment: `process.env.PORT`.'],
+    related: ['process-manager', 'process', 'environment-variables', 'server-logs'],
+    os: {
+      linux: 'The commands in this card are for Linux with systemd, which every recent Ubuntu, Fedora and Arch system uses. On a Chromebook they work inside the Linux development environment.',
+      mac: 'macOS has no systemd. Its process manager is **launchd**. You write a **property list** file (`.plist`) in `~/Library/LaunchAgents/` (runs when you log in) or `/Library/LaunchDaemons/` (runs at boot, as root). The keys that matter: `Label` (a unique name such as `com.summitgear.api`), `ProgramArguments` (the command and its arguments, with the full path from `which node`), `WorkingDirectory`, `EnvironmentVariables`, `RunAtLoad` set to true (start at load), `KeepAlive` set to true (start it again whenever it exits) and `StandardOutPath` / `StandardErrorPath` (files for the output). Load it with `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.summitgear.api.plist`. Restart with `launchctl kickstart -k gui/$(id -u)/com.summitgear.api`. Stop and unload with `launchctl bootout gui/$(id -u)/com.summitgear.api`. Check with `launchctl print gui/$(id -u)/com.summitgear.api`. Follow the logs with `tail -f` on the `StandardOutPath` file. There is no journalctl.',
+      windows: 'In your Ubuntu (WSL) tab, the commands are the Ubuntu ones, once systemd is on. Recent Ubuntu images have it on. If `systemctl` says `System has not been booted with systemd as init system (PID 1). Can\'t operate.`, add the two lines `[boot]` and `systemd=true` to `/etc/wsl.conf` (use `sudo nano /etc/wsl.conf`), then run `wsl --shutdown` in PowerShell and open Ubuntu again. WSL stops when you close it, so use it for practice, not for a real server.',
+      phone: 'A phone cannot run a service. The outputs in this card show what a real Linux server prints.',
+    },
+  },
+
+  port: {
+    term: 'Port', short: 'A numbered door on a computer. One program listens at each door, and every request names the door it wants.',
+    what: "An address tells a request which computer to go to. A **port** (a number from 0 to 65535) tells it which program on that computer. `http://localhost:3000` means this computer, port 3000. Browsers use 80 for HTTP and 443 for HTTPS when you don't write a port.\n\n**Only one program can listen on a port at a time.** If a second one tries, it fails with `EADDRINUSE`.\n\nWhere a server listens also matters. `127.0.0.1` (**localhost**) accepts connections only from the same computer. `0.0.0.0` means every network connection the computer has, so other computers can reach it. `app.listen(3000)` with no address listens on all of them. `app.listen(3000, '127.0.0.1')` keeps it local.",
+    how: "**Port already taken:** you start a server and get `Error: listen EADDRINUSE: address already in use :::3000`. Usually an old copy is still running in another terminal. Find the owner with `sudo ss -ltnp | grep :3000` (the PID is in the last column), then stop it with `kill`, or choose another port.\n\n**Low ports:** on Linux, ports below 1024 need root, so `app.listen(80)` as a normal user fails with `Error: listen EACCES: permission denied :::80`. The usual setup runs your app on a high port like 3000 and lets a web server or your host sit in front on 80 and 443.\n\n**Let the host choose:** hosts give your app a port in `process.env.PORT`, so write `app.listen(process.env.PORT || 3000)`.",
+    usage: [
+      { code: '$ node server.js\nError: listen EADDRINUSE: address already in use :::3000', note: 'Another copy of the server (or another program) already holds port 3000.' },
+      { code: '$ sudo ss -ltnp | grep :3000\nLISTEN 0 511 *:3000 *:* users:(("node",pid=4127,fd=19))', note: 'Who is listening on port 3000? Process 4127 is. `kill 4127` frees the port.' },
+      { code: "app.listen(3000, '127.0.0.1')", note: 'Local only: other computers cannot connect, which is safer for a private tool.' },
+      { code: 'const PORT = process.env.PORT || 3000\napp.listen(PORT)', note: 'Use the port the host gives you, and fall back to 3000 on your own computer.' },
+    ],
+    uses: ['Running several servers on one computer, each on its own port.', 'Choosing who can reach a server: this computer only, or the whole network.', 'Reading the port a hosting platform assigns.'],
+    when: ['Any server you start. Every server needs a port.'],
+    whenNot: ["Don't hard-code a port on a hosting platform. Read `process.env.PORT`.", "Don't listen on all addresses for something that should stay private, like a database admin page."],
+    mistakes: [
+      { wrong: 'node server.js   (while the first copy still runs)', result: 'Error: listen EADDRINUSE: address already in use :::3000', why: 'A forgotten terminal or a service still holds the port. Find it with `ss`, then stop it.' },
+      { prose: 'Using `localhost` in the address on another computer.', why: '`localhost` always means the computer you are typing on. Use the server\'s own address or domain.' },
+    ],
+    tips: ['Common development ports: 3000, 5173 (Vite), 8080. Pick one and stay consistent.', 'If a server will not start, read the very first line of the error. `EADDRINUSE` and `EACCES` both name the problem.'],
+    related: ['client-server', 'process', 'hosting', 'environment-variables'],
+    os: {
+      mac: "Find who holds a port with `lsof -nP -iTCP:3000 -sTCP:LISTEN`: the PID is in the second column. `ss` does not exist on a Mac. Also, recent macOS versions use ports 5000 and 7000 for AirPlay Receiver, so a server on port 5000 can fail with `EADDRINUSE`: pick another port or turn AirPlay Receiver off in System Settings.",
+      windows: 'In your Ubuntu (WSL) tab use the Ubuntu command. If a Node server runs directly on Windows, find the owner in PowerShell or Command Prompt with `netstat -ano | findstr :3000` (the PID is the last column), then stop it with `taskkill /PID 4127 /F`.',
+    },
+  },
+
+  'health-check': {
+    term: 'Health check', short: 'A small route, usually GET /health, that answers 200 when the app is alive so machines can check on it.',
+    what: "A **health check** is a route that does almost nothing: it answers `200` and a tiny body such as `{ \"status\": \"ok\" }`. If it answers, the app is up. If it errors or times out, something is wrong.\n\nMachines call it, not people. A host calls it before sending visitors to a new deploy. A load balancer calls it to find broken servers. An **uptime check** (also called a monitor) is an outside service that calls it every minute or so and alerts you when it fails.",
+    how: "**Keep it small:** fast, cheap, no login, no secrets, no internal details. It gets called constantly.\n\n**Make it honest:** if your app cannot work without its database, have the check try the database and answer `503 Service Unavailable` when it can't. A health check that always says ok is worse than none.\n\n**Watch from outside:** an uptime monitor that runs on the same machine dies with it. Use an outside service, and alert after a few failures in a row so one slow answer doesn't wake you at night.",
+    usage: [
+      { code: "app.get('/health', (req, res) => {\n  res.json({ status: 'ok' })\n})", note: 'The simplest health check.' },
+      { code: "app.get('/health', async (req, res) => {\n  try {\n    await db.ping()\n    res.json({ status: 'ok' })\n  } catch (err) {\n    res.status(503).json({ status: 'down' })\n  }\n})", note: '`db.ping()` stands for whatever cheap query your database library offers. If the database is down, the check says so.' },
+      { code: '$ curl -s -o /dev/null -w "%{http_code}\\n" http://localhost:3000/health\n200', note: 'Print only the status code. This is what a monitor looks at.' },
+      { code: '$ curl -fsS https://api.summitgear.example/health || echo "DOWN"', note: '`-f` makes curl fail on an error status, so the `||` branch runs when the app is unhealthy.' },
+    ],
+    uses: ['Deploys: the host switches traffic only after the new version answers.', 'Uptime monitors that email or message you when the app goes down.', 'Load balancers that stop sending traffic to a broken server.'],
+    when: ['Any server that runs somewhere you cannot watch it.'],
+    whenNot: ["Don't put secrets, config values or stack traces in the answer.", "Don't make it slow or heavy. No big queries, no calls to other companies' APIs on every ping."],
+    mistakes: [
+      { prose: 'A health route that returns 200 even when the database is unreachable.', why: 'Monitors report "healthy" while users get errors. Check what the app really needs.' },
+      { prose: 'Putting the health route behind a login.', why: 'The host and monitors have no account, so they would see 401 and think the app is down.' },
+    ],
+    tips: ['Add the app version to the answer so you can see which deploy is live.', 'Many hosts let you set the health check path in their settings. Match it to your route.'],
+    related: ['deployment', 'hosting', 'process-manager', 'status-codes'],
+  },
+
+  'graceful-shutdown': {
+    term: 'Graceful shutdown', short: 'Finishing the requests already in progress before the server exits, instead of cutting them off.',
+    what: "When a service is stopped or restarted (a deploy, a reboot), the system sends the process **SIGTERM**: \"please stop\". A program with no handler for it is ended immediately, so any request halfway through gets a dropped connection.\n\nA **graceful shutdown** handles `SIGTERM`: stop accepting new connections, let the current requests finish, close the database, then exit.",
+    how: "In Node you listen for the signal with `process.on('SIGTERM', handler)`. In the handler, call `server.close(callback)`, where `server` is what `app.listen` returned. It stops listening and calls the callback once the requests in progress are done. Exit there with `process.exit(0)`.\n\nAdd a safety timer so one stuck connection can't hold the process forever. If you ignore the signal, systemd waits for its stop timeout (90 seconds by default) and then sends **SIGKILL**, which cannot be caught. Also handle `SIGINT`, the signal from Ctrl+C.",
+    usage: [
+      { code: "const server = app.listen(3000)\n\nfunction shutdown(signal) {\n  console.log(signal + ' received, closing server')\n  server.close(() => process.exit(0))\n  setTimeout(() => process.exit(1), 10000).unref()\n}\n\nprocess.on('SIGTERM', () => shutdown('SIGTERM'))\nprocess.on('SIGINT', () => shutdown('SIGINT'))", note: 'Stop taking requests, finish the current ones, exit. If that takes more than 10 seconds, exit with an error anyway. `.unref()` stops the timer itself from keeping the process alive.' },
+      { code: '$ kill 4127\n# in the server log:\nSIGTERM received, closing server', note: 'A plain `kill` sends SIGTERM. The handler runs, then the process exits with code 0.' },
+    ],
+    uses: ['Deploys that do not drop the requests being served.', 'Closing database connections cleanly.', 'Restarting a service without users noticing.'],
+    when: ['Any server with real users, and anything that writes data.'],
+    whenNot: ["Don't do slow work in the handler. The stop timeout is short and then SIGKILL arrives.", "Don't expect it to run on `kill -9`: SIGKILL can't be caught."],
+    mistakes: [
+      { prose: 'Calling `process.exit(0)` straight away in the handler.', why: 'That ends the process before the requests in progress are answered, which is exactly what you were trying to avoid. Exit inside the `server.close` callback.' },
+      { prose: 'Never exiting because an open connection keeps the server busy.', why: 'Add a timer that forces an exit after a few seconds.' },
+    ],
+    tips: ['Test it: start the server, send a slow request, run `kill` on the PID, and check that the request still finishes.', 'Handle both SIGTERM and SIGINT with the same function.'],
+    related: ['process', 'process-manager', 'systemd-service', 'deployment'],
+    os: {
+      windows: 'In your Ubuntu (WSL) tab, signals work as described. Node running directly on Windows only supports SIGINT (Ctrl+C) in a useful way, so test shutdown code in WSL.',
+    },
+  },
+
+  cors: {
+    term: 'CORS', stands: 'Cross-Origin Resource Sharing',
+    short: "The browser asks an API's permission before it lets a page on another origin read the response. The server gives permission with headers.",
+    what: "An **origin** is the scheme, host and port: `https://app.summitgear.example` and `https://api.summitgear.example` are different origins. The browser's **same-origin policy** stops a page's JavaScript from reading responses from another origin. That protects users: another site can't read your bank page.\n\n**CORS** is how a server opts in. It sends a header such as `Access-Control-Allow-Origin: https://app.summitgear.example`, and the browser then lets that page read the response.\n\nCORS is enforced by **browsers**. It is not a wall around your API: `curl`, scripts and other servers ignore it, and for simple requests the server still receives and runs the request. Real protection is authentication.",
+    how: "**Simple requests** (GET, HEAD, or POST with a plain form content type) are sent right away. The browser checks `Access-Control-Allow-Origin` on the response.\n\n**Preflight.** For anything else, such as `PUT`, `DELETE`, a JSON `POST` (`Content-Type: application/json`) or an `Authorization` header, the browser first sends an **`OPTIONS`** request asking if the real one is allowed. It includes `Origin`, `Access-Control-Request-Method` and `Access-Control-Request-Headers`. The server must answer with a 2xx status (204 is typical) and headers:\n• `Access-Control-Allow-Origin`: the allowed origin\n• `Access-Control-Allow-Methods`: e.g. `GET, POST, PUT, DELETE`\n• `Access-Control-Allow-Headers`: e.g. `Content-Type, Authorization`\n• `Access-Control-Max-Age`: seconds the browser may remember the answer\n\n**Credentials** (cookies): the page must ask for them, and the server must send the **exact** origin plus `Access-Control-Allow-Credentials: true`. A `*` wildcard is rejected in that case.\n\nWhen the origin comes from a list, add `Vary: Origin` so caches keep the answers apart.\n\nIn Express you write a middleware like the try-it, or install the `cors` package: `app.use(cors({ origin: 'https://app.summitgear.example' }))`.",
+    usage: [
+      { code: "Access to fetch at 'https://api.summitgear.example/gear' from origin 'https://app.summitgear.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", note: 'The browser console error. The request was sent, but the page may not read the answer.' },
+      { code: "app.use((req, res, next) => {\n  if (req.get('origin') === 'https://app.summitgear.example') {\n    res.set('Access-Control-Allow-Origin', 'https://app.summitgear.example')\n  }\n  next()\n})", note: 'A hand-written CORS middleware. Only the known front end is allowed.' },
+      { code: '$ curl -i -H "Origin: https://app.summitgear.example" https://api.summitgear.example/gear\nHTTP/2 200\naccess-control-allow-origin: https://app.summitgear.example', note: 'Test CORS from the command line by sending an Origin header yourself and reading the response headers.' },
+      { code: '$ curl -i -X OPTIONS \\\n  -H "Origin: https://app.summitgear.example" \\\n  -H "Access-Control-Request-Method: PUT" \\\n  https://api.summitgear.example/gear/2\nHTTP/2 204\naccess-control-allow-origin: https://app.summitgear.example\naccess-control-allow-methods: GET, POST, PUT, DELETE', note: 'A preflight, sent by hand. A healthy API answers 204 with the Allow headers.' },
+    ],
+    uses: ['A front end on one domain calling an API on another.', 'Letting only your own sites read your API responses in a browser.', 'Public APIs that any website may call (`*`, with no credentials).'],
+    when: ['A browser page on one origin calls your API on another origin.'],
+    whenNot: ["Don't use it as your security. It only changes what browsers show the page. Anyone can call the API with `curl`.", "Don't allow `*` for an API that uses cookies or login.", "You don't need it when the page and the API share one origin, or when only servers call the API."],
+    mistakes: [
+      { wrong: "res.set('Access-Control-Allow-Origin', '*')   (page sends cookies)", result: "The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.", why: 'Name the exact origin and add `Access-Control-Allow-Credentials: true`.' },
+      { wrong: "res.set('Access-Control-Allow-Origin', req.get('origin'))   (with cookies allowed)", result: '(no error: every website can now read your users\' logged-in data)', why: 'Copying back whatever origin asks defeats the check. Compare against a list of allowed origins.' },
+      { wrong: 'An OPTIONS request answered with 404 or 401', result: "Response to preflight request doesn't pass access control check: It does not have HTTP ok status.", why: 'The preflight must get a 2xx answer, usually 204. Handle `OPTIONS` before your login check.' },
+    ],
+    tips: ['Open the browser\'s Network tab: the preflight appears as a separate OPTIONS request just before the real one.', 'A request that works in `curl` but fails in the page is the classic CORS sign.'],
+    related: ['client-server', 'middleware', 'http-methods', 'status-codes'],
+  },
 }

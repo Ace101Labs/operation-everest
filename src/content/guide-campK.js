@@ -298,4 +298,70 @@ export const GUIDE_CAMPK = {
     tips: ['Write the summary last, but put it first.', 'One finding = one problem. If you need "and also", split it.', 'Re-read every finding asking: could someone else find this again from my evidence alone?'],
     related: ['audit-method', 'claims-evidence', 'threat-model'],
   },
+
+  // ─────────────── Working with an AI coding assistant ───────────────
+  'ai-coding-assistant': {
+    term: 'AI coding assistant', short: 'A tool that writes or changes code from your description. It is fast, and you are still the one who checks and ships the result.',
+    what: "An **AI coding assistant** (or **coding agent**) reads the files in your project and writes or edits code when you describe what you want. It predicts likely code from your words and the files it can see. It does not know what you meant beyond what you told it, and it does not understand your project the way you do.\n\nThat makes it fast and useful, and it makes its mistakes look just as polished as its good work. You are the reviewer. Treat what it gives you like a pull request from a stranger: read it, run it, and only then accept it.",
+    how: "**Write a brief.** Five parts:\n1. **Goal:** one sentence saying what should be true afterwards.\n2. **Constraints:** what it must not do (no new packages, keep the existing function names, no changes outside `src/`).\n3. **Files:** which files to read and change.\n4. **What done looks like:** concrete inputs and outputs, such as `slug('Hello World')` returns `'hello-world'`.\n5. **How to test:** the command you will run, such as `npm test`.\n\n**Ask for small changes.** One fix or one feature at a time, small enough that you can read the whole diff in a few minutes. A huge change can't really be reviewed.\n\n**Protect yourself.** Commit before you start (`git commit -am \"Checkpoint\"`), so `git restore .` can undo uncommitted edits to tracked files. Keep secrets out of prompts: what you paste is sent to a service (unless the tool runs on your own computer). Paste config with placeholders instead of real values.\n\n**Know when to stop.** Stop when you have asked three times and it keeps going in circles, when the fix is smaller than the prompt, when the code touches logins, payments or encryption and you can't review it, or when you can't explain what it wrote. Do it yourself, or learn the part first.",
+    usage: [
+      { code: "Goal: add slug(name) in src/slug.js.\nConstraints: no new packages; don't change other files.\nDone when: slug('Hello World') returns 'hello-world'\n  and slug('  Mt  Everest ') returns 'mt-everest'.\nTest: I will run npm test.", note: 'A short brief. Every line closes off one way it could go wrong.' },
+      { code: '$ git commit -am "Checkpoint before the assistant works"\n# ...the assistant makes changes you dislike...\n$ git restore .', note: 'Commit first. If the result is a mess, one command puts your tracked files back. (New files it created stay: check `git status`.)' },
+      { code: 'My config, with real values removed:\nDATABASE_URL=<redacted>\nAPI_KEY=<redacted>\nPORT=3000\nThe server crashes at start with "API_KEY is not set". Why?', note: 'Enough to get help. The real secrets never leave your computer.' },
+    ],
+    uses: ['Writing a first version of a small function or a test.', 'Explaining unfamiliar code, error messages or a library.', 'Doing repetitive edits across many files, with you reviewing the diff.'],
+    when: ['The task is small and you can describe a clear pass or fail.', 'You will read and run everything it produces.', 'You have committed first.'],
+    whenNot: ["Don't hand it code you can't review, such as login, payments or encryption, and ship the result unread.", "Don't paste secrets, customer data or private keys.", "Don't ask for a whole app in one go.", "Don't keep going when it has failed three times on the same thing."],
+    mistakes: [
+      { wrong: 'Add login, payments, an admin dashboard and email alerts to my app.', result: '(a change across dozens of files that nobody can review)', why: 'Split it into steps, each one small enough to read and test on its own.' },
+      { prose: 'Pasting a whole `.env` file into the chat.', why: 'Your real keys are now on another company\'s servers. Revoke them and make new ones, and paste placeholders next time.' },
+      { prose: 'Accepting a change because the assistant said "this should work".', why: '"Should" is a guess. Run it.' },
+    ],
+    tips: ['Put the brief in a file such as `TASK.md`, so you can reuse and improve it.', 'If the result is wrong, change the brief, not just the wording of your complaint. Say what was missing.', 'Keep your tests. They are how you check work you did not write.'],
+    related: ['reviewing-ai-code', 'package-hallucination', 'git-restore', 'secrets-management'],
+  },
+
+  'reviewing-ai-code': {
+    term: 'Reviewing AI-written code', short: 'Read the whole diff, run the tests and the app yourself, and try the edges. "Done" and "all tests pass" are claims, not evidence.',
+    what: "**Reviewing** code you did not write is the same job whether a person or an assistant wrote it. With an assistant, three things get more likely: it writes plausible code that is subtly wrong, it changes more than you asked, and it tells you it worked when it didn't check.\n\nSo you verify. You never need to trust its summary, because the diff and your own test run show what really happened.",
+    how: "**1. Read the whole diff.** Start with `git diff --stat` to see which files changed. Any file you did not ask about needs an explanation. Then read every changed line, **deleted lines too**. Look for a new dependency in `package.json`, a removed or weakened test, and anything that looks like a key or password.\n\n**2. Run it yourself.** Run `npm test`, then use the app by hand. Compare the test count with before: a run that says all pass, but with fewer tests, means tests were removed.\n\n**3. Try the edges.** Empty input, a missing field, a negative number, a very long string, the wrong type. The assistant often tests only the example you gave it.\n\n**Common failures to look for:**\n• **Invented functions and packages:** a method that does not exist (`TypeError: items.sortBy is not a function`) or a package nobody published.\n• **Outdated APIs:** code in an old style, or using a feature a newer version removed or deprecated. Check the docs for the version you actually use.\n• **Passes the example, fails the rest:** `average([2, 4])` works, `average([])` throws.\n• **Deleted or weakened tests:** removed `test(...)` blocks, `test.skip`, or an exact check replaced by `toBeTruthy()`.\n• **Hard-coded secrets:** a key or password written in the source.\n• **Swallowed errors:** an empty `catch {}` that hides a failure.",
+    usage: [
+      { code: ' package.json        | 1 +\n src/server.js       | 6 +++++-\n test/server.test.js | 6 ------\n 3 files changed, 6 insertions(+), 7 deletions(-)', note: '`git diff --stat`. A test file that only loses lines is the first thing to open.' },
+      { code: "-  expect(total([1, 2, 3])).toBe(6)\n+  expect(total([1, 2, 3])).toBeTruthy()", note: 'A weakened test: it used to demand 6. Now it accepts anything that is not zero.' },
+      { code: '$ npm test        # before\nTests:       12 passed, 12 total\n$ npm test        # after the assistant\nTests:       9 passed, 9 total', note: 'Everything passes, yet three tests are gone. Compare the counts. (This is Jest-style output; other test tools print it differently.)' },
+      { code: "function average(nums) {\n  return nums.reduce((a, b) => a + b) / nums.length\n}\nconsole.log(average([2, 4]))\nconsole.log(average([]))", out: "3\nTypeError: Reduce of empty array with no initial value", note: 'The given example passes. The empty list, which nobody asked about, crashes it.' },
+    ],
+    uses: ['Checking an assistant\'s change before you commit it.', 'Reviewing a teammate\'s pull request, using the same checklist.', 'Deciding whether a generated test really tests anything.'],
+    when: ['Every time. Review before you commit, and again before you ship.'],
+    whenNot: ["Don't review only the added lines. Deleted lines hide the worst surprises.", "Don't treat a passing test run as proof if you haven't looked at what the tests check."],
+    mistakes: [
+      { prose: 'Skimming the summary the assistant wrote instead of reading the diff.', why: 'The summary says what it meant to do. The diff shows what it did.' },
+      { prose: 'Only running the example from your prompt.', why: 'It was written to pass that example. Try inputs it was not told about.' },
+      { prose: 'Accepting a change that touches files you never mentioned.', why: 'Ask why. Extra changes are where deleted tests and new dependencies hide.' },
+    ],
+    tips: ['`git diff -- path/to/file` shows one file at a time. Read the small diffs first.', 'Write the test yourself first, then ask the assistant to make it pass. It cannot weaken a test you check afterwards.', 'If a diff is too big to read, it is too big to accept. Ask for smaller steps.'],
+    related: ['ai-coding-assistant', 'package-hallucination', 'git-diff', 'secret-scan', 'edge-cases'],
+  },
+
+  'package-hallucination': {
+    term: 'Package hallucination', short: 'An assistant names a package that does not exist. Installing an invented name is a security risk, because an attacker can publish a package under it.',
+    what: "Assistants sometimes write `require('slugify-pro')` or suggest `npm install fast-trail-utils` for a package that was never published. Others name a real package that does something different from what the code assumes.\n\nThe invented name is a security problem as well as a bug. Anyone can publish a package on npm under any name that is free. An attacker who notices that assistants keep suggesting a certain made-up name can publish a package with that name. The next person to run `npm install` on it gets the attacker's code, and install scripts run with your user's permissions. Typo-lookalike names (`expresss`) are the same trick.",
+    how: "Before you install any package an assistant suggested:\n1. **Is it already in `package.json`?** If the code requires something that isn't listed and isn't a built-in module, treat it as suspect.\n2. **Does it exist?** `npm view <name>` prints its details, or an E404 error if there is no such package.\n3. **Is it what it should be?** Check how old it is (`npm view <name> time.created`), who maintains it (`npm view <name> maintainers`), its weekly downloads and its repository link on the npm page. A package created last week, with a handful of downloads and no repository, is a warning sign.\n4. **Do you need it at all?** Prefer a well-known package, a built-in module, or three lines of your own code.\n5. **Install carefully:** `npm install --ignore-scripts <name>` stops install scripts from running while you look at what you got.\n\nThe diff check from this trail does step 1 automatically: it flags a `require` of a package that is not in `package.json`.",
+    usage: [
+      { code: "+const slugify = require('slugify-pro')", note: 'A diff line. If `slugify-pro` is not in package.json, stop and look it up.' },
+      { code: "$ npm view slugify-pro\nnpm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/slugify-pro - Not found", note: 'There is no such package: the assistant invented it. (The exact lines vary a little by npm version.)' },
+      { code: "$ npm view trail-slug time.created\n2026-10-02T09:41:17.512Z\n$ npm view trail-slug maintainers\n[ 'anon-4410 <anon4410@mail.example>' ]", note: 'It exists, but it was published a few weeks ago by one unknown person. That deserves a closer look before it goes near your project. (The package and maintainer here are invented.)' },
+      { code: '$ npm install --ignore-scripts trail-slug', note: 'Installs the package but does not run its install scripts, so you can inspect it first.' },
+    ],
+    uses: ['Checking every dependency an assistant adds.', 'Spotting a typo-lookalike name before it gets installed.', 'Deciding whether to use a package or to write the few lines yourself.'],
+    when: ['Any time new code needs a package that is not in package.json yet.'],
+    whenNot: ["Don't run `npm install` on a name you have not looked up.", "Don't treat an old, popular, well-known package as suspicious just because the assistant suggested it. Check the unfamiliar ones."],
+    mistakes: [
+      { wrong: 'npm install slugify-pro', result: 'npm error 404 Not Found - GET https://registry.npmjs.org/slugify-pro - Not found', why: 'The name does not exist, so the assistant invented it. You were lucky: if someone had published it, npm would have installed their code.' },
+      { wrong: "const sortBy = require('array-sort-by-utils')   (never published)", result: "Error: Cannot find module 'array-sort-by-utils'", why: 'Running the code shows an unpublished name at once. The dangerous case is a name that does exist and does something else.' },
+      { prose: 'Installing a package because it has a convincing name and a short README.', why: 'Both are easy to fake. Age, maintainers, downloads and the repository are harder to fake.' },
+    ],
+    tips: ['A package with no repository link, no history and a few downloads is not necessarily bad. It just has not earned trust yet.', 'Pin the version of a package you have checked, and commit the lock file so everybody installs the same code.'],
+    related: ['ai-coding-assistant', 'reviewing-ai-code', 'dependency-audit', 'package-json'],
+  },
 }

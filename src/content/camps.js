@@ -42,11 +42,11 @@ export const CAMPS = [
   { id: '6', card: '6', n: 5, name: 'Camp II', topic: 'Files, JSON, Git + GitHub', hours: 14, stages: camp6.length ? camp6 : undefined },
   { id: '7', card: '7', n: 6, name: 'Lhotse Face', topic: 'npm, APIs, async + MIDTERM tool', hours: 18, stages: camp7.length ? camp7 : undefined },
   { id: '8', card: '8', n: 7, name: 'Camp III', topic: 'The web: HTML, CSS, browser JavaScript', hours: 20, stages: camp8.length ? camp8 : undefined },
-  { id: '9', card: '9', n: 8, name: 'Yellow Band', topic: 'Back end + shipping live', hours: 16, stages: camp9.length ? camp9 : undefined },
+  { id: '9', card: '9', n: 8, name: 'Yellow Band', topic: 'Back end, shipping live + keeping it running', hours: 17, stages: camp9.length ? camp9 : undefined },
   { id: '10', card: '10', n: 9, name: 'Camp IV', topic: 'Databases + security (when to be extra secure)', hours: 22, stages: camp10.length ? camp10 : undefined },
   { id: 'J', card: 'J', n: 10, name: 'The Balcony', topic: 'Pro tools: TypeScript, React, tests', hours: 24, stages: campJ.length ? campJ : undefined },
-  { id: 'Q', card: 'Q', n: 11, name: 'South Summit', topic: 'AI engineering + running models on your machine', hours: 22, stages: campQ.length ? campQ : undefined },
-  { id: 'K', card: 'K', n: 12, name: 'Hillary Step', topic: 'The Auditor: judge any project or tool', hours: 14, stages: campK.length ? campK : undefined },
+  { id: 'Q', card: 'Q', n: 11, name: 'South Summit', topic: 'AI engineering, agents + running models on your machine', hours: 26, stages: campQ.length ? campQ : undefined },
+  { id: 'K', card: 'K', n: 12, name: 'Hillary Step', topic: 'The Auditor: judge any project, tool or AI-written code', hours: 15, stages: campK.length ? campK : undefined },
   { id: 'A', card: 'A', n: 13, name: 'The Summit', topic: 'FINAL: build, ship and audit your own app', hours: 30, stages: campA.length ? campA : undefined },
 ]
 // Boss name comes from each camp's own boss stage.

@@ -34,4 +34,18 @@ export const OS_CAMP9 = {
       { q: 'In PowerShell, with Node installed on Windows, you run `$env:MAX_GROUP = "5"`, then `node server.js`. What does `process.env.MAX_GROUP + 1` give?', options: ['6', '\'51\'', 'NaN', 'undefined'], answer: 1, why: 'PowerShell sets it with a different command, but the value still reaches Node as text, so \'5\' + 1 is \'51\'. Convert with Number().' },
     ],
   },
+
+  // Keeping a server running: macOS has launchd, not systemd.
+  '9-13#2': {
+    mac: [
+      { q: 'On a Mac, which tool reads a property list file and starts your API at login and again after a crash?', options: ['launchd', 'The express package', 'npm install', 'A health-check route'], answer: 0, why: 'launchd is the macOS process manager. You describe the job in a .plist file in ~/Library/LaunchAgents/.' },
+      { q: 'Which key in a launchd property list makes launchd start the program again whenever it exits?', options: ['KeepAlive', 'WorkingDirectory', 'StandardOutPath', 'Label'], answer: 0, why: '`KeepAlive` set to true is the restart rule. The other keys set the folder, the output file and the job\'s name.' },
+    ],
+  },
+  '9-13#3': {
+    mac: [
+      { q: 'A launchd job writes its output to the file named by its `StandardOutPath`, here /tmp/summitgear.out.log. Which command follows that output live?', options: ['tail -f /tmp/summitgear.out.log', 'journalctl -u summitgear -f', 'systemctl status summitgear', 'launchctl bootout summitgear'], answer: 0, why: 'There is no journalctl on a Mac. The job writes to the file you chose, and `tail -f` keeps showing new lines.' },
+      { q: 'Which launchd property list key sets the file where a job\'s normal output is written?', options: ['StandardOutPath', 'WorkingDirectory', 'RunAtLoad', 'ProgramArguments'], answer: 0, why: '`StandardOutPath` names the output file, and `StandardErrorPath` names the one for errors.' },
+    ],
+  },
 }

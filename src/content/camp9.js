@@ -591,6 +591,81 @@ export const camp9 = [
     ],
   },
 
+  // ───────────────────────────── Trail 7 (id 9-13, added later): keeping a server running ─────────────────────────────
+  {
+    id: '9-13', type: 'learn', mode: 'phone', xp: 35, mins: 60,
+    title: 'Keeping a server running',
+    teaches: ['process', 'process-manager', 'systemd-service', 'port', 'health-check', 'graceful-shutdown', 'cors'],
+    uses: ['middleware', 'environment-variables', 'server-logs', 'hosting'],
+    idea: [
+      { h: 'A server you start by hand will stop', b: "A server you start in a terminal is a **process**: a running program with its own number, the **process ID**. Close the terminal, lose your SSH connection, or let one error go uncaught, and the process ends. Your API stays offline until you notice.\n\nOn a real server you give that job to a **process manager**. On Linux the standard one is **systemd**. You describe your server in a small file (a **service**), and systemd starts it at boot and starts it again after a crash. You read its logs with `journalctl`.\n\nThis trail also covers **ports** (why two servers can't share one), the **health check** that tells machines your app is alive, and the **graceful shutdown** that stops it without cutting requests off. Most of it runs on a real computer, so the cards show real commands and real output. The try-it is a server you can run here." },
+      { h: 'Your page can call your API, but can it read the answer?', b: "Say your front end lives at `https://app.summitgear.example` and your API at `https://api.summitgear.example`. Those are two different **origins**. An origin is the scheme, the host and the port together.\n\nBy default the browser blocks your page's code from **reading** a response that came from another origin. The console says `blocked by CORS policy`. The fix is on the server: it must send a header saying that origin is allowed. That handshake is **CORS**. Browsers enforce it. A command-line tool like `curl` never does. You'll add the header with a middleware in the try-it." },
+    ],
+    example: {
+      intro: 'A systemd service file for the Summit Gear API. It lives at /etc/systemd/system/summitgear.service, so the service is called summitgear. Tap through it.',
+      lang: 'sh',
+      code: "# /etc/systemd/system/summitgear.service\n[Unit]\nDescription=Summit Gear API\nAfter=network.target\n\n[Service]\nWorkingDirectory=/srv/summitgear\nEnvironmentFile=/etc/summitgear.env\nExecStart=/usr/bin/node server.js\nRestart=on-failure\nRestartSec=2\n\n[Install]\nWantedBy=multi-user.target",
+      steps: [
+        { line: 1, note: 'The file name is the service name: `summitgear.service`. Unit files go in `/etc/systemd/system/`, and writing there needs `sudo`.' },
+        { line: 2, note: 'The `[Unit]` section describes the service and when it may start.' },
+        { line: 3, note: 'A label that shows up in `systemctl status` and in the logs.' },
+        { line: 4, note: 'Start this service only after the network is up.' },
+        { line: 6, note: 'The `[Service]` section says how to run your program.' },
+        { line: 7, note: 'The folder the process starts in, as if you had run `cd` first. Relative paths in your code work from here.' },
+        { line: 8, note: 'A file of `KEY=value` lines (like `PORT=3000`) that becomes the process\'s environment variables. Your secrets stay out of the unit file and out of Git. Make the file readable only by root.' },
+        { line: 9, note: 'The command to run. The program needs its **full path**: find yours with `which node`.' },
+        { line: 10, note: 'Start it again if it exits with an error or is killed by a crash. A deliberate `systemctl stop` is not restarted.' },
+        { line: 11, note: 'Wait 2 seconds before each restart, so a program that crashes at once does not spin in a tight loop.' },
+        { line: 13, note: 'The `[Install]` section says what `systemctl enable` does.' },
+        { line: 14, note: 'Start this service in a normal boot. That is what "start at boot" means.' },
+      ],
+    },
+    tryit: {
+      kind: 'server',
+      prompt: "Make the Summit Gear API ready for a real deployment. The page at `https://app.summitgear.example` will call it, so it needs a health check and CORS.\n\n1. **GET /health**: answer `{ \"status\": \"ok\" }`\n2. Add a **middleware** (`app.use((req, res, next) => …)`) before the routes. If the request's `Origin` header (`req.get('origin')`) equals `ALLOWED`, set the response header `Access-Control-Allow-Origin` to that origin. Any other origin gets no header.\n3. **Preflight**: if `req.method` is `'OPTIONS'`, also set `Access-Control-Allow-Methods` to `GET, POST, PUT, DELETE` and `Access-Control-Allow-Headers` to `Content-Type, Authorization`, then answer `res.sendStatus(204)` and stop. Every other request continues with `next()`.\n\nThe `/cors-check` route is there so the tests can see which header your middleware set.",
+      starter: "const express = require('express')\nconst app = express()\n\nconst ALLOWED = 'https://app.summitgear.example'\n\n// 1. CORS middleware goes here, before the routes\n\n// 2. GET /health goes here\n\n// A check route so the tests can see the header your middleware set\napp.get('/cors-check', (req, res) => {\n  res.json({ allowOrigin: res.get('Access-Control-Allow-Origin') || 'none' })\n})\n\napp.listen(process.env.PORT || 3000, () => {\n  console.log('Summit Gear API is listening')\n})\n",
+      hints: [
+        "Health route: `app.get('/health', (req, res) => { res.json({ status: 'ok' }) })`.",
+        "Middleware: `app.use((req, res, next) => { const origin = req.get('origin'); if (origin === ALLOWED) { res.set('Access-Control-Allow-Origin', origin) } … next() })`. `res.set(name, value)` sets a response header.",
+        "Inside the middleware, before `next()`: `if (req.method === 'OPTIONS') { res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE'); res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization'); return res.sendStatus(204) }`. The `return` stops the request here.",
+      ],
+      requests: [
+        { label: 'GET /health: the health check answers ok', method: 'GET', path: '/health', expect: { status: 200, json: { status: 'ok' } } },
+        { label: 'GET /cors-check from the allowed origin: header is set', method: 'GET', path: '/cors-check', headers: { Origin: 'https://app.summitgear.example' }, expect: { status: 200, json: { allowOrigin: 'https://app.summitgear.example' } } },
+        { label: 'GET /cors-check from another origin: no header', method: 'GET', path: '/cors-check', headers: { Origin: 'https://other.example' }, expect: { status: 200, json: { allowOrigin: 'none' } } },
+        { label: 'OPTIONS /health (preflight): 204 with no body', method: 'OPTIONS', path: '/health', headers: { Origin: 'https://app.summitgear.example', 'Access-Control-Request-Method': 'PUT' }, expect: { status: 204 } },
+      ],
+    },
+    mistakes: [
+      { wrong: "$ node server.js   (a second copy, while the first is still running)", result: 'Error: listen EADDRINUSE: address already in use :::3000', why: 'Only one program can listen on a port. Find the one holding it (`sudo ss -ltnp | grep :3000`) and stop it, or give the new one another port.' },
+      { wrong: 'ExecStart=/usr/local/bin/node server.js   (node is really at /usr/bin/node)', result: 'Main process exited, code=exited, status=203/EXEC', why: 'systemd could not run the program at that path. Run `which node` and copy the exact path.' },
+      { wrong: "fetch('https://api.summitgear.example/gear')   (API sends no CORS header)", result: "Access to fetch at 'https://api.summitgear.example/gear' from origin 'https://app.summitgear.example' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.", why: 'The browser will not let your page read a cross-origin response unless the server sends `Access-Control-Allow-Origin` with that origin. Fix it on the server, not in the page.' },
+      { wrong: "res.set('Access-Control-Allow-Origin', '*')   (while the page sends cookies)", result: "The value of the 'Access-Control-Allow-Origin' header in the response must not be the wildcard '*' when the request's credentials mode is 'include'.", why: 'With cookies or other credentials the server must name the exact origin and also send `Access-Control-Allow-Credentials: true`.' },
+    ],
+    recap: [
+      'A **process** is a running program with a **process ID**. It ends when its terminal closes, when it crashes, or when it is stopped.',
+      'A **process manager** (on Linux, **systemd**) starts your server at boot and restarts it after a crash. A service file sets `ExecStart`, `WorkingDirectory`, `Restart=on-failure` and the environment.',
+      '`systemctl start|stop|restart|status|enable` control a service. `journalctl -u summitgear -f` follows its logs. After editing the file, run `sudo systemctl daemon-reload`.',
+      'One program per **port**. `EADDRINUSE` means the port is taken. `127.0.0.1` accepts only this computer, `0.0.0.0` accepts the network.',
+      'A **health check** (`GET /health` answering 200) lets hosts and uptime monitors know the app is alive. A **graceful shutdown** handles `SIGTERM`: stop taking new requests, finish current ones, exit.',
+      '**CORS** is the browser asking the API\'s permission to share a response with a page on another origin. The server sends `Access-Control-Allow-Origin`. Non-simple requests get an `OPTIONS` preflight first. It is not a wall around your API: `curl` ignores it. Never combine `*` with credentials.',
+    ],
+    questions: [
+      { concept: 'process', kind: 'mc', q: 'You start your API with `node server.js` over SSH, then your connection drops. What most likely happens to the server?', options: ['It keeps running, because Node detaches itself from the terminal', 'It stops, because the process was tied to the session that just closed', 'It restarts by itself, because Node has a built-in watchdog', 'It pauses until you reconnect, then carries on'], answer: 1, why: 'A program started in a terminal ends with that terminal. A process manager is what keeps a server alive on its own.' },
+      { concept: 'process-manager', kind: 'mc', q: 'What does a process manager give you that running `node server.js` by hand does not?', options: ['It starts the server at boot and starts it again after a crash', 'It makes your route code run faster', 'It encrypts the traffic between client and server', 'It finds and fixes the bug that caused a crash'], answer: 0, why: 'Starting, watching and restarting is its whole job. It does not fix the bug: read the logs for that.' },
+      { concept: 'systemd-service', kind: 'mc', q: 'On a Linux server, which tool reads a service file and starts your API at boot and again after a crash?', options: ['systemd', 'The express package', 'npm install', 'A health-check route'], answer: 0, why: 'systemd is the first program Linux starts at boot, and it manages services.' },
+      { concept: 'systemd-service', kind: 'mc', q: 'Your service is called `summitgear`. Which command follows its log output live?', options: ['journalctl -u summitgear -f', 'systemctl restart summitgear', 'cat /etc/systemd/system/summitgear.service', 'systemctl enable summitgear'], answer: 0, why: '`journalctl` reads the journal, `-u` picks the service and `-f` keeps following new lines.' },
+      { concept: 'port', kind: 'mc', q: 'You run `node server.js` and see `Error: listen EADDRINUSE: address already in use :::3000`. What does it mean?', options: ['Another program is already listening on port 3000', 'Port 3000 is reserved for the system, so you need sudo', 'Your server file has a syntax error', 'Your internet connection is down'], answer: 0, why: 'Only one program can listen on a port. Stop the other one or use a different port.' },
+      { concept: 'port', kind: 'mc', q: 'Your server listens on `127.0.0.1` only. Can a phone on the same Wi-Fi reach it using the computer\'s network address?', options: ['Yes, any device on the same Wi-Fi can reach any port', 'No, 127.0.0.1 accepts connections only from the same computer', 'Yes, but only for GET requests', 'No, because phones can only use port 80'], answer: 1, why: '127.0.0.1 is localhost. To accept other computers, listen on all addresses (0.0.0.0, which is what `app.listen(3000)` does).' },
+      { concept: 'health-check', kind: 'mc', q: 'What is the best job for `GET /health`?', options: ['Answer 200 quickly with a tiny body, so a monitor can tell the app is alive', 'Return every row in the database to prove the database works', 'Return the server\'s environment variables so operators can read them', 'Run the full test suite on every call'], answer: 0, why: 'A health check is small, fast and safe to expose. It is called often, by machines.' },
+      { concept: 'graceful-shutdown', kind: 'mc', q: 'A deploy stops this service by sending SIGTERM. What does the handler do?', code: "const server = app.listen(3000)\n\nprocess.on('SIGTERM', () => {\n  server.close(() => process.exit(0))\n})", options: ['Stops taking new connections, lets current requests finish, then exits', 'Ignores the signal, so the server keeps running', 'Ends the process at once, cutting every request off', 'Restarts the server on the same port'], answer: 0, why: '`server.close` stops listening and calls back when the requests already in progress are done. Then the process exits.' },
+      { concept: 'cors', kind: 'mc', q: "The browser console says `blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present`. The page is on app.summitgear.example and the API is on api.summitgear.example. Where do you fix it?", options: ['In the API server: send Access-Control-Allow-Origin for the page\'s origin', 'In the page: add a header to the fetch call that turns CORS off', 'In the browser settings of every visitor', 'In the page\'s HTML, with a CORS meta tag'], answer: 0, why: 'The server decides who may read its responses. Nothing in the page can grant that permission for it.' },
+      { concept: 'cors', kind: 'mc', q: 'The page sends cookies to the API, and the server answers with `Access-Control-Allow-Origin: *`. What does the browser do?', options: ['Rejects the response: with credentials the server must name the exact origin', 'Accepts it, because * means every origin is allowed', 'Accepts it, but deletes the cookies', 'Retries the request without the cookies'], answer: 0, why: 'A wildcard is not allowed together with credentials. The server must send the exact origin and `Access-Control-Allow-Credentials: true`.' },
+      { concept: 'port', kind: 'type', q: 'Type the error code Node prints when a port is already taken. It starts with E and ends with INUSE.', accept: ['EADDRINUSE', 'eaddrinuse'], why: 'EADDRINUSE: the address (the port) is already in use.' },
+      { concept: 'cors', kind: 'mc', q: 'A page on one origin sends `fetch(url, { method: \'PUT\' })` to an API on another. What does the browser send first?', options: ['An OPTIONS preflight request asking whether the real request is allowed', 'The PUT request, then it checks the headers of the answer', 'A GET request to /health', 'Nothing: PUT is blocked across origins'], answer: 0, why: 'PUT is not a simple request, so the browser sends an OPTIONS preflight first. The server must answer it with 2xx and the Allow headers.' },
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: '9-7', type: 'server', mode: 'phone', xp: 40, mins: 25,
@@ -774,6 +849,9 @@ export const camp9 = [
       { concept: 'environment-variables', kind: 'mc', q: 'The server is started with the environment variable DEBUG set to the text false, and the code says `if (process.env.DEBUG) { … }`. Does the debug block run?', options: ['No, because the text false counts as false', "Yes: 'false' is a non-empty string, which is truthy", 'Only in production mode, when NODE_ENV is set', 'It throws an error, since the text isn\'t a boolean'], answer: 1 },
       { concept: 'deployment', kind: 'mc', q: 'Your pre-deploy checklist. Which item is WRONG?', options: ['It runs locally with npm start', 'It listens on process.env.PORT', 'Commit .env so the host gets your keys', 'Debug routes are off in production'], answer: 2 },
       { concept: 'https', kind: 'mc', q: 'An email links to `https://summitgear-support.example` and the padlock shows. What does the padlock tell you?', options: ['It\'s the real Summit Gear, because the padlock proves the site belongs to that company', 'The connection is encrypted and the certificate matches summitgear-support.example, which may still be a scam', 'Your password is safe to type there, since the padlock means the page is trustworthy', 'It was checked by your browser maker, who vets every site that shows a padlock'], answer: 1 },
+      { concept: 'cors', kind: 'mc', q: 'Your React page at `https://app.summitgear.example` calls `https://api.summitgear.example/gear`. The console shows a CORS error, but the same URL works in curl. What is the right fix?', options: ['Make the API send Access-Control-Allow-Origin for the page\'s origin', 'Turn off HTTPS on the API so the browser has nothing to check', 'Add a CORS header inside the page\'s own HTML', 'Send the request again until the browser lets it through'], answer: 0 },
+      { concept: 'graceful-shutdown', kind: 'mc', q: 'Each deploy cuts off a few requests halfway through. The old process is stopped with SIGTERM. What is the best fix?', options: ['Handle SIGTERM: stop listening, finish the current requests, then exit', 'Stop the old process with kill -9 so it ends sooner', 'Remove the signal from the deploy settings', 'Move the server to a higher port number'], answer: 0 },
+      { concept: 'process-manager', kind: 'mc', q: 'A teammate runs `node server.js` in a session on the production server and says "it\'s live". What is the problem?', options: ['It ends when the session closes or the program crashes: run it as a service with a restart rule', 'Node cannot run on a production server', 'It must have a health check before it may listen on any port', 'Express servers only work on localhost'], answer: 0 },
     ],
   },
 ]

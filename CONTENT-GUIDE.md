@@ -178,11 +178,11 @@ re-teach another camp's ids. Writers work in parallel, so **tag quiz questions o
 - **6 Camp II:** fs-module read-file write-file json json-parse-stringify git repository commit staging-area git-log git-diff branch merge merge-conflict remote github push-pull gitignore
 - **7 Lhotse Face:** npm package-json dependency semver node-modules modules request-response http-methods-basics status-codes-basics api json-api fetch promise async-await try-catch midterm-planning
 - **8 Camp III:** html html-element html-attribute page-structure css css-selector box-model flexbox responsive-design dom query-selector events forms accessibility devtools
-- **9 Yellow Band:** client-server http-methods status-codes express route route-params query-string request-body middleware rest-api environment-variables hosting deployment dns-domains https server-logs
+- **9 Yellow Band:** client-server http-methods status-codes express route route-params query-string request-body middleware rest-api environment-variables hosting deployment dns-domains https server-logs process process-manager systemd-service port health-check graceful-shutdown cors
 - **10 Camp IV:** database table-row-column primary-key sql-select sql-where sql-order-limit sql-insert sql-update-delete sql-join db-index sql-injection parameterized-query password-hashing authentication authorization secrets-management least-privilege sensitive-data
 - **J The Balcony:** typescript type-annotation interface-type union-type type-errors react component jsx props state react-events lists-keys use-effect testing unit-test assertion test-first
-- **Q South Summit:** ai-model training-vs-inference token context-window model-parameters temperature hallucination prompt embeddings rag ai-api local-model quantization hardware-requirements model-licenses model-evaluation ai-privacy
-- **K Hillary Step:** audit-method claims-evidence architecture-review threat-model dependency-audit cost-analysis privacy-audit license-check benchmark-skepticism repo-health audit-report
+- **Q South Summit:** ai-model training-vs-inference token context-window model-parameters temperature hallucination prompt embeddings rag ai-api local-model quantization hardware-requirements model-licenses model-evaluation ai-privacy ai-agent tool-calling agent-loop agent-permissions prompt-injection sandbox isolation container allowlist mcp mcp-server mcp-trust
+- **K Hillary Step:** audit-method claims-evidence architecture-review threat-model dependency-audit cost-analysis privacy-audit license-check benchmark-skepticism repo-health audit-report ai-coding-assistant reviewing-ai-code package-hallucination
 - **A The Summit:** project-planning requirements mvp build-plan integration final-testing self-audit presenting-work
 
 ## Reference solutions (required for every graded task)
