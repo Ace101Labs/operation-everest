@@ -1,0 +1,75 @@
+// Base Camp: other versions of each quiz question. A retry deals a different version
+// (same concept, same kind, same number of options), so a quiz can't be passed from
+// memory. Keyed by question id (`<stage>#<index>`). See CONTENT-GUIDE.md "Alternate versions".
+export const ALTS_CAMP2 = {
+  // Trail 1: What is a terminal?
+  '2-1#0': [{ q: 'You type `ls` and press Enter. What reads that line and runs it?', options: ['The terminal window', 'The shell', 'The prompt', 'The folder you are in'], answer: 1, why: 'The terminal is only the window. The shell inside it reads each line and runs it.' }],
+  '2-1#1': [{ q: 'You see `climber@laptop:~$` with the cursor blinking after it. What should you do?', options: ['Wait until the $ goes away', 'Type a command and press Enter', 'Press Enter to clear the error', 'Retype the whole line, then press Enter'], answer: 1, why: 'The prompt means the shell is ready. Type only what comes after the `$`.' }],
+  '2-1#2': [{ q: 'In `sherpa@basecamp:~$`, which part is the user\'s name?', options: ['sherpa', 'basecamp', '~', '$'], answer: 0, why: 'user@machine: sherpa is the user, basecamp is the machine.' }],
+  '2-1#3': [{ q: 'A website runs on a server in a data centre. How does a developer usually control that server?', options: ['By plugging in a screen and clicking around', 'By typing commands into a terminal connected to it', 'By installing an app with big buttons on it', 'By asking the data centre staff to make each change'], answer: 1, why: 'Servers usually have no screen, so developers connect a terminal and type commands.' }],
+  '2-1#4': [{ q: 'You want to know which folder you are standing in. Which command?', options: ['ls', 'pwd', 'whereami', 'folder'], answer: 1, why: 'pwd = print working directory. `ls` shows what\'s in the folder, not where it is.' }],
+  '2-1#6': [{ q: 'You selected a command in the terminal and want to copy it. Which keys copy it?', options: ['Ctrl+Shift+C', 'Ctrl+C', 'Alt+C', 'Ctrl+Alt+C'], answer: 0, why: 'In a Linux terminal, Ctrl+C means "stop the running command", so copy is Ctrl+Shift+C (and paste is Ctrl+Shift+V).' }],
+  '2-1#5': [{ q: 'The screen shows `climber@laptop:~$ pwd`. Which part did you type?', options: ['climber@laptop:~$', 'pwd', 'The whole line', 'Only the $'], answer: 1, why: 'The shell prints the prompt. You type the command after the `$`.' }],
+
+  // Trail 2: Folders and paths
+  '2-2#0': [{ q: 'You are in the photos folder inside `/home/climber`. You type `pwd`. What prints?', options: ['/home/climber/photos', 'photos', '/home/climber', '/photos'], answer: 0, why: 'pwd prints the full path of the folder you are in.' }],
+  '2-2#1': [{ q: 'You are in `/home/climber/notes/old`. What prints?', code: '$ cd ..\n$ cd ..\n$ pwd', options: ['/home/climber/notes', '/home/climber', '/home', '/'], answer: 1, why: 'Each `..` goes up one level: old → notes → climber.' }],
+  '2-2#2': [{ q: 'Which path points to the same file no matter which folder you are in?', options: ['notes/route.txt', '../notes/route.txt', '/home/climber/notes/route.txt', 'route.txt'], answer: 2, why: 'It starts with `/`, so it is absolute: it starts from the very top every time.' }],
+  '2-2#3': [{ q: 'What does `~` stand for in a path?', options: ['The folder above this one', 'Your home folder', 'The very top folder, /', 'The folder you were just in'], answer: 1, why: '`~` is short for your home folder, like /home/climber.' }],
+  '2-2#4': [{ q: 'You just walked into a folder with `cd`. Type the command that shows what is inside it.', accept: ['ls'], why: '`ls` = list: what\'s in the folder you are in.' }],
+  '2-2#5': [{ q: 'You ran `cd /home/climber/photos`, then `cd /home/climber/notes`. Which command takes you straight back to photos?', options: ['cd -', 'cd ..', 'cd ~', 'cd photos'], answer: 0, why: '`cd -` returns to the folder you were just in. `cd ..` would go up to climber, and there is no photos folder inside notes.' }],
+  '2-2#6': [{ q: 'You are in `/home/climber`. You type `cd notes`. Where do you end up?', options: ['/home/climber/notes', '/notes', '/home/notes', 'Nowhere, since notes needs a / first'], answer: 0, why: 'A relative path starts from where you stand: climber → notes.' }],
+
+  // Trail 3: Making, reading and deleting
+  '2-3#0': [{ q: 'You want a new, empty folder called `tents`. Which command?', options: ['touch tents', 'mkdir tents', 'cd tents', 'cat tents'], answer: 1, why: 'mkdir makes a folder. touch would make an empty file instead.' }],
+  '2-3#1': [{ q: '`notes/route.txt` holds one line of text. Which command prints that line?', options: ['ls notes/route.txt', 'cat notes/route.txt', 'cd notes/route.txt', 'touch notes/route.txt'], answer: 1, why: 'cat prints what is inside a file. ls only shows its name, and cd works only on folders.' }],
+  '2-3#2': [{ q: 'In `head -n 2 list.txt`, which part is the flag?', options: ['head', '-n', 'list.txt', 'head -n 2 list.txt'], answer: 1, why: 'Flags start with a dash. `-n` changes how many lines head prints, and 2 is the number it uses.' }],
+  '2-3#3': [{ q: '`ls` shows `notes  photos`, but `ls -a` also shows `.secret-stash`. Why was it missing the first time?', options: ['It is empty, so ls skips it', 'Its name starts with a dot, so it is hidden', 'It belongs to another user', 'ls only lists folders, not files'], answer: 1, why: 'Names starting with a dot are hidden. `ls -a` shows them too.' }],
+  '2-3#4': [{ q: 'You ran `rm route.txt` and now you need the file back. What can you do?', options: ['Restore it from the trash', 'Run `touch route.txt` to bring it back', 'Nothing: rm deletes for good, with no undo', 'Restart the terminal so it comes back'], answer: 2, why: 'rm skips the trash. Once it is gone it is gone, unless you kept a copy somewhere else. `touch` would only make a new, empty file.' }],
+  '2-3#5': [{ q: 'In `-rw-r--r--`, what can the **owner** (the first three letters after the dash) do?', options: ['Only read it', 'Read it and write to it', 'Read, write and run it', 'Nothing at all'], answer: 1, why: 'The owner\'s set is `rw-`: read yes, write yes, run no.' }],
+  '2-3#6': [{ q: 'A file lists 300 climbers, oldest sign-up at the top. You want the first 5 who signed up. Which command?', options: ['cat climbers.txt', 'head -n 5 climbers.txt', 'tail -n 5 climbers.txt', 'ls -l climbers.txt'], answer: 1, why: '`head` shows the start of a file, and here the oldest sign-ups are at the top.' }],
+  '2-3#7': [{ q: 'You type `rmdir camp`, but `camp` still has files in it. What happens?', options: ['It deletes the folder and every file in it', 'It refuses, and nothing is deleted', 'It deletes the files but keeps the folder', 'It moves the whole folder to the trash'], answer: 1, why: '`rmdir` removes only empty folders, which is why it is the safe choice.' }],
+  '2-3#8': [{ q: 'Type the command that makes an empty file called `gear.md`.', accept: ['touch gear.md'], why: '`touch` makes an empty file.' }],
+
+  // Trail 4: What is a program?
+  '2-4#0': [{ q: 'You saved your program as `climb.js`. Which command runs it?', options: ['cat climb.js', 'node climb.js', 'run climb.js', 'open climb.js'], answer: 1, why: 'node reads the file and runs it. cat would only print the code.' }],
+  '2-4#1': [{ q: 'What prints?', code: 'console.log("2 + 2")', options: ['4', '2 + 2', '"2 + 2"', 'Nothing'], answer: 1, why: 'It is inside quotes, so it is a string: text printed exactly as written, without the quotes.' }],
+  '2-4#2': [{ q: 'What prints **first**?', code: 'console.log("last")\nconsole.log("first")', options: ['first', 'last', 'Both on the same line', 'Nothing, because the order is wrong'], answer: 1, why: 'Lines run top to bottom. The words inside the quotes don\'t change the order.' }],
+  '2-4#3': [{ q: 'What\'s wrong?', code: 'console.log(Base camp")', options: ['Missing an opening quote', 'Missing a semicolon at the end', 'console is misspelled', 'It should use single quotes'], answer: 0, why: 'The text has a closing quote but no opening one, so JavaScript can\'t tell where the string starts.' }],
+  '2-4#4': [{ q: 'Your program prints `Hello, climbr`. You meant `climber`. What does Node do the next time you run it?', options: ['Fixes the spelling for you', 'Prints `Hello, climbr` again', 'Stops with a syntax error', 'Asks which spelling you meant'], answer: 1, why: 'A program does exactly what you wrote. A typo inside quotes is still valid code, so it prints as written.' }],
+
+  // Weather check: "Learn to code in 7 days"
+  '2-9#0': [{ q: '"Become a developer in 7 days." Why is that claim a red flag?', options: ['Seven days is enough, as long as you study around the clock', 'It is a big promise with no proof, and real skill takes far more practice than that', 'It is only a small stretch, since most people need about 10 days', 'Any course that promises a time frame must be a scam'], answer: 1, why: 'Big promises with no proof are a red flag. Skill comes from practice, and a week of it doesn\'t make a developer.' }],
+  '2-9#1': [{ q: '"No terminal needed, just click." Why is that a problem for someone becoming a developer?', options: ['It is fine, since modern servers come with a screen and mouse for clicking', 'Servers usually have no screen, so developers need the terminal to work on them', 'It is fine, since the terminal only matters after years of practice', 'It is only a problem if the course costs more than a hundred dollars'], answer: 1, why: 'Servers usually have no screen. Skipping the terminal leaves you unable to work on them.' }],
+  '2-9#2': [{ q: 'The sign-up page asks to "see, edit and delete all your Google Drive files." What is the safest move?', options: ['Accept, since Google checked the app before listing it', 'Stop and ask why a course needs that, and how to revoke it', 'Accept now and remove the access after the first lesson', 'Accept, because only big companies can ask for that much'], answer: 1, why: 'Ask what an app can access before you allow it, and whether you can take that access back. A course has no reason to edit your files.' }],
+
+  // Don't Cause an Avalanche
+  '2-av#0': [{ q: 'Print the folder you are standing in', options: ['cat', 'pwd', 'ls -a', 'cd'], answer: 1 }],
+  '2-av#1': [{ q: 'See what\'s inside the folder you\'re in', options: ['ls', 'pwd', 'cd', 'touch'], answer: 0 }],
+  '2-av#2': [{ q: 'You\'re in /home/climber/notes. Go to /home/climber', options: ['cd notes', 'cd ..', 'cd /', 'cd -a'], answer: 1 }],
+  '2-av#3': [{ q: 'Go to your home folder, wherever you are', options: ['cd ..', 'cd ~', 'cd /', 'ls ~'], answer: 1 }],
+  '2-av#4': [{ q: 'Create a new folder called tents', options: ['mkdir tents', 'touch tents', 'cd tents', 'cat tents'], answer: 0 }],
+  '2-av#5': [{ q: 'Show what\'s written in packing-list.txt', options: ['ls packing-list.txt', 'touch packing-list.txt', 'cat packing-list.txt', 'cd packing-list.txt'], answer: 2 }],
+  '2-av#6': [{ q: 'Which one deletes a file for good?', options: ['rm', 'rmdir', 'cat', 'touch'], answer: 0 }],
+  '2-av#7': [{ q: 'List every file, including ones whose names start with a dot', options: ['ls', 'ls -a', 'ls -l', 'ls -h'], answer: 1 }],
+
+  // Don't Wake the Yeti
+  '2-yeti#0': [{ q: 'What prints?', code: 'console.log("rope")', options: ['rope', '"rope"', 'console.log("rope")', 'nothing'], answer: 0 }],
+  '2-yeti#1': [{ q: 'Run the file summit.js', options: ['cat summit.js', 'node summit.js', 'open summit.js', 'run summit.js'], answer: 1 }],
+  '2-yeti#2': [{ q: 'What\'s broken?', code: 'console.log(snow")', options: ['missing a semicolon', 'missing opening quote', 'snow is misspelled', 'should use single quotes'], answer: 1 }],
+  '2-yeti#3': [{ q: 'What prints last?', code: 'console.log("tent")\nconsole.log("rope")\nconsole.log("axe")', options: ['tent', 'rope', 'axe', 'all three at once'], answer: 2 }],
+  '2-yeti#4': [{ q: 'In `console.log("hi")`, what is `"hi"`?', options: ['a command', 'a string', 'a flag', 'a folder'], answer: 1 }],
+  '2-yeti#5': [{ q: 'Your code has a typo inside the quotes. The program prints…', options: ['the word as you typed it', 'the word you meant', 'an error message', 'nothing at all'], answer: 0 }],
+
+  // The Base Camp Gatekeeper
+  '2-boss#0': [{ q: 'You are lost in the folders. Which command tells you exactly where you are?', options: ['cd', 'ls', 'pwd', 'cat'], answer: 2 }],
+  '2-boss#1': [{ q: 'From `/home/climber/photos`, `cd ..` takes you to…', options: ['/home', '/home/climber', '/photos', '/'], answer: 1 }],
+  '2-boss#2': [{ q: 'Which of these is an absolute path?', options: ['notes/route.txt', '/home/climber/notes/route.txt', '../notes', 'route.txt'], answer: 1 }],
+  '2-boss#3': [{ q: 'Command to make a folder named `summit`:', accept: ['mkdir summit'] }],
+  '2-boss#4': [{ q: 'You run `rm old.txt`. Where can you get it back from?', options: ['The trash', 'Nowhere: it\'s gone for good', 'A hidden folder called .old', 'The next time you open the terminal'], answer: 1 }],
+  '2-boss#5': [{ q: 'What prints?', code: 'console.log("Z")\nconsole.log("Y")\nconsole.log("X")', options: ['X, Y, Z on three lines', 'Z, Y, X on three lines', 'ZYX on one line', 'Only Z, the first line'], answer: 1 }],
+  '2-boss#6': [{ q: 'You wrote `trail.js`. Which program runs it?', options: ['cat', 'node', 'pwd', 'mkdir'], answer: 1 }],
+  '2-boss#7': [{ q: 'What\'s wrong here?', code: 'console.log(Summit")', options: ['Needs single quotes', 'Missing opening quote', 'console is misspelled', 'Needs a semicolon'], answer: 1 }],
+  '2-boss#8': [{ q: 'In `ls -a notes`, what is `-a`?', options: ['The folder to list', 'A flag that changes how ls behaves', 'A second command that runs after ls', 'A file called a inside notes'], answer: 1 }],
+  '2-boss#9': [{ q: 'A course says "skip the terminal, our AI types every command for you." For someone becoming a developer, that is…', options: ['A time saver that lets you skip slow work', 'A red flag: it keeps you dependent on the tool', 'Fine, since servers all have screens now', 'A sign the course is built for beginners'], answer: 1 }],
+}

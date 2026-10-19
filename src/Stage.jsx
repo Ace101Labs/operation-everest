@@ -1,0 +1,345 @@
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Md } from './md.jsx'
+import { bridgeSafe, runCode, terminalCommand } from './runner.js'
+import { isPassed, knockBackTargets, stagePoints } from './progress.js'
+import { TYPE, WIN, LOSE, bossLine, defeatLine } from './content/names.js'
+import { CAMPS, QUESTIONS } from './content/camps.js'
+import { Burst, Range } from './Snow.jsx'
+import { TerminalStage } from './Terminal.jsx'
+import { Radio } from './Radio.jsx'
+import { Lesson, getPlace, setPlace } from './Lesson.jsx'
+import { ENGINES } from './Engines.jsx'
+import { emit } from './events.js'
+import { deal } from './deal.js'
+
+const SURPRISES = ['🃏 Bonus: you found a playing card in the snow.', '🦅 Tip: read an error message from the top line first.', '☕ Nice work. Take a short break if you like.', '🧭 Fun fact: the first website (1991) is still online.']
+
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true } catch { return false }
+}
+
+function Header({ stage, close, step, total }) {
+  return (
+    <header className="bar-top">
+      <button className="icon" onClick={close}>✕</button>
+      <div><small>{TYPE[stage.type].icon} {stage.type === 'boss' ? 'BOSS FIGHT' : (stage.type === 'avalanche' || stage.type === 'yeti') ? 'CHALLENGE' : TYPE[stage.type].name} · up to {stage.xp} XP</small><strong>{stage.title}</strong></div>
+      {total ? <div className="steps">{step}/{total}</div> : null}
+    </header>
+  )
+}
+
+const resolve = (v, s) => (typeof v === 'function' ? v(s) : v)
+
+// What this attempt paid: points scale with your best score, so only beating it adds more.
+function xpLine(stage, prev, score) {
+  const before = stagePoints(stage, prev)
+  const now = stagePoints(stage, { passed: true, best: Math.max(prev?.best || 0, score) })
+  const of = `${now} of ${stage.xp} XP`
+  if (!prev?.passed) return `+${now} XP (${of}${now < stage.xp ? '. Retake for 100% to earn the rest' : ''})`
+  if (now > before) return `+${now - before} XP (new best: ${of})`
+  return `no new XP (your best: ${of}). Beat your best score to earn more.`
+}
+
+function Result({ score, stage, onDone, retry, extra, p }) {
+  const passMark = p.settings.passMark
+  const passed = score >= passMark / 100
+  const msg = useMemo(() => { const l = passed ? WIN : LOSE; return l[Math.floor(Math.random() * l.length)] }, [passed])
+  const surprise = useMemo(() => (passed && p.settings.surprises && Math.random() < 0.25 ? SURPRISES[Math.floor(Math.random() * SURPRISES.length)] : null), [passed])
+  return (
+    <div className={`result ${passed ? 'win' : 'lose'}`}>
+      {passed && !p.settings.reduceMotion && <Burst />}
+      <div className="big">{passed ? (stage.type === 'boss' ? '🚩' : '❄️') : '🪢'}</div>
+      <h2>{passed ? (stage.type === 'boss' ? `${stage.title} defeated!` : msg) : msg}</h2>
+      <p>{Math.round(score * 100)}% · {passed ? xpLine(stage, p.stages[stage.id], score) : `you need ${passMark}%. Retake as often as you like.`}</p>
+      {surprise && <p className="surprise">{surprise}</p>}
+      {extra}
+      <div className="row">
+        {!passed && <button className="btn" onClick={retry}>Try again</button>}
+        <button className={`btn ${passed ? 'primary' : ''}`} onClick={() => onDone(score)}>Back to camp</button>
+      </div>
+    </div>
+  )
+}
+
+const FUSE = 20 // seconds per question in "Don't wake the Yeti"
+
+export function Questions({ stage, questions: given, onFinish, challenge, onAnswer, platform }) {
+  const questions = useMemo(() => deal(given, platform), []) // fresh order, options and versions each attempt
+  const [cracks, setCracks] = useState(0)
+  const [noise, setNoise] = useState(0)
+  const [left, setLeft] = useState(FUSE)
+  const [dead, setDead] = useState(null)
+  const [timedOut, setTimedOut] = useState(false)
+  const [maxNoise, setMaxNoise] = useState(0)
+  useEffect(() => { setMaxNoise(m => Math.max(m, noise)) }, [noise])
+  const [i, setI] = useState(0)
+  const [pick, setPick] = useState(null)
+  const [typed, setTyped] = useState('')
+  const [shown, setShown] = useState(false)
+  const [right, setRight] = useState(0)
+  const q = questions[i]
+  const correct = q.kind === 'mc' ? pick === q.answer
+    : q.accept.some(a => a.trim().toLowerCase() === typed.trim().toLowerCase().replace(/\s+/g, ' '))
+  const fail = () => {
+    if (challenge === 'avalanche') { const c = cracks + 1; setCracks(c); if (c >= 3) setTimeout(() => setDead('avalanche'), 700) }
+    if (challenge === 'yeti') setNoise(n => { const v = n + 35; if (v >= 100) setTimeout(() => setDead('yeti'), 700); return Math.min(100, v) })
+  }
+  const check = () => {
+    setShown(true)
+    onAnswer?.(q.qid, correct)
+    if (correct) { setRight(r => r + 1); if (challenge === 'yeti') setNoise(n => Math.max(0, n - 10)) } else fail()
+  }
+  useEffect(() => {
+    if (challenge !== 'yeti' || shown || dead) return
+    if (left <= 0) { setTimedOut(true); setShown(true); onAnswer?.(q.qid, false); fail(); return }
+    const t = setTimeout(() => setLeft(l => +(l - 0.1).toFixed(1)), 100)
+    return () => clearTimeout(t)
+  }, [challenge, left, shown, dead])
+  const next = () => {
+    if (i + 1 >= questions.length) { const score = right / questions.length; emit('quiz-done', { score, challenge, cracks, noise: maxNoise }); return onFinish(score) }
+    setI(i + 1); setPick(null); setTyped(''); setShown(false); setLeft(FUSE); setTimedOut(false)
+  }
+  // Challenges hand a loss straight to the Wipeout (animation + knock-back); no extra screen.
+  useEffect(() => { if (dead) onFinish(0, dead) }, [dead])
+  if (dead) return null
+  if (false) return (
+    <div className={`disaster ${dead}`}>
+      <div className="big">{dead === 'avalanche' ? '🏔️' : <span className="yeti">🦍</span>}</div>
+      <h2>{dead === 'avalanche' ? 'AVALANCHE!' : 'ROOOAAAR! The Yeti is awake!'}</h2>
+      <p>{dead === 'avalanche' ? 'Three wrong answers, three cracks, and the snow gave way. Go back to camp and try again, more carefully.' : 'Too many wrong or slow answers made too much noise. Go back to camp and try again.'}</p>
+      <button className="btn primary wide" onClick={() => onFinish(0, dead)}>Back to camp</button>
+    </div>
+  )
+  return (
+    <div className="quiz">
+      <div className="progress"><div style={{ width: `${((i + (shown ? 1 : 0)) / questions.length) * 100}%` }} /></div>
+      {challenge === 'avalanche' && (
+        <div className={`meter snowpack c${cracks}`}>
+          <span>Snowpack (3 cracks ends it)</span>{[0, 1, 2].map(k => <b key={k}>{k < cracks ? '💥' : '❄️'}</b>)}
+        </div>
+      )}
+      {challenge === 'yeti' && (
+        <div className="meter yetibar">
+          <span className="yeti small">🦍</span><span className="zz">{noise < 35 ? '💤' : noise < 70 ? '😑' : '😠'}</span>
+          <div className="noise"><div style={{ width: `${noise}%` }} /></div>
+          <span className={`fuse ${left < 6 ? 'low' : ''}`}>⏱ {Math.ceil(left)}s</span>
+        </div>
+      )}
+      <div className="q-text" role="heading" aria-level="3"><Md text={q.q} /></div>
+      {q.code && <pre><code>{q.code}</code></pre>}
+      {q.kind === 'mc' ? (
+        <div className="options">
+          {q.options.map((o, j) => (
+            <button key={j} disabled={shown} onClick={() => setPick(j)}
+              className={`opt ${pick === j ? 'picked' : ''} ${shown && j === q.answer ? 'right' : ''} ${shown && pick === j && j !== q.answer ? 'wrong' : ''}`}>
+              <Md text={o} />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <input className="typed" value={typed} disabled={shown} onChange={e => setTyped(e.target.value)}
+          autoCapitalize="off" autoCorrect="off" spellCheck="false" placeholder="Type your answer" />
+      )}
+      {shown && (
+        <div className={`feedback ${correct ? 'ok' : 'no'}`}>
+          <strong>⛑️ {timedOut ? 'Too slow. The Yeti stirs.' : correct ? 'Correct' : q.kind === 'type' ? `Answer: ${q.accept[0]}` : challenge === 'avalanche' ? 'Wrong. A crack opens in the snow.' : 'Not quite'}</strong>
+          {!correct && q.kind === 'mc' && <div className="right-answer">✅ Correct answer: <Md text={q.options[q.answer]} /></div>}
+          {!correct && q.kind !== 'mc' && q.accept?.length > 1 && <div className="right-answer">Also accepted: {q.accept.slice(1, 4).map(a => <code key={a}>{a} </code>)}</div>}
+          {q.why && <Md text={q.why} />}
+        </div>
+      )}
+      <button className="btn primary wide" disabled={!shown && (q.kind === 'mc' ? pick === null : !typed.trim())}
+        onClick={shown ? next : check}>{shown ? (i + 1 >= questions.length ? 'See result' : 'Next question') : 'Check my answer'}</button>
+    </div>
+  )
+}
+
+function Learn({ stage, finish, p, onAnswer, recordCode }) {
+  const [phase, setPhase] = useState(getPlace(stage.id)?.phase === 'quiz' ? 'quiz' : 'lesson')
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  const [asking, setAsking] = useState(false)
+  const done = sc => { if (sc >= p.settings.passMark / 100) setPlace(stage.id, null); setScore(sc) }
+  const reread = () => { setAsking(false); setPlace(stage.id, { part: 0 }); setScore(null); setRound(r => r + 1); setPhase('lesson') }
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }}
+    extra={score < p.settings.passMark / 100 && <button className="btn wide" onClick={reread}>📖 Read the lesson again</button>} />
+  if (phase === 'quiz') return <>
+    <button className="btn wide reread" onClick={() => setAsking(true)}>📖 Back to the lesson</button>
+    {asking && <div className="confirm-back" role="dialog" aria-modal="true" aria-label="Leave the quiz?">
+      <div className="lesson-card">
+        <p><strong>Go back to the lesson?</strong></p>
+        <p>The quiz resets. You'll start it over with new questions.</p>
+        <div className="row"><button className="btn" onClick={() => setAsking(false)}>Stay in the quiz</button><button className="btn primary" onClick={reread}>Go to the lesson</button></div>
+      </div>
+    </div>}
+    <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} onFinish={done} onAnswer={onAnswer} />
+  </>
+  return <Lesson stage={stage} platform={p.settings.platform} onTryPass={(code, lang) => recordCode?.(`${stage.id} tryit`, code, lang)} onDone={() => { setPlace(stage.id, { ...getPlace(stage.id), phase: 'quiz' }); setPhase('quiz') }} />
+}
+
+// Every hands-on stage (code drills, web, sql, server, react, and engine-based basecamp
+// builds) runs through one wrapper: the engine grades it, then you plant the flag.
+function EngineStage({ stage, finish, p, alreadyPassed }) {
+  const [passed, setPassed] = useState(null)
+  const [done, setDone] = useState(false)
+  const [copied, setCopied] = useState('')
+  const kind = stage.type === 'keyboard' ? stage.engine : stage.type
+  const Engine = ENGINES[kind]
+  const task = { ...stage, prompt: resolve(stage.prompt ?? stage.brief, p.settings), expect: resolve(stage.expect, p.settings) }
+  if (done) return <Result p={p} score={1} stage={stage} onDone={sc => finish(sc, passed)} retry={() => {}} extra={kind === 'code' && bridgeSafe(stage, passed) && (
+    <div className="bridge">
+      <p><strong>Optional: run this code on your computer.</strong> Copy the command, open a terminal on your computer (or an SSH app on your phone), paste it and press Enter. It saves your code as a real file and runs it. <strong>It worked if your output prints in the terminal.</strong></p>
+      <button className="btn wide" onClick={async () => setCopied(await copy(terminalCommand(stage.file, passed)) ? 'Copied. Now paste it in your terminal.' : 'Copy failed. Open "What\'s in the command?" and long-press the code to copy it.')}>📋 Copy terminal command</button>
+      {copied && <small>{copied}</small>}
+      <details><summary>What's in the command?</summary>
+        <p>It makes a practice folder inside <code>everest</code> in your home folder, goes into it, writes your code into a new file, then runs it with node. The EVEREST lines just mark where your code starts and stops. It only ever works inside that folder, and if the file already exists it changes nothing.</p>
+        <pre className="small"><code>{terminalCommand(stage.file, passed)}</code></pre>
+      </details>
+    </div>)} />
+  return <>
+    <Engine task={task} onPass={c => setPassed(c ?? '')} />
+    {passed !== null && <button className="btn primary wide sticky-cta" onClick={() => setDone(true)}>✅ Finish this pitch</button>}
+    {alreadyPassed && <p className="note">You already cleared this pitch. This is extra practice.</p>}
+  </>
+}
+
+function Build({ stage, finish, p }) {
+  const [done, setDone] = useState(false)
+  if (done) return <Result p={p} score={1} stage={stage} onDone={sc => finish(sc, done)} retry={() => {}} />
+  return <TerminalStage stage={stage} p={p} onPass={snap => setDone(snap || true)} />
+}
+
+function RadioStage({ stage, finish, p, saveJournal }) {
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} />
+  return <Radio key={round} stage={stage} onFinish={setScore} journal={p.journal?.[stage.id]} saveJournal={t => saveJournal(stage.id, t)} />
+}
+
+function Audit({ stage, finish, p, onAnswer }) {
+  const [go, setGo] = useState(false)
+  const [card, setCard] = useState(0)
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} />
+  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} onFinish={setScore} onAnswer={onAnswer} />
+  if (stage.primer && card < stage.primer.length) return (
+    <div className="audit">
+      <small className="part-label">How to check the weather · {card + 1} of {stage.primer.length}</small>
+      <div className="lesson-card" key={card}><h2>{stage.primer[card].h}</h2><Md text={stage.primer[card].b} /></div>
+      <button className="btn primary wide" onClick={() => setCard(card + 1)}>Next</button>
+    </div>
+  )
+  return (
+    <div className="audit">
+      <div className="lesson-card"><h3>🌨️ Weather check: is it safe to climb today?</h3><Md text={stage.scenario} /></div>
+      <button className="btn primary wide" onClick={() => setGo(true)}>Assess the risk</button>
+    </div>
+  )
+}
+
+// The avalanche sweeps across the screen, or the Yeti rises up and roars. Then the climber
+// sees which lessons they've been knocked back to.
+function Wipeout({ type, lessons, still, onDone }) {
+  const [phase, setPhase] = useState(still ? 'card' : 'anim')
+  useEffect(() => { if (phase === 'anim') { const t = setTimeout(() => setPhase('card'), 2600); return () => clearTimeout(t) } }, [phase])
+  const ava = type === 'avalanche'
+  return <div className={`wipeout ${ava ? 'ava' : 'yeti-fx'} ${phase}`}>
+    {phase === 'anim' && (ava ? <>
+      <div className="wave w1" /><div className="wave w2" /><div className="wave w3" />
+      <div className="fx-word">AVALANCHE!</div>
+    </> : <>
+      <svg className="yeti-big" viewBox="0 0 200 220" aria-hidden="true">
+        <ellipse cx="100" cy="150" rx="78" ry="70" fill="#eef4fb" />
+        <circle cx="100" cy="78" r="58" fill="#f6f9fd" />
+        <path d="M30 120 Q10 160 34 196 M170 120 Q190 160 166 196" stroke="#dfe8f2" strokeWidth="26" strokeLinecap="round" fill="none" />
+        <ellipse cx="100" cy="88" rx="38" ry="30" fill="#9fb4c8" />
+        <circle cx="84" cy="80" r="7" fill="#d62828" /><circle cx="116" cy="80" r="7" fill="#d62828" />
+        <path d="M74 66 L94 74 M126 66 L106 74" stroke="#2b3a4d" strokeWidth="5" strokeLinecap="round" />
+        <path d="M78 100 Q100 124 122 100 Z" fill="#2b3a4d" /><path d="M86 101 L90 109 L94 101 M106 101 L110 109 L114 101" fill="#fff" />
+      </svg>
+      <div className="fx-word">ROOOAAAR!</div>
+    </>)}
+    {phase === 'card' && <div className="lesson-card fx-card">
+      <div className="big">{ava ? '❄️' : '🦍'}</div>
+      <h2>{ava ? 'The avalanche swept you back' : 'You woke the Yeti'}</h2>
+      <p>{ava ? 'Three cracks and the slope gave way.' : 'It chased you back down the trail.'} To earn your way back up, pass {lessons.length === 1 ? 'this lesson' : 'these lessons'} again. They cover what you got wrong:</p>
+      <ul className="builds-left">{lessons.map(s => <li key={s.id}>🧭 {s.title}</li>)}</ul>
+      <p className="note">Then try the challenge again. Everything else you've cleared stays cleared.</p>
+      <button className="btn primary wide" onClick={onDone}>Back to camp</button>
+    </div>}
+  </div>
+}
+
+function Challenge({ stage, finish, p, onAnswer, knockBack, alreadyPassed }) {
+  const [go, setGo] = useState(false)
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  const [wiped, setWiped] = useState(null) // { score, lessons: [{ id, title }] }
+  const missed = useRef(new Set())
+  const answer = (qid, ok) => { onAnswer?.(qid, ok); if (!ok && QUESTIONS[qid]) missed.current.add(QUESTIONS[qid].q.concept) }
+  const done = sc => {
+    // A failed avalanche or Yeti knocks you back to the lessons behind your mistakes.
+    if (sc < p.settings.passMark / 100 && !alreadyPassed) {
+      const camp = CAMPS.find(c => c.stages?.includes(stage))
+      const ids = knockBackTargets(camp, stage, missed.current)
+      knockBack?.(ids)
+      setWiped({ score: sc, lessons: ids.map(id => camp.stages.find(s => s.id === id)) })
+    } else setScore(sc)
+  }
+  if (wiped) return <Wipeout type={stage.type} lessons={wiped.lessons} still={p.settings.reduceMotion} onDone={() => finish(wiped.score)} />
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setGo(true); setRound(r => r + 1); missed.current = new Set() }} />
+  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} challenge={stage.type} onFinish={done} onAnswer={answer} />
+  return (
+    <div className="boss-intro">
+      <div className="big">{stage.type === 'avalanche' ? '❄️' : <span className="yeti sleeping">🦍</span>}</div>
+      <h2>{stage.title}</h2>
+      <div className="lesson-card"><Md text={stage.rules} /></div>
+      <button className="btn primary wide" onClick={() => setGo(true)}>Start the challenge</button>
+    </div>
+  )
+}
+
+function Boss({ stage, finish, p, onAnswer }) {
+  const [go, setGo] = useState(false)
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  const campId = stage.id.split('-')[0]
+  const campName = CAMPS.find(c => c.id === campId)?.name
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} extra={score >= p.settings.passMark / 100 && <p className="villain cleared">☀️ {defeatLine(campId, campName)}</p>} />
+  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} onFinish={setScore} onAnswer={onAnswer} />
+  return (
+    <div className="boss-intro">
+      <div className="big boss-shake">🧊</div>
+      <h2>{stage.title}</h2>
+      <p className="villain">🌫️ {bossLine(campId)}</p>
+      <p>{stage.questions.length} questions, mixed from the whole camp, and the Sherpa grades each one. Score {p.settings.passMark}% to clear it.</p>
+      <button className="btn primary wide" onClick={() => setGo(true)}>⛏️ Start the boss quiz</button>
+    </div>
+  )
+}
+
+export function Stage({ p, stage, close, recordResult, recordCode, knockBack, saveJournal, recordAnswer }) {
+  const t0 = useRef(Date.now())
+  const finish = (score, code) => {
+    const mins = Math.min(60, Math.max(1, Math.round((Date.now() - t0.current) / 60000)))
+    recordResult(stage, score, mins, code)
+    close()
+  }
+  const props = { stage, finish, p, saveJournal, close, recordCode, knockBack, onAnswer: recordAnswer, alreadyPassed: isPassed(p, stage.id) }
+  return (
+    <div className="screen stage-screen">
+      <Range still calm />
+      <Header stage={stage} close={close} />
+      <div className="stage-body">
+        {stage.type === 'learn' && <Learn {...props} />}
+        {(['code', 'web', 'sql', 'server', 'react'].includes(stage.type) || (stage.type === 'keyboard' && stage.engine)) && <EngineStage {...props} />}
+        {stage.type === 'keyboard' && !stage.engine && <Build {...props} />}
+        {stage.type === 'radio' && <RadioStage {...props} />}
+        {stage.type === 'audit' && <Audit {...props} />}
+        {stage.type === 'boss' && <Boss {...props} />}
+        {(stage.type === 'avalanche' || stage.type === 'yeti') && <Challenge {...props} />}
+      </div>
+    </div>
+  )
+}

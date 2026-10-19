@@ -1,0 +1,24 @@
+{
+  "name": "operation-everest",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build-react-runtime.mjs && vite",
+    "build": "node scripts/check-content.mjs && node scripts/build-react-runtime.mjs && vite build",
+    "preview": "vite preview",
+    "check": "node scripts/check-content.mjs"
+  },
+  "dependencies": {
+    "@vercel/blob": "^2.8.2",
+    "qrcode-generator": "^2.0.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sql.js": "^1.15.0",
+    "sucrase": "^3.35.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0"
+  }
+}

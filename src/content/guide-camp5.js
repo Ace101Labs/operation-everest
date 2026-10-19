@@ -1,0 +1,312 @@
+// Field Guide cards first taught in the 5 camp: Western Cwm (Camp 4 of 13).
+// Debugging + your command-line planner. See CONTENT-GUIDE.md.
+//
+// Every error message and stack trace below was produced by running the code with
+// Node (v20) and copying the output. Only the file paths were shortened to
+// /home/climber/…, and the Node-internal lines at the bottom of long traces were
+// trimmed where marked with "…". Internal line numbers (like loader:1521) change
+// between Node versions; the parts that point at YOUR code never do.
+
+export const GUIDE_CAMP5 = {
+  // ─────────────── Reading errors ───────────────
+  'error-types': {
+    term: 'Error types', short: 'The first word of an error (SyntaxError, ReferenceError, TypeError, RangeError) tells you what kind of problem it is.',
+    what: 'When JavaScript hits something it can\'t do, it stops and reports an **error**. Every error has a **type** (its family name) and a **message** (the details). The type is the first word on the error line, like `TypeError: Cannot read properties of undefined (reading \'name\')`. Each type points to a different kind of problem, so learning the few common ones tells you where to look.',
+    how: 'The error line always has the shape **`Type: message`**. The types you\'ll meet almost every day:\n\n• **SyntaxError**: the grammar is broken (a missing quote, bracket or comma). Node finds it while reading the file, so **nothing runs at all**.\n• **ReferenceError**: you used a **name** JavaScript has never heard of, usually a typo, or a variable used before or outside the place it was made.\n• **TypeError**: the name exists, but the **value is the wrong kind** for what you did with it. Calling something that isn\'t a function, or reading a property of `undefined` or `null`.\n• **RangeError**: a value is the right kind but **outside the allowed range**, like asking for -1 items or a function that calls itself forever.\n• **Error**: the plain, general type. Node uses it for things like a missing file, and your own code can create one with `throw new Error("message")` to stop on purpose. (You\'ll learn to catch errors in Lhotse Face.)\n\nSyntaxErrors happen **before** the program starts. The others are **runtime errors**: the program starts, runs every line above the bad one, then crashes on it. When Node crashes it also exits with **exit code 1**, a signal to the shell that the program failed.',
+    usage: [
+      { code: 'console.log("Camp 4"', out: 'SyntaxError: missing ) after argument list', note: 'Broken grammar: the bracket never closes. Nothing in the file runs.' },
+      { code: 'console.log(altitud)', out: 'ReferenceError: altitud is not defined', note: 'A name nobody created (a typo for altitude).' },
+      { code: 'const camp = "Western Cwm"\ncamp()', out: 'TypeError: camp is not a function', note: 'camp exists, but it\'s a string. You can\'t call a string like a function.' },
+      { code: 'const slots = new Array(-1)', out: 'RangeError: Invalid array length', note: 'A list can\'t have -1 items. Right kind of value (a number), wrong range.' },
+      { code: 'throw new Error("Rope too short")', out: 'Error: Rope too short', note: 'Your own error, on purpose. The plain Error type with your message.' },
+    ],
+    uses: ['Knowing where to look before you\'ve read a single line of code: SyntaxError means "check quotes and brackets", ReferenceError means "check spelling and where the name was made", TypeError means "check what the value really is".', 'Searching the web: pasting the type plus the message (without your file paths) finds people who hit the same thing.', 'Describing a bug to a teammate in one sentence: "it\'s a TypeError on line 6".'],
+    when: ['Every time a program crashes: read the type first, before anything else.', 'When choosing a type for your own errors later: pick the one that matches the problem.'],
+    whenNot: ['Don\'t stop at the type. "TypeError" alone doesn\'t tell you what\'s wrong; the message after the colon does, and the line number tells you where.', 'Don\'t assume no error means no bug. Many bugs (wrong answers, NaN, a missing line) never raise an error at all. Those you hunt with the debugging process.'],
+    mistakes: [
+      { wrong: 'const peak = 8849\npeak = 8850', result: 'TypeError: Assignment to constant variable.', why: 'Many beginners expect a SyntaxError here. The grammar is fine; the problem is changing a `const`. If you need to change it, declare it with `let`.' },
+      { prose: 'Reading only the last few lines of a crash and missing the error line in the middle.', why: 'Node prints the code line, a ^ marker, a blank line, then `Type: message`. That one line is the most important line on the screen; find it first.' },
+    ],
+    tips: ['Say the error out loud in plain words: "ReferenceError: hour is not defined" = "I used the name hour, but nobody ever made it."', 'The ^ caret under your code points at the exact spot Node was looking at when it gave up.', 'Copy the whole error into your notes when you fix a tricky one. You\'ll see the same message again.'],
+    related: ['stack-trace', 'reference-error', 'type-error', 'syntax-error'],
+  },
+  'stack-trace': {
+    term: 'Stack trace', short: 'The "how did we get here" list under an error: which function crashed, and who called it.',
+    what: 'A stack trace is the list of `at …` lines printed under an error. It shows **where the crash happened** and **the chain of function calls that led there**, newest first. Read it as a chain of "who called whom" notes: the top line is where the crash happened, and each line below it is the function that called the one above.',
+    how: 'When Node crashes it prints, top to bottom:\n1. **file:line** where it crashed, like `/home/climber/planner.js:8`\n2. **the line of code itself**, with a `^` under the exact spot\n3. a blank line, then **`Type: message`**, the error itself\n4. the **stack trace**: one `at` line per function call, **most recent first**\n5. the Node version, like `Node.js v20.20.2`\n\nEach `at` line reads: `at functionName (file:line:column)`. The first one is the function that actually crashed. The next is the function that **called** it, and so on down. `at Object.<anonymous>` means "the top level of your file", the code not inside any function, where everything started.\n\nLines that start with **`node:internal`** are Node\'s own code for loading your file. Skip them: the bug is almost always in the first line that names **your** file.\n\nThe column number counts characters from the start of the line (starting at 1), so `8:28` means line 8, character 28.',
+    usage: [
+      { code: '$ node planner.js', out: '/home/climber/planner.js:8\n    console.log(formatHour(hour))\n                           ^\n\nReferenceError: hour is not defined\n    at buildPlan (/home/climber/planner.js:8:28)\n    at Object.<anonymous> (/home/climber/planner.js:12:1)\n    at Module._compile (node:internal/modules/cjs/loader:1521:14)\n    …\n\nNode.js v20.20.2', note: 'Read it as: crashed in buildPlan at line 8, which was called from the top level of the file at line 12. The node:internal lines are Node loading the file; ignore them.' },
+      { code: '$ node legs.js', out: '/home/climber/legs.js:2\n  return leg.time.hours * 60\n                  ^\n\nTypeError: Cannot read properties of undefined (reading \'hours\')\n    at minutes (/home/climber/legs.js:2:19)\n    at describe (/home/climber/legs.js:6:28)\n    at report (/home/climber/legs.js:10:39)\n    at Object.<anonymous> (/home/climber/legs.js:13:1)\n    …', note: 'Three of your functions deep. It crashed in minutes (line 2), which describe called (line 6), which report called (line 10), which the top level called (line 13). The bug might be in any of them: here the data passed down had no `time`.' },
+      { code: '$ node sx.js', out: '/home/climber/sx.js:2\n  console.log("Planning " + start + " to " + end\n                                             ^^^\n\nSyntaxError: missing ) after argument list\n    at wrapSafe (node:internal/modules/cjs/loader:1464:18)\n    …', note: 'A SyntaxError\'s trace is ALL node:internal: your code never started. Only the top file:line matters.' },
+    ],
+    uses: ['Going straight to the broken line instead of scrolling through the whole file.', 'Seeing which caller passed in the bad value, when a function crashes because of the data it was given.', 'Bug reports: pasting the error line plus the first few `at` lines tells another developer exactly where to look.', 'Reading crash logs on a server, where a stack trace may be all you have.'],
+    when: ['Every crash. Read the error line, then the first `at` line that names your file.', 'When the crash is inside a function: walk down the trace to see who called it, and with what.'],
+    whenNot: ['Don\'t read from the bottom up. The bottom lines are Node starting up; the top is where your problem is.', 'Don\'t paste full stack traces with private paths into public posts. Your folder names (and sometimes usernames) are in there; shorten them first.', 'Don\'t assume the line in the trace is always the line to change. It\'s where the program noticed; the real mistake may be in the caller, or in the data.'],
+    mistakes: [
+      { prose: 'Scrolling to the last line (`Node.js v20.20.2`) and thinking the error is about the Node version.', why: 'That line just tells you which Node ran the program. The actual error is the `Type: message` line above the trace.' },
+      { prose: 'Opening `node:internal/modules/cjs/loader` to look for the bug.', why: 'That\'s Node\'s own code, and it\'s almost never the problem. Find the first `at` line with your own file name.' },
+      { wrong: 'function count(n) { return count(n + 1) }\ncount(0)', result: 'RangeError: Maximum call stack size exceeded\n    at count (/home/climber/count.js:1:21)\n    at count (/home/climber/count.js:1:28)\n    at count (/home/climber/count.js:1:28)\n    …', why: 'The same function repeated over and over in the trace means it keeps calling itself with no way to stop. The "stack" of unfinished calls overflowed.' },
+    ],
+    tips: ['Your three-step read: **1.** the `Type: message` line (what), **2.** the first `at` line naming your file (where), **3.** the next `at` line down (who called it).', 'Most editors have a "Go to Line" shortcut, and many terminals let you click a `file:line:column` path to jump straight there. The note for your system below has the keys.', 'The word "stack" comes from how calls pile up: each function call sits on top of the one that called it, like plates. A crash shows you the pile.'],
+    related: ['error-types', 'debugging-process', 'reference-error', 'type-error'],
+    os: {
+      mac: 'In VS Code on a Mac, **Ctrl+G** (yes, Ctrl, not Cmd) opens "Go to Line". In VS Code\'s built-in terminal, **Cmd+click** a `file:line:column` path to jump straight there.',
+      linux: 'In VS Code, **Ctrl+G** opens "Go to Line". In its built-in terminal, **Ctrl+click** a `file:line:column` path to jump straight there.',
+      windows: 'In VS Code (with WSL or not), **Ctrl+G** opens "Go to Line", and **Ctrl+click** on a `file:line:column` path in the built-in terminal jumps to it.',
+      phone: 'On a phone, zoom out or turn sideways: stack traces are wide. Look for the line ending in `.js:NUMBER:NUMBER` that names your file.',
+    },
+  },
+  'reference-error': {
+    term: 'ReferenceError', short: '"I don\'t know that name." You used a variable or function that doesn\'t exist where you used it.',
+    what: 'A ReferenceError means JavaScript met a **name** it can\'t find. Either it was never created, it\'s spelled differently, or it was created somewhere your code can\'t see from where it is.',
+    how: 'Every time your code uses a name like `hour` or `formatHour`, JavaScript looks it up, starting where you are and working outwards. If it finds nothing, it stops with `ReferenceError: <name> is not defined`.\n\nThe three classic causes:\n• **A typo**: `altitud` instead of `altitude`, or wrong capitals (`Altitude`). JavaScript is case-sensitive.\n• **Out of reach**: a variable made inside a function (or inside `{ }` braces) only exists in there. Code outside can\'t see it.\n• **Too early**: using a `let` or `const` on a line *above* where it\'s created gives a slightly different message: `Cannot access \'altitude\' before initialization`.\n\nA fourth cause is forgetting quotes: `console.log(Summit)` treats Summit as a name, not text.',
+    usage: [
+      { code: 'const altitude = 6400\nconsole.log(altitud)', out: 'ReferenceError: altitud is not defined', note: 'A typo. The fix is to spell it the same way in both places.' },
+      { code: 'function pack() {\n  const items = 3\n}\npack()\nconsole.log(items)', out: 'ReferenceError: items is not defined', note: 'items only exists inside pack. Outside, it\'s out of reach. Return the value from the function instead.' },
+      { code: 'console.log(altitude)\nlet altitude = 5000', out: 'ReferenceError: Cannot access \'altitude\' before initialization', note: 'Used on line 1, created on line 2. Code runs top to bottom, so move the let above.' },
+      { code: 'console.log(Summit)', out: 'ReferenceError: Summit is not defined', note: 'No quotes, so JavaScript looks for a variable called Summit. Text needs quotes: "Summit".' },
+    ],
+    uses: ['Instantly recognising a typo or a missing variable from the first word of the error.', 'Spotting when a value is stuck inside a function and needs to be returned.'],
+    when: ['You see "is not defined": check the spelling of that exact name, then check where it was created.'],
+    whenNot: ['Don\'t "fix" it by creating a new variable with the misspelled name. Find the real one and use its correct name, or you\'ll have two variables and a hidden bug.', 'Don\'t move everything to the top of the file to make the error go away. Fix why that one name is out of reach.'],
+    mistakes: [
+      { wrong: 'Console.log("hi")', result: 'ReferenceError: Console is not defined', why: 'Capital C. JavaScript sees `Console` and `console` as different names.' },
+      { wrong: 'for (let h = 8; h < 11; h++) {\n  console.log(formatHour(hour))\n}', result: 'ReferenceError: hour is not defined', why: 'The loop variable is called `h`, not `hour`. Use the name you actually created.' },
+      { prose: 'Searching the whole file for the bug when the message names it exactly.', why: 'The message tells you the name. Use your editor\'s find-in-file search for that word to see every place it\'s used and where (or whether) it\'s created.' },
+    ],
+    tips: ['Copy and paste names instead of retyping them; most typos are retyping.', 'Your editor\'s auto-complete suggests names that exist. If your name isn\'t in the list, that\'s a clue.', '"is not defined" = never made or out of reach. "before initialization" = made, but further down the file.'],
+    related: ['error-types', 'type-error', 'stack-trace'],
+    os: {
+      mac: 'Find in file is **Cmd+F** in most Mac editors.',
+      linux: 'Find in file is **Ctrl+F** in most editors.',
+      windows: 'Find in file is **Ctrl+F** in most editors.',
+      phone: 'Most phone code editors have a magnifying-glass search. Search the exact name from the error.',
+    },
+  },
+  'type-error': {
+    term: 'TypeError', short: '"That value can\'t do that." The name exists, but the value is the wrong kind for what you did.',
+    what: 'A TypeError means the name was found, but the **value** behind it can\'t do what you asked. You tried to call a string like a function, change a constant, or (most often) look inside something that is `undefined` or `null`.',
+    how: 'The two messages you\'ll see most:\n\n• **`Cannot read properties of undefined (reading \'x\')`**: you wrote `something.x`, but `something` is `undefined`, the value meaning "nothing here". The name in the brackets is the property you were *trying* to read; the problem is the thing **before** the dot. Common causes: a misspelled property one step earlier (`trip.stop` instead of `trip.stops`), a missing argument, or a list item that doesn\'t exist.\n• **`x is not a function`**: you put `()` after something that isn\'t a function. Often a misspelled method name (`push2`), or a variable that holds text or a number.\n\nOthers you\'ll meet: `Assignment to constant variable.` (changing a `const`), and `Cannot read properties of null` (the same as undefined, but the value is `null`).\n\nKey detail: reading a property that doesn\'t exist is **not** an error, it quietly gives `undefined`. The crash happens one step later, when you try to read something **from** that undefined.',
+    usage: [
+      { code: 'const trip = { name: "Cwm crossing", stops: ["Camp I", "Camp II"] }\nconsole.log(trip.stop.length)', out: 'TypeError: Cannot read properties of undefined (reading \'length\')', note: 'trip.stop (no s) doesn\'t exist, so it\'s undefined. Then .length on undefined crashes.' },
+      { code: 'const gear = ["rope"]\ngear.push2("axe")', out: 'TypeError: gear.push2 is not a function', note: 'Lists have push, not push2. A misspelled method.' },
+      { code: 'const n = 5\nn.toUpperCase()', out: 'TypeError: n.toUpperCase is not a function', note: 'toUpperCase is a string method. 5 is a number, so it doesn\'t have one.' },
+      { code: 'const camp = null\ncamp.name', out: 'TypeError: Cannot read properties of null (reading \'name\')', note: 'Same idea with null: there\'s nothing to look inside.' },
+      { code: 'const trip = { name: "Cwm" }\nconsole.log(trip.height)', out: 'undefined', note: 'No crash! A missing property just gives undefined. The crash only comes if you go one step further.' },
+    ],
+    uses: ['Finding misspelled properties and method names.', 'Spotting data that\'s missing: a list item that isn\'t there, an argument nobody passed.', 'Catching values that are the wrong kind, like a number where you expected text.'],
+    when: ['You see "Cannot read properties of undefined": look at the thing **before** the dot and ask why it\'s undefined. Log it.', 'You see "is not a function": check the spelling of the method, and log what the value really is.'],
+    whenNot: ['Don\'t guess at the property in the brackets. In `Cannot read properties of undefined (reading \'length\')`, `length` is fine; what came before `.length` is the problem.', 'Don\'t silence it by checking for undefined everywhere without understanding why it was undefined. Fix the source, then guard real edge cases (like genuinely missing data).'],
+    mistakes: [
+      { wrong: 'const peak = 8849\npeak = 8850', result: 'TypeError: Assignment to constant variable.', why: 'const means "this name always holds this value". Use `let` for values that change.' },
+      { wrong: 'const climb = "steep"\nclimb()', result: 'TypeError: climb is not a function', why: 'climb holds a string. Only functions can be called with ().' },
+      { wrong: 'const pack = ["rope", "axe"]\nconsole.log(pack[2].length)', result: 'TypeError: Cannot read properties of undefined (reading \'length\')', why: 'The list has items 0 and 1. pack[2] doesn\'t exist, so it\'s undefined.' },
+    ],
+    tips: ['When you see undefined in a TypeError, put `console.log(…)` on the thing before the dot, on the line above the crash.', 'Misspelled property names don\'t crash on the spot; they crash one step later. Look one dot to the left.', '`typeof value` tells you what kind of value you really have: "string", "number", "undefined", "object", "function".'],
+    related: ['error-types', 'reference-error', 'console-debugging', 'stack-trace'],
+  },
+
+  // ─────────────── The debugging toolkit ───────────────
+  'debugging-process': {
+    term: 'Debugging process', short: 'A repeatable routine for finding bugs: reproduce, read, locate, guess, test, fix, check.',
+    what: '**Debugging** is finding and fixing the cause of a problem in a program. A **bug** is any way the program behaves differently from what you intended: a crash, a wrong answer, or a missing line. The debugging *process* is a routine that works for every bug, so you don\'t have to rely on luck or change random lines and hope.',
+    how: 'Don\'t change random lines and hope. Follow the same routine every time:\n\n1. **Reproduce it.** Find the exact input that makes it go wrong, every time: `node planner.js 17 9`. If you can\'t make it happen on demand, you can\'t prove you fixed it.\n2. **Read the error** (if there is one): type, message, first `at` line naming your file.\n3. **Locate it.** Narrow down where it goes wrong. Print values with console.log along the way until you find the first place reality differs from what you expected.\n4. **Make one guess** (a hypothesis): "I think h starts at 1 instead of 0."\n5. **Test one change.** Change ONE thing, run again. If it didn\'t help, undo it before trying the next idea.\n6. **Fix the cause**, not the symptom.\n7. **Check it**: run the original failing input again, plus the inputs that already worked, plus the edge cases. Then remove your debugging logs.\n\nThe root idea: **compare what you expected with what actually happened, and find the first point where they split.**',
+    usage: [
+      { code: 'const climbs = [300, 450, 250]\nlet total = 0\nfor (let i = 1; i < climbs.length; i++) {\n  total = total + climbs[i]\n}\nconsole.log("Metres climbed: " + total)', out: 'Metres climbed: 700', note: 'Expected 1000. No error, just a wrong answer. Step 1: reproduced, every run.' },
+      { code: 'for (let i = 1; i < climbs.length; i++) {\n  console.log("i =", i, "adding", climbs[i])\n  total = total + climbs[i]\n}', out: 'i = 1 adding 450\ni = 2 adding 250\nMetres climbed: 700', note: 'Step 3: locate. 300 is never added: i starts at 1. Lists start at 0. Fix `let i = 0`, re-run: 1000. Delete the debug line.' },
+    ],
+    uses: ['Every bug you will ever meet, from a typo to a server outage.', 'Explaining to someone else what you\'ve already ruled out.', 'Bugs with no error at all, like a wrong total or a missing line.'],
+    when: ['Something doesn\'t behave as you expected, even if there\'s no error.', 'You\'ve made two "quick fixes" and it still doesn\'t work. Stop and go back to step 1.'],
+    whenNot: ['Don\'t skip "reproduce". Fixing a bug you can\'t trigger is guesswork.', 'Don\'t change several things at once. If it starts working, you won\'t know which change fixed it, or which one broke something else.', 'Don\'t keep debugging when you\'re exhausted and going in circles. Take a short walk; fresh eyes find bugs fast.'],
+    mistakes: [
+      { prose: 'Changing random lines until the error disappears ("shotgun debugging").', why: 'The error may vanish while the real bug stays, or a new one appears. One guess, one change, one test.' },
+      { prose: 'Fixing the symptom: the total is 700 instead of 1000, so adding 300 at the end.', why: 'It works for this list only. With a different list it\'s wrong again. Find why 300 went missing.' },
+      { prose: 'Declaring victory after the failing case works, without re-running the cases that used to work.', why: 'A fix can break something else. Always re-check the old good inputs too.' },
+    ],
+    tips: ['Write your guess down before you test it. It stops you going in circles.', 'Make the failing case as small as possible: fewer lines, simpler input. Small cases make bugs obvious.', 'If it worked yesterday, ask "what changed since then?" That\'s usually where the bug is.'],
+    related: ['console-debugging', 'rubber-duck', 'stack-trace', 'edge-cases'],
+  },
+  'console-debugging': {
+    term: 'console.log debugging', short: 'Printing values in the middle of your program to see what is really happening.',
+    what: 'console.log debugging means adding temporary `console.log(…)` lines to a program so you can **see** the values inside it while it runs. It turns guesses ("I think start is 9") into facts ("start is the string \'9\'"). It\'s the simplest debugging tool there is, and professionals use it every day.',
+    how: 'You can\'t see inside a running program; console.log lets you look. Put a log **just before** the line that misbehaves, and print what you *think* is true.\n\nMake every debug log useful:\n• **Label it**: `console.log("start =", start)` beats `console.log(start)` when you have five logs going.\n• **Show the type** when numbers act strangely: `console.log(typeof start)` prints `string` or `number`.\n• **Show hidden quotes**: `console.log("start is", "8")` and `console.log("start is", 8)` print the *same thing*. `console.log(JSON.stringify(start))` prints `"8"` (with quotes) for text and `8` for a number, so you can tell them apart.\n• **Show several at once** with curly braces: `console.log({ start, end })` prints `{ start: \'8\', end: 17 }`: names, values, and quotes on strings.\n• **Log inside loops** to watch each step.\n\nWhen the bug is fixed, **delete the debug logs**. `console.error(…)` is its sibling: it prints too, but to the error channel (see the CLI tool card).',
+    usage: [
+      { code: 'const start = "8"\nconsole.log("start is", start)\nconsole.log("start is", 8)', out: 'start is 8\nstart is 8', note: 'Identical output, different types. Plain logs hide the quotes.' },
+      { code: 'console.log(typeof start)\nconsole.log(JSON.stringify(start))', out: 'string\n"8"', note: 'Now the truth is visible: it\'s text, not a number.' },
+      { code: 'const end = 17\nconsole.log({ start, end })', out: '{ start: \'8\', end: 17 }', note: 'Labels and values in one go. Strings show quotes, numbers don\'t (real Node output).' },
+      { code: 'for (const d of ["climb", "rest"]) {\n  console.log("day:", d)\n}', out: 'day: climb\nday: rest', note: 'A log inside a loop prints once per step, so you can watch it go.' },
+    ],
+    uses: ['Finding out what a variable actually holds at a certain line.', 'Checking whether a line runs at all: a log inside an `if` that never prints means the condition was false.', 'Watching a loop step by step.', 'Debugging on servers, where fancier debugging tools aren\'t available.'],
+    when: ['The output is wrong but there\'s no error.', 'You\'re not sure what a value is, or whether a piece of code runs.'],
+    whenNot: ['Don\'t leave debug logs in finished code: they clutter the output and can break tools that read it (and break exact-output checks in this game).', 'Never log passwords, keys or other people\'s private data. Logs are often saved and seen by others.', 'Don\'t add fifty logs at once. Add one or two where you suspect the problem, then move them closer.'],
+    mistakes: [
+      { prose: 'Adding `console.log(start)` and seeing `8`, then assuming it\'s the number 8.', why: 'Strings print without quotes. Use `typeof start` or `JSON.stringify(start)` when the type matters.' },
+      { prose: 'Putting the log AFTER the line that crashes.', why: 'The program stops at the crash, so that log never runs. Log on the line before.' },
+      { prose: 'Forgetting to remove debug logs, then wondering why the output check fails.', why: 'Extra lines are extra output. Clean up once the bug is fixed.' },
+    ],
+    tips: ['Start labels with something easy to search for, like `console.log("DEBUG start =", start)`, so you can find and delete them all later.', 'If a log inside an if-block never prints, the bug is the condition, not the code inside it.', 'Professional tools (a "debugger" that pauses your program line by line) exist and you\'ll meet them, but console.log works everywhere, always.'],
+    related: ['debugging-process', 'console-log', 'type-conversion', 'rubber-duck'],
+  },
+  'rubber-duck': {
+    term: 'Rubber duck debugging', short: 'Explaining your code out loud, line by line, to anyone or anything, until you hear the bug.',
+    what: 'Rubber duck debugging means explaining your code, **line by line, out loud**, to a listener who knows nothing: a rubber duck on your desk, a plant, a pet, or the Sherpa. You often find the bug halfway through a sentence.',
+    how: 'When you only *read* your code, your brain sees what you **meant** to write. When you have to *say* what each line does, you\'re forced to look at what you **actually** wrote. The gap between those two is where bugs live.\n\nHow to do it:\n1. Say what the program is **supposed** to do, in one sentence.\n2. Go line by line. For each line, say what it does **and** what every value is at that moment. "i starts at 1… and the first item in the list is at position… oh. Zero."\n3. Don\'t skip "obvious" lines. Bugs love obvious lines.\n\nThe duck doesn\'t answer, and it doesn\'t need to. Writing the explanation down (like a message to a teammate) works just as well; many people find the bug before they press Send.',
+    usage: [
+      { code: '// "This counts the rest days.\n//  rest starts at 0.\n//  For each day in the list...\n//  if the day is \'Rest\' with a capital R, add one.\n//  Wait, the list says \'rest\', lowercase. That\'s it."\nif (d === "Rest") rest++', note: 'Saying the comparison out loud reveals the capital letter that never matches.' },
+      { code: '// "Loop from 9... while h is less than or equal to 13...\n//  so it runs for 13 too. But 13:00 is when the day ENDS."\nfor (let h = 9; h <= 13; h++)', note: 'Explaining the condition exposes an off-by-one: it should be `h < 13`.' },
+    ],
+    uses: ['Logic bugs with no error message, where the code runs but does the wrong thing.', 'Getting unstuck when you\'ve stared at the same lines for twenty minutes.', 'Preparing a question for someone else: half the time you answer it yourself while writing it.'],
+    when: ['You\'ve read the code several times and "it all looks right".', 'Before asking for help, so you can explain what you\'ve already checked.'],
+    whenNot: ['When the error message already tells you exactly what\'s wrong (like a ReferenceError naming a typo). Just fix it.', 'As a replacement for checking values. If you\'re unsure what a value is, log it; don\'t assume while explaining.'],
+    mistakes: [
+      { prose: 'Summarising ("this loop adds everything up") instead of going line by line.', why: 'Summaries describe what you meant. The bug is in the details: the starting number, the < or <=, the exact spelling.' },
+      { prose: 'Feeling silly and skipping it.', why: 'Professional teams do this constantly. It costs two minutes and finds bugs that hours of staring miss.' },
+    ],
+    tips: ['Say the values, not just the steps: "h is 9, then 10, then…"', 'Writing it as a message to someone works as well as talking. Many bugs are found in unsent messages.', 'The Sherpa (⛑️) is a good duck.'],
+    related: ['debugging-process', 'console-debugging'],
+  },
+  'edge-cases': {
+    term: 'Edge cases', short: 'The unusual inputs at the edges: empty, missing, zero, negative, too big, the wrong kind. Where most bugs hide.',
+    what: 'An **edge case** is an input or situation at the extreme edge of what your program expects: nothing at all, an empty string, zero, a negative number, a decimal where you wanted a whole number, the biggest allowed value, or text where you wanted a number. Your program usually works for the normal ("happy path") input. Edge cases are where it breaks.',
+    how: 'The middle of the normal range usually works; bugs sit at the edges. For every input, ask:\n\n• **Missing?** What if it isn\'t given at all (`undefined`)?\n• **Empty?** `""`, or just spaces `"  "`? (Careful: `Number("")` is **0**, not NaN.)\n• **Wrong kind?** `"nine"` instead of `9`?\n• **Zero and negatives?** `0`, `-2`?\n• **Decimals?** `9.5` when only whole hours make sense?\n• **Boundaries?** The exact limits: `0` and `24` (allowed?), `25` (not allowed). Start equal to end?\n• **Wrong order?** Start after end?\n• **Plurals and wording?** "1 hours" looks broken.\n\nThen decide, for each one: **accept it, or reject it with a helpful message.** Never let it crash or quietly print a wrong result. Testing the exact boundary values (and one step past them) is called **boundary testing**; it catches the classic `<` versus `<=` mistake.',
+    usage: [
+      { code: 'console.log(Number(""), Number("  "), Number("nine"), Number("9.5"), Number("-2"))', out: '0 0 NaN 9.5 -2', note: 'Blank text turns into 0, a valid-looking number. That\'s why you check for blanks yourself.' },
+      { code: 'function toHour(text) {\n  if (text.trim() === "") return NaN\n  return Number(text)\n}\nconsole.log(toHour("9"), toHour(""), toHour("nine"))', out: '9 NaN NaN', note: 'Handle the blank edge case first. .trim() removes spaces from both ends of a string.' },
+      { code: '$ node planner.js 11 12\nDay plan: 11:00 to 12:00 (1 hour)\n$ node planner.js 9 9\nError: start (9) must be before end (9).', note: 'Two edge cases handled: a one-hour plan says "1 hour", and an empty plan is refused with a clear message.' },
+    ],
+    uses: ['Command-line tools and forms, where people type anything.', 'Money and quantity code, where 0, negatives and decimals matter a lot.', 'Writing tests later (The Balcony): a good test list is mostly edge cases.', 'Security: attackers deliberately send the weird inputs nobody planned for.'],
+    when: ['Every time your program takes input from a person, a file or another program.', 'Right after the happy path works: before calling it done, try to break it.'],
+    whenNot: ['Don\'t invent impossible cases forever. Handle what can realistically arrive; your program\'s input comes from known places.', 'Don\'t "handle" an edge case by silently changing the input (turning -2 into 2). Reject it clearly so the person knows what went wrong.'],
+    mistakes: [
+      { wrong: 'const start = Number(process.argv[2])  // run with: node planner.js "" 5', result: '(start is 0, and the plan quietly starts at midnight)', why: 'Number("") is 0, not NaN. Blank input slips through a NaN check. Check for blanks first.' },
+      { wrong: 'for (let h = 9; h <= 13; h++)  // a 9-to-13 plan', result: '(prints 13:00 as well: one hour too many)', why: 'An off-by-one at the boundary. The day ends at 13:00, so the last block starts at 12. Use <.' },
+      { wrong: 'console.log("(" + hours + " hours)")  // hours is 1', result: '(1 hours)', why: 'Wording is an edge case too. Pick "hour" when the count is 1.' },
+    ],
+    tips: ['Keep a little checklist: missing, empty, wrong kind, zero, negative, decimal, boundary, one past the boundary.', 'Try your own tool with silly input before anyone else does.', 'Edge cases you\'ve handled make great examples in your usage message.'],
+    related: ['nan', 'type-conversion', 'cli-tool', 'debugging-process'],
+  },
+
+  // ─────────────── Text vs numbers ───────────────
+  nan: {
+    term: 'NaN (Not a Number)', stands: 'Not a Number', short: 'The special number JavaScript gives when maths fails, like Number("nine"). It spreads, and it never equals anything.',
+    what: '`NaN` stands for **Not a Number**. It\'s the result JavaScript gives when it tries to make a number and can\'t: converting `"nine"`, multiplying text, or doing maths with `undefined`. Strangely, `typeof NaN` is `number`.',
+    how: 'NaN has three behaviours you must know:\n\n1. **It doesn\'t crash.** `Number("nine")` just quietly gives NaN, and your program keeps going. That\'s why NaN bugs show up as weird output ("Carry NaN litres of water") instead of an error.\n2. **It spreads.** Any maths with NaN gives NaN: `NaN + 5` is NaN. One bad value poisons every calculation after it, so the place you *see* NaN is often far from where it was *made*.\n3. **It never equals anything, not even itself.** `NaN === NaN` is `false`. So `if (x === NaN)` is **always false** and never catches anything.\n\nThe correct check is **`Number.isNaN(x)`**: true only when x really is NaN. (There\'s an older `isNaN(x)` without `Number.`, which converts first, so `isNaN("hello")` is true even though "hello" is a string, not NaN. Prefer `Number.isNaN`.)\n\nComparisons with NaN are always false too: `NaN > 5` and `NaN < 5` are both false.',
+    usage: [
+      { code: 'console.log(Number("nine"))', out: 'NaN', note: 'Can\'t convert, no crash, just NaN.' },
+      { code: 'console.log(NaN + 5, "abc" * 2, undefined + 1)', out: 'NaN NaN NaN', note: 'It spreads through every calculation.' },
+      { code: 'console.log(NaN === NaN)', out: 'false', note: 'The famous one. Never use === to check for NaN.' },
+      { code: 'console.log(Number.isNaN(NaN), Number.isNaN(Number("nine")), Number.isNaN(9))', out: 'true true false', note: 'The right way to check.' },
+      { code: 'console.log(typeof NaN)', out: 'number', note: 'Strange but true: NaN is a value of the number type.' },
+    ],
+    uses: ['Checking whether text from the command line or a form really was a number: `Number.isNaN(Number(text))`.', 'Explaining weird output: "NaN" in a result means a bad value got into the maths somewhere upstream.'],
+    when: ['Right after converting any outside input to a number, check it with Number.isNaN before using it.', 'You see "NaN" printed: trace back to find the first value that was NaN.'],
+    whenNot: ['Never test `x === NaN` or `x == NaN`; it\'s always false.', 'Don\'t rely on NaN checks alone for input: `Number("")` and `Number("  ")` are 0, not NaN, so blanks need their own check. And `Number("Infinity")` is Infinity, which also isn\'t NaN; `Number.isInteger` rejects it.'],
+    mistakes: [
+      { wrong: 'if (start === NaN) {\n  console.log("Not a number!")\n}', result: '(never prints, even for "nine")', why: 'NaN is never equal to anything, including NaN. Use `Number.isNaN(start)`.' },
+      { wrong: 'const days = process.argv[1]\nconsole.log("Carry " + days * 2 + " litres of water")', result: 'Carry NaN litres of water', why: 'argv[1] is the script\'s path, not your number, so the maths gives NaN. Your first argument is argv[2].' },
+      { prose: 'Seeing NaN at the end of a long calculation and checking only the last line.', why: 'NaN spreads. Log the values step by step, from the start, to find the first one that turned NaN.' },
+    ],
+    tips: ['Read "NaN" in output as "a bad value got into the maths". Then go upstream.', '`Number.isInteger(x)` is false for NaN and Infinity, so it\'s a handy all-in-one check when you need whole numbers.', 'Inside a string, NaN prints as the letters NaN: `"Total: " + NaN` is "Total: NaN".'],
+    related: ['type-conversion', 'edge-cases', 'console-debugging'],
+  },
+  'type-conversion': {
+    term: 'Type conversion', short: 'Turning a value from one type into another, like the text "8" into the number 8, with Number() and String().',
+    what: 'Every value in JavaScript has a **type**: a string (text), a number, a boolean (true/false), and so on. **Type conversion** means turning a value of one type into another. It matters most for input: everything typed on a command line, in a form, or read from a file arrives as **text**, even when it looks like a number.',
+    how: '**You converting on purpose (explicit), the safe way:**\n• `Number("8")` gives `8`. It\'s strict: the whole text must be a number (spaces at the ends are allowed), or you get NaN. `Number("8am")` is NaN.\n• `String(8)` gives `"8"`.\n• `parseInt("8am")` gives `8`: it reads digits from the start and **stops** at the first non-digit, so it quietly ignores junk. `parseInt("3.9")` is `3`. `parseFloat("3.9kg")` is `3.9`. Use these only when you *want* to ignore trailing text.\n\n**JavaScript converting by itself (implicit), the source of many bugs:**\n• `+` with a string **glues text**: `"12" + "4"` is `"124"`, and `"5" + 1` is `"51"`.\n• `-`, `*` and `/` **convert to numbers**: `"5" - 1` is `4`, `"5" * "2"` is `10`.\n• Comparing two strings compares them **like words in a dictionary**, character by character: `"9" < "10"` is **false**, because "9" comes after "1".\n\nThe rule: **convert outside input to numbers once, as soon as it arrives, then check it.**',
+    usage: [
+      { code: 'console.log("12" + "4")\nconsole.log(Number("12") + Number("4"))', out: '124\n16', note: 'Text glued vs numbers added. Convert first.' },
+      { code: 'console.log("5" + 1, "5" - 1, "5" * "2")', out: '51 4 10', note: '+ glues when either side is text; - and * convert to numbers.' },
+      { code: 'console.log(Number("8am"), parseInt("8am"), parseInt("3.9"), parseFloat("3.9kg"))', out: 'NaN 8 3 3.9', note: 'Number is strict; parseInt and parseFloat stop at the first character they can\'t use.' },
+      { code: 'console.log(Number(""), Number("  8  "), Number("1,000"))', out: '0 8 NaN', note: 'Blank is 0, outer spaces are ignored, and commas are not allowed.' },
+      { code: 'console.log("9" < "10", 9 < 10)', out: 'false true', note: 'Strings compare like dictionary words. Convert before comparing.' },
+    ],
+    uses: ['Command-line arguments: `process.argv` is always strings.', 'Form inputs on web pages, which are also always strings.', 'Reading numbers from files.', 'Building output text from numbers with String() or template literals.'],
+    when: ['Any time a value came from outside your program and you need to do maths or compare sizes with it.'],
+    whenNot: ['Don\'t use parseInt to validate input: it accepts "8am" as 8 and "9.5" as 9, silently hiding mistakes. Use Number() and check for NaN.', 'Don\'t rely on JavaScript\'s automatic conversion with `+`. Be explicit with Number().', 'Don\'t convert things that should stay text, like phone numbers or codes with leading zeros: `Number("007")` is 7.'],
+    mistakes: [
+      { wrong: 'const morning = process.argv[2]  // "12"\nconst afternoon = process.argv[3]  // "4"\nconsole.log(morning + afternoon)', result: '124', why: 'Both are strings, so + glued them. Use Number(morning) + Number(afternoon).' },
+      { wrong: 'if (process.argv[2] > process.argv[3]) // run with 9 10', result: '(true, because "9" > "10" as text)', why: 'Two strings compare like dictionary words. Convert both to numbers before comparing.' },
+      { wrong: 'const hours = parseInt("9.5")', result: '9', why: 'parseInt quietly dropped the .5. If decimals aren\'t allowed, reject them; don\'t silently chop them.' },
+    ],
+    tips: ['When numbers behave oddly, log `typeof` first. "string" explains most surprises.', 'Convert once, at the very top, into a well-named variable (`const start = Number(startText)`), then only use that.', 'Name raw text with "Text" on the end (`startText`) and the converted number without it (`start`). It keeps you honest.'],
+    related: ['nan', 'process-argv', 'edge-cases', 'string'],
+  },
+
+  // ─────────────── Command-line tools ───────────────
+  'process-argv': {
+    term: 'process.argv', stands: 'process argument vector (the list of words this program was started with)', short: 'The list of words typed on the command line, so your program can read its input.',
+    what: '`process.argv` is a list (an array) that Node fills in when your program starts. It holds every word of the command that started it. "argv" is old programmer shorthand for **arg**ument **v**ector, and a vector here just means a list. **Arguments** are the extra words you type after the file name, like the `9` and `17` in `node planner.js 9 17`.',
+    how: 'Run `node planner.js 9 17` and process.argv is:\n`[ \'/usr/bin/node\', \'/home/climber/planner.js\', \'9\', \'17\' ]`\n\n• **position 0**: the full path to the node program itself\n• **position 1**: the full path to your script\n• **position 2 onwards**: the words you typed, in order\n\nSo **your first argument is `process.argv[2]`**, not 0 or 1. `process.argv.slice(2)` gives just your arguments as their own list.\n\nThree rules:\n• **Every argument is a string**, even `9`. Convert with `Number()`.\n• **Missing arguments are `undefined`**. Run `node planner.js` with nothing and `process.argv[2]` is undefined.\n• **The shell splits on spaces**: `node planner.js "team meeting"` is ONE argument (the quotes keep it together), while `node planner.js team meeting` is two.\n\n(`process` is a built-in Node object about the running program. It exists in Node, not in browsers.)',
+    usage: [
+      { code: '// args.js\nconsole.log(process.argv)', out: '$ node args.js 9 17\n[ \'/usr/bin/node\', \'/home/climber/args.js\', \'9\', \'17\' ]', note: 'Your words start at position 2. Note the quotes: they\'re strings. (The node path depends on how Node was installed.)' },
+      { code: 'console.log(process.argv.slice(2))', out: '$ node args.js 9 17 "team meeting"\n[ \'9\', \'17\', \'team meeting\' ]', note: 'slice(2) keeps only your arguments. Quotes made "team meeting" one argument.' },
+      { code: 'const startText = process.argv[2]\nconsole.log(typeof startText, startText)', out: '$ node args.js 9\nstring 9\n$ node args.js\nundefined undefined', note: 'A string when given; undefined when missing.' },
+    ],
+    uses: ['Every command-line tool: `node planner.js 9 17`, `git commit -m "msg"` (git reads its own argv the same way).', 'Passing a file name to a script: `node count-lines.js notes.txt`.', 'Small automation scripts that take a date, a number or a name.'],
+    when: ['Your program needs a little input each time it runs, and typing it on the command line is natural.'],
+    whenNot: ['For secrets like passwords or keys. Command lines can be seen by other programs on the computer and are saved in your shell history. (You\'ll meet environment variables for secrets later.)', 'For large amounts of data: put it in a file and pass the file name instead.', 'In browser JavaScript: process.argv only exists in Node.'],
+    mistakes: [
+      { wrong: 'const days = process.argv[1]  // run: node water.js 3', result: 'Carry NaN litres of water', why: 'argv[1] is the path to water.js. Your first argument is argv[2].' },
+      { wrong: 'const total = process.argv[2] + process.argv[3]  // run: node total.js 12 4', result: '124', why: 'Arguments are strings, so + glues them. Convert with Number() first.' },
+      { wrong: 'process.argv[2].trim()  // run with no arguments', result: 'TypeError: Cannot read properties of undefined (reading \'trim\')', why: 'Missing arguments are undefined. Check `=== undefined` before using them.' },
+    ],
+    tips: ['Give your arguments names straight away: `const startText = process.argv[2]`. Code full of `argv[2]` and `argv[3]` is easy to mix up.', 'Print `process.argv` once when you start a new tool, to see exactly what arrives.', 'Arguments with spaces need quotes on the command line: `node planner.js "9" "team meeting"`.'],
+    related: ['cli-tool', 'type-conversion', 'exit-codes', 'edge-cases'],
+    os: {
+      windows: 'In WSL (Ubuntu) everything is exactly as shown. In PowerShell, position 0 is a Windows path like `C:\\Program Files\\nodejs\\node.exe`, but your arguments still start at position 2.',
+      mac: 'Position 0 is wherever Node was installed, often `/usr/local/bin/node` or `/opt/homebrew/bin/node` with Homebrew. Your arguments still start at position 2.',
+      linux: 'Position 0 is often `/usr/bin/node` (installed with your package manager) or a path inside `~/.nvm/` if you use nvm. Your arguments still start at position 2.',
+      phone: 'Phones can\'t run Node directly. Use the game\'s code engine (it sets process.argv for you), or an SSH app to run it on a real computer.',
+    },
+  },
+  'cli-tool': {
+    term: 'Command-line tool (CLI)', stands: 'CLI = command-line interface', short: 'A program you run by typing a command with arguments, which prints results (or a helpful error) and exits.',
+    what: 'A **command-line tool** is a program you use from the terminal: you type its name and some arguments, it does one job, prints the result, and finishes. `ls`, `git` and `node` are all CLI tools. Your day planner is one too. **CLI** stands for **command-line interface**: the "interface" (the way you talk to it) is typed commands rather than buttons.',
+    how: 'A good CLI tool follows a simple shape:\n1. **Read** its arguments from `process.argv`.\n2. **Validate** them: missing? wrong kind? out of range? (the edge cases)\n3. If something\'s wrong, print a **helpful error** and exit with a **failure exit code**. A helpful error says what was wrong **and** how to do it right. A **usage message** shows the correct form: `Usage: node planner.js <start> <end>`. By convention, `<angle brackets>` mark a value you fill in.\n4. Otherwise, **do the job** and print the result.\n\n**Two output channels.** Every program has two text outputs: **standard output** (stdout) for results, and **standard error** (stderr) for errors and warnings. `console.log` writes to stdout; `console.error` writes to stderr. On screen they look the same, but they can be separated: `node planner.js 9 13 > plan.txt` saves only the plan (stdout) to a file, while errors still appear on screen, so you notice them. That\'s why errors go through `console.error`.',
+    usage: [
+      { code: '$ node planner.js 9 13', out: 'Day plan: 09:00 to 13:00 (4 hours)\n09:00  Focus block 1\n10:00  Focus block 2\n11:00  Focus block 3\n12:00  Lunch', note: 'Happy path: arguments in, result out.' },
+      { code: '$ node planner.js', out: 'Usage: node planner.js <start> <end>', note: 'No arguments: show how to use it, instead of crashing.' },
+      { code: '$ node planner.js nine 17', out: 'Error: "nine" is not a number. Use hours like 9 or 17.', note: 'A helpful error: what was wrong, and what to do instead.' },
+      { code: 'if (problem !== "") {\n  console.error(problem)\n  process.exitCode = 1\n}', note: 'Errors go to stderr with console.error, and the exit code says "failed".' },
+      { code: '$ node pl.js nine > out.txt\nError: "nine" is not a number\n$ cat out.txt\n', out: '(out.txt is empty)', note: '> only captures stdout. The error still showed on screen because console.error writes to stderr.' },
+    ],
+    uses: ['Automating chores: renaming files, converting data, generating reports.', 'Developer tools: git, npm, node and most build tools are CLI tools.', 'Small personal tools (like your planner) that are faster to type than to open an app.', 'Building blocks for scripts: one tool\'s output and exit code drive the next step.'],
+    when: ['A job takes a little input and produces text output.', 'You want something you can run quickly, repeat, or chain into scripts.'],
+    whenNot: ['When the people using it aren\'t comfortable in a terminal. Build a web page or app for them instead (Camp III).', 'When the job needs lots of back-and-forth choices; a CLI is best at "input in, result out".', 'Don\'t print errors with console.log in a CLI tool: they\'d end up mixed into the results file.'],
+    mistakes: [
+      { prose: 'Letting the tool crash with a stack trace when the user forgets an argument.', why: 'Stack traces are for developers fixing code. Users need "Usage: node planner.js <start> <end>". Check for missing arguments first.' },
+      { prose: 'Error messages like "Invalid input".', why: 'Which input? Why? Say what was wrong and how to fix it: `Error: "nine" is not a number. Use hours like 9 or 17.`' },
+      { prose: 'Printing an error but still exiting with code 0.', why: 'Scripts and other tools think it succeeded. Set `process.exitCode = 1` (or call `process.exit(1)`) on failure.' },
+    ],
+    tips: ['Put an example in your usage message: `Example: node planner.js 9 17`. It\'s the fastest way to learn a tool.', 'Many tools show their usage when given `--help`. You can support it with `if (process.argv[2] === "--help")`.', 'Make the error message the one you\'d want to read when tired.'],
+    related: ['process-argv', 'exit-codes', 'edge-cases', 'console-log'],
+  },
+  'exit-codes': {
+    term: 'Exit codes', short: 'The number a program hands back to the shell when it finishes: 0 means success, anything else means failure.',
+    what: 'When any program finishes, it gives the shell a whole number called its **exit code** (also called exit status). **0 means success.** **Any other number means something went wrong.** You don\'t see it printed, but scripts, other tools and the shell itself use it to decide what happens next.',
+    how: 'Think of it as a pass/fail result the program reports when it ends: 0 is "all good", anything else is "something failed". Common codes:\n• **0**: success\n• **1**: general failure. Node uses this when your program crashes with an uncaught error, and it\'s the usual choice for "bad input".\n• **2**: often "used wrongly" (`ls` returns 2 when a file doesn\'t exist)\n• **127**: the shell couldn\'t find the command (command not found)\n• **130**: stopped with Ctrl+C\n\n**Seeing it:** `echo $?` prints the exit code of the last command. (The note for your system below covers other shells.)\n\n**Using it:** `&&` runs the next command **only if** the first succeeded (exit 0). `||` runs the next command **only if** it failed.\n\n**Setting it in Node:**\n• `process.exitCode = 1`: sets the code; the program finishes normally (any remaining code still runs) and then exits with 1. The gentle way.\n• `process.exit(1)`: stops the program **immediately**, right there, with code 1. Nothing after it runs.\n• If your program reaches the end with no crash and you set nothing, the code is 0.',
+    usage: [
+      { code: '$ node pack.js 4\nPack 12 snack bars\n$ echo $?', out: '0', note: 'It worked, so 0.' },
+      { code: '$ node pack.js two\nError: "two" is not a whole number of days\n$ echo $?', out: '1', note: 'pack.js called process.exit(1) for bad input.' },
+      { code: '$ node pack.js 3 && echo "Packed!"', out: 'Pack 9 snack bars\nPacked!', note: '&& ran the second command because the first exited with 0.' },
+      { code: '$ node pack.js two || echo "Something went wrong"', out: 'Error: "two" is not a whole number of days\nSomething went wrong', note: '|| ran the second command because the first failed.' },
+      { code: '$ lss\nlss: command not found\n$ echo $?', out: '127', note: 'The shell\'s own code for "no such command". (The exact wording of the message varies a little between shells; the 127 doesn\'t.)' },
+    ],
+    uses: ['Scripts that stop when a step fails: build, then test, then deploy, only if each step exits with 0.', 'Automated checks (like the ones that run on code before it\'s accepted) decide pass or fail purely by exit code.', 'Chaining commands with && so the next one only runs if the last one worked.'],
+    when: ['Your CLI tool fails for any reason: exit with a non-zero code.', 'Writing a script where later steps depend on earlier ones.'],
+    whenNot: ['Don\'t exit with 0 after printing an error. Anything automated will think it worked.', 'Don\'t call `process.exit()` in the middle of code that\'s still writing output or saving a file; it stops instantly. Prefer `process.exitCode = 1` and let the program finish.', 'Don\'t invent dozens of different codes for a small tool. 0 for success and 1 for failure is plenty.'],
+    mistakes: [
+      { wrong: 'console.error("Error: start must be a number")\n// …and nothing else', result: '(exit code 0: "success")', why: 'Printing an error doesn\'t change the exit code. Add `process.exitCode = 1`.' },
+      { wrong: 'process.exit(1)\nconsole.log("Try: node planner.js 9 17")', result: '(the hint never prints)', why: 'process.exit stops immediately. Print everything first, then exit, or use process.exitCode.' },
+      { prose: 'Running `echo $?` twice and getting 0 the second time.', why: 'The second `echo $?` reports on the first echo, which succeeded. Check it straight after the command you care about.' },
+    ],
+    tips: ['Read `&&` as "and then, if that worked" and `||` as "or else, if that failed".', 'Every crash with a stack trace exits with 1, so automated tools always know a crash is a failure.', 'Your planner sets `process.exitCode = 1` on every error path. Check them all with `echo $?`.'],
+    related: ['cli-tool', 'process-argv', 'error-types'],
+    os: {
+      windows: 'In WSL (Ubuntu), `echo $?` works exactly as shown. In PowerShell the last exit code is in `$LASTEXITCODE` instead (and `&&` and `||` need PowerShell 7 or newer). In the old Command Prompt it is `%ERRORLEVEL%`.',
+      mac: 'The default Mac shell (zsh) supports `echo $?`, `&&` and `||` exactly as shown. Its not-found message reads `zsh: command not found: lss`, but the code is still 127.',
+      linux: 'bash and zsh both support `echo $?`, `&&` and `||` exactly as shown. The not-found message starts with the shell\'s name (`bash: lss: command not found`); the code is 127 either way.',
+      phone: 'In an SSH app connected to a computer, `echo $?` works as shown. Inside this game, the Sherpa reports your program\'s errors directly.',
+    },
+  },
+}
