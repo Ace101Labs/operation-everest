@@ -17,7 +17,7 @@ import { mergeProgress } from './progress.js'
 import qrcode from 'qrcode-generator'
 import { cleanCode, getLink, linkUrl, linkWith, newCode, unlink } from './sync.js'
 
-export function Settings({ p, back, replace, reset, setSetting, net, sync }) {
+export function Settings({ p, back, replace, reset, setSetting, net, sync, openLocker }) {
   const st = p.settings
   const [code, setCode] = useState('')
   const [msg, setMsg] = useState('')
@@ -53,6 +53,7 @@ export function Settings({ p, back, replace, reset, setSetting, net, sync }) {
         </div>
         <div className="lesson-card">
           <h3>🎮 Game settings</h3>
+          <button className="btn wide" onClick={openLocker}>{st.avatar || '🧗'} Change your climber and gear</button>
           <label className="setting"><span>Your computer (the 💻 notes in every lesson match it)</span>
             <select className="typed" value={st.platform || ''} onChange={e => setSetting('platform', e.target.value)}>
               {PLATFORMS.map(pl => <option key={pl.id} value={pl.id}>{pl.icon} {pl.label}</option>)}

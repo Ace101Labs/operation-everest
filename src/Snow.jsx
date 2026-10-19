@@ -20,8 +20,9 @@ export function Snow({ count = 60, front = 10 }) {
   return <>{draw(back, 'snow')}{draw(fore, 'snow front')}</>
 }
 
-// A tall Everest scene behind everything: layered ridges, snowfields, a climbing
-// route with tiny climbers on it, and the real wildlife of the Khumbu.
+// A tall Everest scene behind everything: layered ridges, snowfields, the climbing
+// route and the real wildlife of the Khumbu. (The only climber shown anywhere is the
+// player's own, on the map.)
 const TRAIL = 'M70 585 L165 525 L110 470 L200 412 L150 352 L214 300 L182 246 L222 192 L206 160 L228 128'
 
 // `at` = where it stands when the scene is still (no animation).
@@ -33,8 +34,6 @@ function Mover({ path, dur, begin = 0, children, size = 11, still, at }) {
     </text>
   )
 }
-
-const CLIMBER_SPOTS = [[165, 525], [200, 412], [214, 300], [222, 192]]
 
 export function Range({ still = false, calm = false }) {
   return (
@@ -52,10 +51,9 @@ export function Range({ still = false, calm = false }) {
       <path d="M228 120 L205 175 L215 172 L200 205 L222 190 L236 210 L240 182 L262 190 Z" fill="url(#snowcap)" />
       <path d="M285 175 L273 205 L288 198 L298 214 L300 195 Z" fill="url(#snowcap)" opacity=".85" />
       <path d="M150 300 L170 330 L160 334 L182 352 L165 300 Z M300 250 L318 290 L306 286 Z" fill="#CFE6FA" opacity=".35" />
-      {/* climbing route + climbers */}
+      {/* climbing route */}
       <path d={TRAIL} fill="none" stroke="#CFE6FA" strokeWidth="1.2" strokeDasharray="2 5" opacity=".5" />
       {!calm && <text x="232" y="112" fontSize="14">🚩</text>}
-      {[0, 1, 2, 3].map(k => <Mover key={k} path={TRAIL} dur={80} begin={-k * 20} size={10} still={still} at={CLIMBER_SPOTS[k]}>🧗</Mover>)}
       {/* sky: lammergeier (bearded vulture) circling */}
       <Mover path="M60 120 C 100 60, 200 60, 240 110 C 280 160, 120 170, 60 120 Z" dur={26} size={13} still={still} at={[150, 85]}>🦅</Mover>
       {/* snow leopard prowling the mid ridge */}

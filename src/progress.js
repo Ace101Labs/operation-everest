@@ -231,13 +231,19 @@ export function estimate(p) {
 }
 
 // Altitude: base of the camp you're on, plus your share of the climb to the next one.
-export function altitude(p) {
+// The climber's place on the route as one number: camp index + share of that camp done
+// (1.5 = halfway from Base Camp to Camp 3). The map draws the climber from it.
+export function climbPos(p) {
   let i = 0
   while (i < CAMPS.length - 1 && CAMPS[i].stages && cleared(p, i)) i++
-  const base = ALTITUDE[i], next = ALTITUDE[Math.min(i + 1, ALTITUDE.length - 1)]
   const done = CAMPS[i].stages && cleared(p, i)
-  return Math.round(done ? next : base + (next - base) * campFraction(p, CAMPS[i]))
+  return Math.min(ALTITUDE.length - 1, i + (done ? 1 : campFraction(p, CAMPS[i])))
 }
+export function altAt(t) {
+  const i = Math.min(Math.floor(t), ALTITUDE.length - 1), next = ALTITUDE[Math.min(i + 1, ALTITUDE.length - 1)]
+  return Math.round(ALTITUDE[i] + (next - ALTITUDE[i]) * (t - i))
+}
+export const altitude = p => altAt(climbPos(p))
 
 // ---- checking a save that came from somewhere else (sync or a pasted backup code) ----
 // A save from outside can't be trusted: someone could post a "free unlock" code that hides

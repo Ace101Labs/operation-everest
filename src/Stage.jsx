@@ -55,7 +55,7 @@ function Result({ score, stage, onDone, retry, extra, p }) {
       {extra}
       <div className="row">
         {!passed && <button className="btn" onClick={retry}>Try again</button>}
-        <button className={`btn ${passed ? 'primary' : ''}`} onClick={() => onDone(score)}>Back to camp</button>
+        <button className={`btn ${passed ? 'primary' : ''}`} onClick={() => onDone(score)}>⛰️ Back to the mountain</button>
       </div>
     </div>
   )
@@ -209,13 +209,18 @@ function Learn({ stage, finish, p, onAnswer, recordCode }) {
 // Every hands-on stage (code drills, web, sql, server, react, and engine-based basecamp
 // builds) runs through one wrapper: the engine grades it, then you plant the flag.
 function EngineStage({ stage, finish, p, alreadyPassed }) {
+  const kind = stage.type === 'keyboard' ? stage.engine : stage.type
   const [passed, setPassed] = useState(null)
   const [done, setDone] = useState(false)
   const [copied, setCopied] = useState('')
-  const kind = stage.type === 'keyboard' ? stage.engine : stage.type
+  // Route puzzles: opening the answer still passes, but pays only the pass mark. Solve it
+  // without the answer (now or on a retake) for full points.
+  const [peeked, setPeeked] = useState(false)
+  const answerCost = kind === 'route' ? 100 - p.settings.passMark : 0
+  const sc = peeked && answerCost ? p.settings.passMark / 100 : 1
   const Engine = ENGINES[kind]
   const task = { ...stage, prompt: resolve(stage.prompt ?? stage.brief, p.settings), expect: resolve(stage.expect, p.settings) }
-  if (done) return <Result p={p} score={1} stage={stage} onDone={sc => finish(sc, passed)} retry={() => {}} extra={kind === 'code' && bridgeSafe(stage, passed) && (
+  if (done) return <Result p={p} score={sc} stage={stage} onDone={v => finish(v, passed)} retry={() => {}} extra={kind === 'code' && bridgeSafe(stage, passed) && (
     <div className="bridge">
       <p><strong>Optional: run this code on your computer.</strong> Copy the command, open a terminal on your computer (or an SSH app on your phone), paste it and press Enter. It saves your code as a real file and runs it. <strong>It worked if your output prints in the terminal.</strong></p>
       <button className="btn wide" onClick={async () => setCopied(await copy(terminalCommand(stage.file, passed)) ? 'Copied. Now paste it in your terminal.' : 'Copy failed. Open "What\'s in the command?" and long-press the code to copy it.')}>📋 Copy terminal command</button>
@@ -226,7 +231,7 @@ function EngineStage({ stage, finish, p, alreadyPassed }) {
       </details>
     </div>)} />
   return <>
-    <Engine task={task} onPass={c => setPassed(c ?? '')} />
+    <Engine task={task} answerCost={answerCost || undefined} onPass={(c, meta) => { setPassed(c ?? ''); setPeeked(!!meta?.peeked) }} />
     {passed !== null && <button className="btn primary wide sticky-cta" onClick={() => setDone(true)}>✅ Finish this pitch</button>}
     {alreadyPassed && <p className="note">You already cleared this pitch. This is extra practice.</p>}
   </>
@@ -358,7 +363,7 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
   const finish = (score, code) => {
     const mins = Math.min(60, Math.max(1, Math.round((Date.now() - t0.current) / 60000)))
     recordResult(stage, score, mins, code)
-    close()
+    close(true) // back to the mountain, where the climber moves
   }
   const props = { stage, finish, p, saveJournal, close, recordCode, knockBack, onAnswer: recordAnswer, alreadyPassed: isPassed(p, stage.id) }
   return (

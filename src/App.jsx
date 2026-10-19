@@ -133,15 +133,15 @@ export default function App() {
   else if (view.name === 'pack') screen = <Pack p={p} setSetting={setSetting} start={view.tab} back={() => setView({ name: 'map' })} />
   else if (view.name === 'guide') screen = <FieldGuide p={p} back={() => setView({ name: 'map' })} />
   else if (view.name === 'review') screen = <Acclimatize p={p} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
-  else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} />
+  else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} openLocker={() => setView({ name: 'pack', tab: 'locker' })} />
   else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
-    close={() => { const storm = stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : 'camp', camp: view.camp }) }} />
-  else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: 'camp', camp: view.camp })} />
+    close={done => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? 'map' : (view.from || 'camp'), camp: view.camp }) }} />
+  else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
   else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} close={() => setView({ name: 'map' })} />
   else if (view.name === 'camp') screen = <Camp p={p} camp={camp} back={() => setView({ name: 'map' })}
     openStage={stage => setView({ name: 'stage', camp: view.camp, stage })} />
-  else screen = <Mountain p={p} net={net} openSettings={() => setView({ name: 'settings' })}
+  else screen = <Mountain p={p} net={net} paused={intro} openSettings={() => setView({ name: 'settings' })}
     openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })}
-    openCamp={i => setView({ name: 'camp', camp: i })} />
+    openCamp={i => setView({ name: 'camp', camp: i })} openStage={(i, stage) => setView({ name: 'stage', camp: i, stage, from: 'map' })} />
   return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PLATFORMS } from './platforms.js'
+import { GEAR } from './rewards.js'
 import { APP_NAME } from './progress.js'
 import { Snow, Range } from './Snow.jsx'
 import { HowToPlay, InstallGuide } from './HowTo.jsx'
@@ -11,9 +12,10 @@ export function Welcome({ setSetting }) {
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState(null)
   const [hours, setHours] = useState(7)
+  const [avatar, setAvatar] = useState('🧗')
   // Installed while on the install step: move straight on to how the climb works.
   useEffect(() => onInstallChange(() => { if (isInstalled() || wasJustInstalled()) setStep(s => (s === 1 ? 2 : s)) }), [])
-  const finish = () => { setSetting('playerName', name.trim()); setSetting('weeklyHours', hours); setSetting('platform', platform) }
+  const finish = () => { setSetting('avatar', avatar); setSetting('playerName', name.trim()); setSetting('weeklyHours', hours); setSetting('platform', platform) }
   return (
     <div className="screen welcome">
       <Snow count={40} front={6} />
@@ -44,7 +46,10 @@ export function Welcome({ setSetting }) {
           <button className="btn primary wide" onClick={() => setStep(3)}>Next</button>
         </>}
         {step === 3 && <>
-          <h2>What name should the game use for you?</h2>
+          <h2>Pick your climber</h2>
+          <div className="pick-climber">{GEAR.avatar.filter(g => g.how === 'Included from the start').map(g => (
+            <button key={g.id} className={avatar === g.id ? 'on' : ''} onClick={() => setAvatar(g.id)} aria-label={g.name}>{g.id}</button>))}</div>
+          <p className="note">This is you on the mountain. Earn more climbers (a snow leopard, a yak, a yeti…) as you go.</p>
           <input className="typed" value={name} onChange={e => setName(e.target.value)} maxLength={24} placeholder="Your name (optional)" />
           <button className="btn primary wide" onClick={() => setStep(4)}>Next</button>
         </>}

@@ -27,11 +27,13 @@ export function Editor({ value, onChange, lang = 'js', rows = 8 }) {
     <div className="keys">{(KEYS[lang] || KEYS.js).map(k => <button key={k} onClick={() => insert(k)} aria-label={k === '\n' ? 'new line' : k}>{k === '\n' ? '↵' : k.trim() || k}</button>)}</div>
   </>
 }
-function Hints({ hints = [] }) {
+// `answerCost`: the last hint is the whole answer, and opening it lowers the score (shown on the button).
+function Hints({ hints = [], answerCost, onPeek }) {
   const [n, setN] = useState(0)
+  const last = answerCost && hints.length > 1 && n === hints.length - 1
   return <>
     {hints.slice(0, n).map((h, i) => <div key={i} className="hint">⛑️ Sherpa: <Md text={h} /></div>)}
-    {n < hints.length && <button className="btn" onClick={() => setN(n + 1)}>Show hint {n + 1}</button>}
+    {n < hints.length && <button className="btn" onClick={() => { if (last) onPeek?.(); setN(n + 1) }}>{last ? `🔑 Show the answer (−${answerCost}% ⭐)` : `Show hint ${n + 1}`}</button>}
   </>
 }
 function Report({ items }) {
@@ -297,7 +299,7 @@ function atFlag() { return __at(__y, __x) === 'flag' }
 const CELL = { '#': '🪨', F: '🚩', '.': '', S: '' }
 const moveCalls = code => (code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').match(/\b(up|down|left|right)\s*\(/g) || []).length
 
-export function RouteEngine({ task, onPass }) {
+export function RouteEngine({ task, onPass, answerCost }) {
   const map = task.map
   const start = (() => { for (let r = 0; r < map.length; r++) { const c = map[r].indexOf('S'); if (c > -1) return [r, c] } return [0, 0] })()
   const [code, setCode] = useState(task.starter || '')
@@ -306,6 +308,7 @@ export function RouteEngine({ task, onPass }) {
   const [busy, setBusy] = useState(false)
   const [fx, setFx] = useState('')
   const timer = useRef(null)
+  const peeked = useRef(false)
   useEffect(() => () => clearInterval(timer.current), [])
   const run = async () => {
     clearInterval(timer.current); setPos(start); setFx(''); setRes(null); setBusy(true)
@@ -324,7 +327,7 @@ export function RouteEngine({ task, onPass }) {
     if (task.maxCalls) report.push({ label: `At most ${task.maxCalls} move command${task.maxCalls > 1 ? 's' : ''} written in your code (let a loop repeat them)`, ok: calls <= task.maxCalls, detail: `you wrote ${calls}` })
     if (r.error) emit('error-seen')
     const pass = report.every(x => x.ok)
-    const finish = () => { setBusy(false); setFx(r.error ? 'fall' : reached ? 'win' : ''); setRes({ ...r, out, pass, report }); if (pass) onPass?.(code) }
+    const finish = () => { setBusy(false); setFx(r.error ? 'fall' : reached ? 'win' : ''); setRes({ ...r, out, pass, report }); if (pass) onPass?.(code, { peeked: peeked.current }) }
     if (document.body.classList.contains('calm') || !path.length) { setPos(end); return finish() }
     let k = 0
     timer.current = setInterval(() => {
@@ -343,7 +346,7 @@ export function RouteEngine({ task, onPass }) {
     </div>
     <Editor value={code} onChange={setCode} lang="js" />
     <div className="row"><button className="btn primary" onClick={run} disabled={busy}>{busy ? 'Climbing…' : '▶ Run the route'}</button></div>
-    <Hints hints={task.hints} />
+    <Hints hints={task.hints} answerCost={answerCost} onPeek={() => { peeked.current = true }} />
     {res && <div className={`console ${res.pass ? 'ok' : res.error ? 'err' : ''}`}><small>What happened</small>
       <pre>{[...res.out, res.error ? `💥 ${res.error.replace(/^Error: /, '')}` : res.pass ? '🚩 Flag reached!' : ''].filter(Boolean).join('\n') || ' '}</pre>
       {!res.pass && <p className="note">{res.error ? (/^(Error: )?(Ouch|You stepped)/.test(res.error) ? '⛑️ Your climber stopped there. Read the message: where were you, and which way did you try to go?' : '⛑️ Read the error first: what does it say, and on which line?') : '⛑️ Look at where your climber ended up, then trace your code one step at a time.'}</p>}
