@@ -7,6 +7,11 @@ import { altAt } from './progress.js'
 // player's own climber stands where their progress really is, and it climbs (or slides
 // back after an avalanche) the next time the map is shown.
 const SEEN = 'everest.seenClimb' // where the map last showed the climber (not progress)
+const FLOWN = 'everest.flown' // the flight into Lukla has been shown on this device
+// The flight in: from high over the range, down onto the Lukla airstrip.
+const FLY = [[352, 40], [330, 470], [70, 535]]
+const bez = (k, i) => (1 - k) ** 2 * FLY[0][i] + 2 * (1 - k) * k * FLY[1][i] + k * k * FLY[2][i]
+const bezD = (k, i) => 2 * (1 - k) * (FLY[1][i] - FLY[0][i]) + 2 * k * (FLY[2][i] - FLY[1][i])
 
 // One marker per entry in ALTITUDE: Lukla, then where each camp starts, up to the summit.
 const W = [[70, 535], [250, 500], [110, 462], [255, 425], [105, 388], [250, 350], [115, 312], [240, 275],
@@ -29,6 +34,22 @@ export function ClimbScene({ t, statuses, avatar, still, paused, onCamp, onClimb
   })
   const [pop, setPop] = useState(null) // { m: metres gained (or lost), key }
   const raf = useRef(0)
+  // A brand-new player flies into Lukla first; the plane lands and becomes their climber.
+  const [flight, setFlight] = useState(() => (!still && t === 0 && !localStorage.getItem(FLOWN) ? 0 : null))
+  const [landed, setLanded] = useState(false)
+  useEffect(() => {
+    if (paused || flight === null || flight > 0) return
+    let start = 0, id = 0
+    const step = now => {
+      if (!start) start = now
+      const k = Math.min(1, (now - start) / 2600)
+      setFlight(Math.max(0.0001, 1 - (1 - k) ** 2)) // eases in to touchdown
+      if (k < 1) id = requestAnimationFrame(step)
+      else setTimeout(() => { localStorage.setItem(FLOWN, '1'); setFlight(null); setLanded(true) }, 450)
+    }
+    const wait = setTimeout(() => { id = requestAnimationFrame(step) }, 500)
+    return () => { clearTimeout(wait); cancelAnimationFrame(id) }
+  }, [paused, flight === null])
   useEffect(() => {
     if (paused) return // wait until the landing screen is gone, so the climb is seen
     localStorage.setItem(SEEN, String(t))
@@ -89,13 +110,22 @@ export function ClimbScene({ t, statuses, avatar, still, paused, onCamp, onClimb
         })}
         {!still && <text x="300" y="80" fontSize="13" className="bird">🦅<animateTransform attributeName="transform" type="translate" values="0 0; -40 10; -80 -5; -40 -12; 0 0" dur="24s" repeatCount="indefinite" /></text>}
         <text x="300" y="545" fontSize="14">🐂<animateTransform attributeName="transform" type="translate" values={still ? '0 0' : '40 0; -320 0'} dur="60s" repeatCount="indefinite" /></text>
+        {flight !== null && (() => {
+          const k = flight, x = bez(k, 0), y = bez(k, 1)
+          // ✈️ points up-right (-45°); turn it to face the way it's flying
+          const deg = Math.atan2(bezD(k, 1), bezD(k, 0)) * 180 / Math.PI + 45
+          return <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
+            <text fontSize={30 - 10 * k} textAnchor="middle" dominantBaseline="central" transform={`rotate(${deg.toFixed(1)})`}>✈️</text>
+            {k > 0.97 && <text y="-26" textAnchor="middle" className="touchdown">Touchdown · Lukla</text>}
+          </g>
+        })()}
         {/* you */}
-        <g className={`me ${moving ? 'moving' : ''}`} transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)})`} onClick={onClimber} role="button" aria-label="Your climber (tap to change)">
+        {flight === null && <g className={`me ${moving ? 'moving' : ''} ${landed ? 'landed' : ''}`} transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)})`} onClick={onClimber} role="button" aria-label="Your climber (tap to change)">
           <circle r="22" fill="url(#c-glow)" />
           <g className="me-body"><text y="-12" fontSize="22" textAnchor="middle" dominantBaseline="central">{avatar}</text></g>
           <g transform="translate(0 -35)"><rect x="-14" y="-7" width="28" height="13" rx="6.5" className="me-tag" /><text y="0" className="me-tag-t" textAnchor="middle" dominantBaseline="central">YOU</text></g>
           {pop && pop.m !== 0 && <text key={pop.key} y="-48" textAnchor="middle" className={`climb-pop ${pop.m > 0 ? 'up' : 'down'}`}>{pop.m > 0 ? `+${pop.m.toLocaleString()} m ⬆` : `${pop.m.toLocaleString()} m 💨`}</text>}
-        </g>
+        </g>}
       </svg>
     </div>
   )
