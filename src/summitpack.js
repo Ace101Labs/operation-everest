@@ -145,6 +145,7 @@ export function summitPack(p) {
   const saved = p.code || {}
   const projects = []
   for (const camp of CAMPS) for (const stage of camp.stages || []) {
+    if (stage.type === 'route') continue // route puzzles only run inside the game
     if (saved[stage.id]) { const pr = project(camp, stage, saved[stage.id]); if (pr) projects.push(pr) }
     // lesson try-its: smaller practice pieces, kept beside the camp's projects
     const t = saved[`${stage.id} tryit`]

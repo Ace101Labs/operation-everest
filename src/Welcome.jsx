@@ -22,7 +22,7 @@ export function Welcome({ setSetting }) {
         {step === 0 && <>
           <div className="arrival">
             <small>✈️ NOW ARRIVING · LUKLA · 2,860 m</small>
-            <p><strong>Thanks for flying into Lukla</strong>, the gateway to Everest. Real climbers trek 8 to 10 days up the valley from here to reach Base Camp. We've walked your pack up the trail for you, so your climb starts at <strong>Base Camp, 5,364 m</strong>. Enjoy your hike!</p>
+            <p><strong>Thanks for flying into Lukla</strong>, the gateway to Everest. Real climbers trek 8 to 10 days up the valley from here to reach <strong>Base Camp, 5,364 m</strong>, where the climb begins. Your trek is four short stops, and on the way you'll write your very first code. Enjoy your hike!</p>
           </div>
           <div className="big">🏔️</div>
           <h1>{APP_NAME}</h1>

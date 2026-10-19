@@ -1,5 +1,6 @@
 // The 13 camps up Everest. Each camp is a card rank (2 up to the Ace).
 // `hours` = rough total effort (phone + keyboard). `stages` live in their own file.
+import { campT } from './campT.js'
 import { camp2 } from './camp2.js'
 import { camp3 } from './camp3.js'
 import { camp4 } from './camp4.js'
@@ -33,6 +34,7 @@ import { OS_QUESTIONS } from './os-questions.js'
 export const ALTS = { ...ALTS_CAMP2, ...ALTS_CAMP3, ...ALTS_CAMP4, ...ALTS_CAMP5, ...ALTS_CAMP6, ...ALTS_CAMP7, ...ALTS_CAMP8, ...ALTS_CAMP9, ...ALTS_CAMP10, ...ALTS_CAMPJ, ...ALTS_CAMPQ, ...ALTS_CAMPK, ...ALTS_CAMPA }
 
 export const CAMPS = [
+  { id: 'T', card: '🥾', n: 0, name: 'The Trek', topic: 'Lukla to Base Camp: your first steps', trek: true, stages: campT },
   { id: '2', card: '2', n: 1, name: 'Base Camp', topic: 'Terminal + your first program', hours: 8, stages: camp2 },
   { id: '3', card: '3', n: 2, name: 'Khumbu Icefall', topic: 'Variables, decisions, loops', hours: 10, stages: camp3.length ? camp3 : undefined },
   { id: '4', card: '4', n: 3, name: 'Camp I', topic: 'Functions + data (lists, objects)', hours: 10, stages: camp4.length ? camp4 : undefined },

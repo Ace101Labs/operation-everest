@@ -38,7 +38,7 @@ export function Mountain({ p, net, openCamp, openSettings, openGuide, openReview
           <button className="stat-btn" onClick={() => openPack('score')}><b>{score(p).points.toLocaleString()}</b><span>⭐ points of {MAX_POINTS.toLocaleString()}</span></button>
           {p.settings.showEstimate && <div><b>{Math.ceil(est.weeks)}</b><span>⏳ wks to summit</span></div>}
         </div>
-        {/* The bar measures the climb from Base Camp, not from sea level. */}
+        {/* The bar measures the climb from Lukla airport (where the trek starts), not from sea level. */}
         <div className="altbar"><div style={{ width: `${((shownAlt - ALTITUDE[0]) / (SUMMIT - ALTITUDE[0])) * 100}%` }} /></div>
         {canDaily && <button className="review-btn daily-btn" onClick={openDaily}>{dailyDone ? `☀️ Daily run done · best ${p.daily.best}/5 · 🔥${p.daily.count}` : `☀️ Today's daily run${dailyStreak(p) ? ` · keep your 🔥${dailyStreak(p)} going` : ''}`}</button>}
         {due > 0 && <button className="review-btn" onClick={openReview}>🏕️ Review {due} missed question{due > 1 ? 's' : ''}</button>}
@@ -54,7 +54,7 @@ export function Mountain({ p, net, openCamp, openSettings, openGuide, openReview
             onClick={() => status !== 'coming' && status !== 'locked' && openCamp(i)}>
             <div className="card-face"><span>{c.card}</span><i>♠</i></div>
             <div className="camp-info">
-              <small>Camp {c.n} of 13 · {c.name}</small>
+              <small>{c.trek ? 'The approach · ✈️ from Lukla airport' : `Camp ${c.n} of 13 · ${c.name}`}</small>
               <strong>{c.topic}</strong>
               <div className="bar"><div style={{ width: `${Math.round(frac * 100)}%` }} />
                 {current.i === i && <span className="bar-climber" style={{ left: `${Math.round(frac * 100)}%` }} aria-hidden="true">{p.settings.avatar || '🧗'}</span>}</div>
@@ -62,7 +62,7 @@ export function Mountain({ p, net, openCamp, openSettings, openGuide, openReview
             </div>
           </button>
         ))}
-        <div className="basecamp">🏔️ Start here: Base Camp · 5,364 m<small>✈️ trekked up from Lukla airport (2,860 m)</small></div>
+        <div className="basecamp">✈️ Start here: Lukla airport · 2,860 m<small>trek up the valley to Base Camp (5,364 m), then climb</small></div>
       </div>
       {p.settings.showEstimate && <footer className="estimate">
         ~{Math.round(est.left)} hrs of climbing left at {est.perWeek.toFixed(1)} hrs/week{est.measured ? ' (your real pace)' : ' (planned pace)'}

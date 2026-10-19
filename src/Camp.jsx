@@ -17,13 +17,18 @@ export function Camp({ p, camp, back, openStage }) {
       <Range still={p.settings.reduceMotion} />
       <header className="bar-top">
         <button className="icon" onClick={back}>‹</button>
-        <div><small>Camp {camp.n} of 13 · {camp.name} · the {camp.card} card</small><strong>{camp.topic}</strong></div>
+        <div><small>{camp.trek ? 'The approach · Lukla 2,860 m → Base Camp 5,364 m' : `Camp ${camp.n} of 13 · ${camp.name} · the ${camp.card} card`}</small><strong>{camp.topic}</strong></div>
       </header>
       <div className="stages route">
-        {campBossPassed(p, camp)
-          ? <div className="villain cleared">☀️ The storm has lifted here. The Whiteout has no hold on {camp.name}.</div>
-          : <div className="villain">🌫️ <strong>The Whiteout:</strong> “{TAUNT[camp.id]}”</div>}
-        <div className="summit-flag">🧊 Beat the Whiteout's lieutenant to lift the storm</div>
+        {camp.trek ? <>
+          <div className="villain cleared">☀️ Clear skies on the trail. The Whiteout waits higher up.</div>
+          <div className="summit-flag">🏔️ Base Camp, 5,364 m: the climb starts here</div>
+        </> : <>
+          {campBossPassed(p, camp)
+            ? <div className="villain cleared">☀️ The storm has lifted here. The Whiteout has no hold on {camp.name}.</div>
+            : <div className="villain">🌫️ <strong>The Whiteout:</strong> “{TAUNT[camp.id]}”</div>}
+          <div className="summit-flag">🧊 Beat the Whiteout's lieutenant to lift the storm</div>
+        </>}
         {list.map(({ s, n }, k) => {
           const passed = isPassed(p, s.id)
           const open = stageOpen(p, camp, s)

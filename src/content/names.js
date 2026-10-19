@@ -15,8 +15,9 @@ export const TYPE = {
   boss:     { icon: '🧊', name: 'Whiteout boss' },
 }
 
-// Real-ish altitudes (m). Index = camp position; the last value is the summit.
-export const ALTITUDE = [5364, 5600, 6065, 6300, 6400, 6800, 7200, 7500, 7950, 8400, 8749, 8790, 8849]
+// Real-ish altitudes (m). Index = camp position (the trek starts at Lukla airport); the last
+// value is the summit.
+export const ALTITUDE = [2860, 5364, 5600, 6065, 6300, 6400, 6800, 7200, 7500, 7950, 8400, 8749, 8790, 8849]
 export const SUMMIT = 8849
 
 export const WIN = ['Passed. Checkpoint reached!', 'Passed. Clean ascent!', 'Passed. Rope secured!', 'Passed. Strong climbing!', 'Passed. Footing solid!', 'Passed. The fog thins!']

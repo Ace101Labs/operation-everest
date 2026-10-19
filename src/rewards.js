@@ -36,7 +36,7 @@ export const ACHIEVEMENTS = [
 ]
 
 export const patchesFor = p => CAMPS.flatMap(c => c.stages ? [
-  { id: `summit-${c.id}`, icon: '🏔️', title: `${c.name} summited`, card: c.card, got: campClear(p, c) },
+  { id: `summit-${c.id}`, icon: c.trek ? '🥾' : '🏔️', title: c.trek ? 'The Trek walked: Lukla to Base Camp' : `${c.name} summited`, card: c.card, got: campClear(p, c) },
   ...(c.boss ? [{ id: `boss-${c.id}`, icon: '⚔️', title: `${c.boss} defeated`, card: c.card, got: campBossPassed(p, c) }] : []),
 ] : [])
 
@@ -64,7 +64,7 @@ export const GEAR = {
   ],
   terminal: [
     { id: 'classic', name: 'Classic', fg: '#d6e6f5', prompt: '#5CC8FF', how: 'Included from the start', unlock: () => true },
-    { id: 'ice', name: 'Ice', fg: '#e6f7ff', prompt: '#9be7ff', how: 'Finish Base Camp', unlock: p => campDone(p, CAMPS[0]) },
+    { id: 'ice', name: 'Ice', fg: '#e6f7ff', prompt: '#9be7ff', how: 'Finish Base Camp', unlock: p => campDone(p, CAMPS.find(c => c.id === '2')) },
     { id: 'amber', name: 'Amber', fg: '#ffcf87', prompt: '#ffb347', how: 'Earn "Week on the Mountain"', unlock: p => has(p, 'streak-7') },
     { id: 'matrix', name: 'Green Screen', fg: '#7dff9a', prompt: '#3dff6e', how: 'Earn "Terminal Talker"', unlock: p => has(p, 'terminal-talker') },
   ],
