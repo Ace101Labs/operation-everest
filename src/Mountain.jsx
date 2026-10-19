@@ -58,7 +58,7 @@ export function Mountain({ p, net, openCamp, openSettings, openGuide, openReview
               <strong>{c.topic}</strong>
               <div className="bar"><div style={{ width: `${Math.round(frac * 100)}%` }} />
                 {current.i === i && <span className="bar-climber" style={{ left: `${Math.round(frac * 100)}%` }} aria-hidden="true">{p.settings.avatar || '🧗'}</span>}</div>
-              <em>{LABEL[status]} · ~{c.hours} hrs{c.boss ? ` · boss: ${c.boss}` : ''}</em>
+              <em>{status === 'locked' && i > 0 && CAMPS[i - 1].trek ? 'Locked: walk the trek from Lukla first' : c.trek && status === 'done' ? 'Walked ✓' : LABEL[status]} · ~{c.hours} hrs{c.boss ? ` · boss: ${c.boss}` : ''}</em>
             </div>
           </button>
         ))}

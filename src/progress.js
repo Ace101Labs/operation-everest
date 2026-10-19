@@ -194,17 +194,18 @@ export const buildsLeft = p => CAMPS.flatMap(c => keyboardStages(c).filter(s => 
 
 // The whole climb works on a phone: camp i opens when camp i-1's boss is beaten.
 // Computer builds never block the climb; they gate only the full summit certificate.
-// The approach trek counts as walked once it's cleared, or once any camp after it has
-// progress (players who started before the trek existed never have to go back for it).
-export const trekWalked = p => campClear(p, CAMPS[0]) || CAMPS.slice(1).some(c => (c.stages || []).some(s => isPassed(p, s.id)))
-const cleared = (p, i) => (CAMPS[i].trek ? trekWalked(p) : campClear(p, CAMPS[i]))
+// The approach trek is the way in: Base Camp opens once every trek stop is walked. Players
+// who started before the trek existed walk it too (about 20 minutes); everything they had
+// already cleared stays cleared and is waiting at Base Camp.
+export const trekWalked = p => campClear(p, CAMPS[0])
+const cleared = (p, i) => campClear(p, CAMPS[i])
 export function campStatus(p, i) {
   const c = CAMPS[i]
   if (!c.stages) return 'coming'
   if (cleared(p, i)) return 'done'
   if (i === 0) return 'open'
   const prev = CAMPS[i - 1]
-  if (prev.trek) return 'open' // Base Camp never waits for the trek
+  if (prev.trek) return trekWalked(p) ? 'open' : 'locked'
   if (!campBossPassed(p, prev)) return 'locked'
   return 'open'
 }
