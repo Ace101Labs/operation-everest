@@ -233,9 +233,11 @@ export function estimate(p) {
 // Altitude: base of the camp you're on, plus your share of the climb to the next one.
 // The climber's place on the route as one number: camp index + share of that camp done
 // (1.5 = halfway from Base Camp to Camp 3). The map draws the climber from it.
+// It is the HIGHEST camp you've opened, so a lesson added later to a camp you already
+// passed (or reviewing an old camp) never drags you back down the mountain.
+export const highestCamp = p => CAMPS.reduce((top, c, k) => (c.stages && campStatus(p, k) !== 'locked' ? k : top), 0)
 export function climbPos(p) {
-  let i = 0
-  while (i < CAMPS.length - 1 && CAMPS[i].stages && cleared(p, i)) i++
+  const i = highestCamp(p)
   const done = CAMPS[i].stages && cleared(p, i)
   return Math.min(ALTITUDE.length - 1, i + (done ? 1 : campFraction(p, CAMPS[i])))
 }

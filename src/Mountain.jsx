@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CAMPS } from './content/camps.js'
 import { SUMMIT, TYPE } from './content/names.js'
-import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen } from './progress.js'
+import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen, highestCamp } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
 
@@ -20,7 +20,7 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
   const est = estimate(p)
   const alt = altitude(p)
   const camps = CAMPS.map((c, i) => ({ c, i, status: campStatus(p, i), frac: campFraction(p, c) }))
-  const current = camps.find(x => x.status === 'open') || camps[0]
+  const current = camps[highestCamp(p)] // the furthest camp you've reached, never an older one
   const next = current.status === 'open' ? nextPitch(p, current.c) : null
   const [arrived, setArrived] = useState(null) // camp index just reached (-1 = knocked back)
   const pts = score(p).points
