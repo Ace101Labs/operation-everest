@@ -6,6 +6,7 @@ export const TYPE = {
   sql:      { icon: '🗄️', name: 'Database drill' },
   server:   { icon: '📡', name: 'Server drill' },
   react:    { icon: '⚛️', name: 'React drill' },
+  route:    { icon: '🧗', name: 'Route puzzle' },
   keyboard: { icon: '🏕️', name: 'Camp build' },
   radio:    { icon: '📻', name: 'Radio check' },
   audit:    { icon: '🌨️', name: 'Weather check' },

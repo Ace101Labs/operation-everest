@@ -23,6 +23,8 @@ self.addEventListener('fetch', e => {
   const u = new URL(req.url)
   // never cache sync: it must always show the latest copy
   if (req.method !== 'GET' || u.origin !== location.origin || u.pathname.startsWith('/api/')) return
+  // visitor stats (Vercel Web Analytics) always go to the network
+  if (u.pathname.startsWith('/_vercel/')) return
   // icons and the manifest always come straight from the network: newer iOS shows a
   // letter instead of the home-screen icon when a service worker answers these
   if (/\.(png|webmanifest)$/.test(u.pathname)) return

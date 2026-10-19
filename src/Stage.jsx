@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Md } from './md.jsx'
 import { bridgeSafe, runCode, terminalCommand } from './runner.js'
 import { isPassed, knockBackTargets, stagePoints } from './progress.js'
-import { TYPE, WIN, LOSE, bossLine, defeatLine } from './content/names.js'
+import { TYPE, WIN, LOSE, TAUNT, bossLine, defeatLine } from './content/names.js'
 import { CAMPS, QUESTIONS } from './content/camps.js'
 import { Burst, Range } from './Snow.jsx'
 import { TerminalStage } from './Terminal.jsx'
@@ -62,12 +62,28 @@ function Result({ score, stage, onDone, retry, extra, p }) {
 }
 
 const FUSE = 20 // seconds per question in "Don't wake the Yeti"
+// Quick timed rounds (a storm on the trail, the daily run): seconds per question.
+export const QUICK = { storm: 15, daily: 20 }
+const timed = c => c === 'yeti' || c in QUICK
+const pickOne = (l, not) => { const o = l.filter(x => x !== not); return o[Math.floor(Math.random() * o.length)] } // never the same line twice running
+// What the boss says when you hit it, and when it hits you back.
+const OUCH = ['ARGH! The storm flickers.', 'That one stung!', 'The fog tears open for a moment.', 'It staggers back into the clouds.', 'A gap of blue sky. Keep going!']
+const JEER = ['See? You don\'t really get it.', 'Turn back while you still can.', 'Told you this was too hard.', 'One more like that and you\'re off this mountain.']
 
-export function Questions({ stage, questions: given, onFinish, challenge, onAnswer, platform }) {
+export function Questions({ stage, questions: given, onFinish, challenge, onAnswer, platform, passMark = 80, taunt }) {
   const questions = useMemo(() => deal(given, platform), []) // fresh order, options and versions each attempt
+  // Boss fight: every right answer is a hit; every wrong one costs a rope. You get exactly as
+  // many ropes as the misses the pass mark allows, plus one, so running out of rope means
+  // the score can no longer pass, never sooner. Its health hits zero when your pass is secure.
+  const need = Math.ceil(questions.length * passMark / 100)
+  const ropesMax = questions.length - need + 1
+  const [ropes, setRopes] = useState(ropesMax)
+  const [say, setSay] = useState(taunt)
+  const [hitFx, setHitFx] = useState('')
   const [cracks, setCracks] = useState(0)
   const [noise, setNoise] = useState(0)
-  const [left, setLeft] = useState(FUSE)
+  const fuse = QUICK[challenge] || FUSE
+  const [left, setLeft] = useState(fuse)
   const [dead, setDead] = useState(null)
   const [timedOut, setTimedOut] = useState(false)
   const [maxNoise, setMaxNoise] = useState(0)
@@ -83,24 +99,28 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
   const fail = () => {
     if (challenge === 'avalanche') { const c = cracks + 1; setCracks(c); if (c >= 3) setTimeout(() => setDead('avalanche'), 700) }
     if (challenge === 'yeti') setNoise(n => { const v = n + 35; if (v >= 100) setTimeout(() => setDead('yeti'), 700); return Math.min(100, v) })
+    if (challenge === 'boss') { const r = ropes - 1; setRopes(r); setSay(pickOne(JEER, say)); setHitFx('hurt'); if (r <= 0) setTimeout(() => setDead('boss'), 1600) }
   }
   const check = () => {
     setShown(true)
     onAnswer?.(q.qid, correct)
-    if (correct) { setRight(r => r + 1); if (challenge === 'yeti') setNoise(n => Math.max(0, n - 10)) } else fail()
+    if (correct) {
+      setRight(r => r + 1); if (challenge === 'yeti') setNoise(n => Math.max(0, n - 10))
+      if (challenge === 'boss') { setHitFx('hit'); setSay(right + 1 >= need ? 'NO! The storm is breaking apart!' : pickOne(OUCH, say)) }
+    } else fail()
   }
   useEffect(() => {
-    if (challenge !== 'yeti' || shown || dead) return
+    if (!timed(challenge) || shown || dead) return
     if (left <= 0) { setTimedOut(true); setShown(true); onAnswer?.(q.qid, false); fail(); return }
     const t = setTimeout(() => setLeft(l => +(l - 0.1).toFixed(1)), 100)
     return () => clearTimeout(t)
   }, [challenge, left, shown, dead])
   const next = () => {
     if (i + 1 >= questions.length) { const score = right / questions.length; emit('quiz-done', { score, challenge, cracks, noise: maxNoise }); return onFinish(score) }
-    setI(i + 1); setPick(null); setTyped(''); setShown(false); setLeft(FUSE); setTimedOut(false)
+    setI(i + 1); setPick(null); setTyped(''); setShown(false); setLeft(fuse); setTimedOut(false); setHitFx('')
   }
   // Challenges hand a loss straight to the Wipeout (animation + knock-back); no extra screen.
-  useEffect(() => { if (dead) onFinish(0, dead) }, [dead])
+  useEffect(() => { if (dead) { if (dead === 'boss') emit('quiz-done', { score: right / questions.length, challenge }); onFinish(dead === 'boss' ? right / questions.length : 0, dead) } }, [dead])
   if (dead) return null
   if (false) return (
     <div className={`disaster ${dead}`}>
@@ -118,6 +138,15 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
           <span>Snowpack (3 cracks ends it)</span>{[0, 1, 2].map(k => <b key={k}>{k < cracks ? '💥' : '❄️'}</b>)}
         </div>
       )}
+      {challenge === 'boss' && (
+        <div className={`bossfight ${hitFx}`} key={`${i}-${hitFx}`}>
+          <div className="boss-hp"><span>🌫️ {stage.title}</span><div><i style={{ width: `${Math.max(0, (need - right) / need) * 100}%` }} /></div></div>
+          <div className="boss-face" aria-hidden="true">{right >= need ? '🌤️' : '⛈️'}</div>
+          {say && <p className="boss-say">“{say}”</p>}
+          <div className="ropes" aria-label={`${ropes} of ${ropesMax} ropes left`}>{Array.from({ length: ropesMax }, (_, k) => <b key={k} className={k < ropes ? '' : 'gone'}>🪢</b>)}<span>ropes</span></div>
+        </div>
+      )}
+      {timed(challenge) && challenge !== 'yeti' && <div className="meter quickbar"><span>{challenge === 'storm' ? '⛈️ Beat the storm' : '☀️ Daily run'}</span><span className={`fuse ${left < 5 ? 'low' : ''}`}>⏱ {Math.ceil(left)}s</span></div>}
       {challenge === 'yeti' && (
         <div className="meter yetibar">
           <span className="yeti small">🦍</span><span className="zz">{noise < 35 ? '💤' : noise < 70 ? '😑' : '😠'}</span>
@@ -142,7 +171,7 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
       )}
       {shown && (
         <div className={`feedback ${correct ? 'ok' : 'no'}`}>
-          <strong>⛑️ {timedOut ? 'Too slow. The Yeti stirs.' : correct ? 'Correct' : q.kind === 'type' ? `Answer: ${q.accept[0]}` : challenge === 'avalanche' ? 'Wrong. A crack opens in the snow.' : 'Not quite'}</strong>
+          <strong>⛑️ {timedOut ? (challenge === 'yeti' ? 'Too slow. The Yeti stirs.' : 'Out of time.') : challenge === 'boss' ? (correct ? 'Hit! Correct.' : 'It hits back. You lose a rope.') : correct ? 'Correct' : q.kind === 'type' ? `Answer: ${q.accept[0]}` : challenge === 'avalanche' ? 'Wrong. A crack opens in the snow.' : 'Not quite'}</strong>
           {!correct && q.kind === 'mc' && <div className="right-answer">✅ Correct answer: <Md text={q.options[q.answer]} /></div>}
           {!correct && q.kind !== 'mc' && q.accept?.length > 1 && <div className="right-answer">Also accepted: {q.accept.slice(1, 4).map(a => <code key={a}>{a} </code>)}</div>}
           {q.why && <Md text={q.why} />}
@@ -306,21 +335,26 @@ function Boss({ stage, finish, p, onAnswer }) {
   const [round, setRound] = useState(0)
   const campId = stage.id.split('-')[0]
   const campName = CAMPS.find(c => c.id === campId)?.name
-  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} extra={score >= p.settings.passMark / 100 && <p className="villain cleared">☀️ {defeatLine(campId, campName)}</p>} />
-  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} onFinish={setScore} onAnswer={onAnswer} />
+  const [downed, setDowned] = useState(false)
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setDowned(false); setRound(r => r + 1) }}
+    extra={score >= p.settings.passMark / 100 ? <p className="villain cleared">☀️ {defeatLine(campId, campName)}</p> : downed && <p className="villain">🌫️ Out of ropes. The lieutenant knocked you back down the slope. Everything you've cleared stays cleared: catch your breath and go again.</p>} />
+  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} challenge="boss" passMark={p.settings.passMark} taunt={TAUNT[campId]}
+    onFinish={(sc, how) => { setDowned(how === 'boss'); setScore(sc) }} onAnswer={onAnswer} />
   return (
     <div className="boss-intro">
       <div className="big boss-shake">🧊</div>
       <h2>{stage.title}</h2>
       <p className="villain">🌫️ {bossLine(campId)}</p>
-      <p>{stage.questions.length} questions, mixed from the whole camp, and the Sherpa grades each one. Score {p.settings.passMark}% to clear it.</p>
-      <button className="btn primary wide" onClick={() => setGo(true)}>⛏️ Start the boss quiz</button>
+      {TAUNT[campId] && <p className="boss-say">“{TAUNT[campId]}”</p>}
+      <p>Every right answer is a hit. Every wrong one and it hits back: you lose a rope. Knock its health to zero before your ropes run out. {stage.questions.length} questions from the whole camp, graded by the Sherpa. Score {p.settings.passMark}% to clear it.</p>
+      <button className="btn primary wide" onClick={() => setGo(true)}>⚔️ Fight</button>
     </div>
   )
 }
 
 export function Stage({ p, stage, close, recordResult, recordCode, knockBack, saveJournal, recordAnswer }) {
   const t0 = useRef(Date.now())
+  useEffect(() => { try { sessionStorage.setItem('everest.lastStage', stage.id) } catch {} }, [stage.id]) // for the suggestion box
   const finish = (score, code) => {
     const mins = Math.min(60, Math.max(1, Math.round((Date.now() - t0.current) / 60000)))
     recordResult(stage, score, mins, code)
@@ -333,7 +367,7 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
       <Header stage={stage} close={close} />
       <div className="stage-body">
         {stage.type === 'learn' && <Learn {...props} />}
-        {(['code', 'web', 'sql', 'server', 'react'].includes(stage.type) || (stage.type === 'keyboard' && stage.engine)) && <EngineStage {...props} />}
+        {(['code', 'web', 'sql', 'server', 'react', 'route'].includes(stage.type) || (stage.type === 'keyboard' && stage.engine)) && <EngineStage {...props} />}
         {stage.type === 'keyboard' && !stage.engine && <Build {...props} />}
         {stage.type === 'radio' && <RadioStage {...props} />}
         {stage.type === 'audit' && <Audit {...props} />}

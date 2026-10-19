@@ -35,6 +35,10 @@ export function liveStreak(p) {
   const missed = Math.round((new Date(today()) - new Date(s.last)) / 864e5) - 1
   return missed <= 0 || (p.oxygen || 0) >= missed ? s.count || 0 : 0
 }
+// Questions from lessons you've passed: what storms and the daily run draw on.
+export const learnedPool = p => CAMPS.flatMap(c => (c.stages || []).filter(s => s.type === 'learn' && p.stages[s.id]?.passed).flatMap(s => s.questions || []))
+// The daily-run streak as it stands today (gone if you skipped yesterday).
+export const dailyStreak = p => (p.daily && (p.daily.last === today() || p.daily.last === addDays(-1)) ? p.daily.count || 0 : 0)
 export const dueReviews = p => Object.entries(p.missed || {}).filter(([qid, v]) => v.due <= today() && QUESTIONS[qid]).map(([qid]) => qid)
 
 // Field Guide: concepts unlock when the stage that teaches them is cleared.
@@ -135,21 +139,31 @@ export function useProgress() {
   const knockBack = useCallback(ids => update(s => { for (const id of ids) if (s.stages[id]) s.stages[id] = { ...s.stages[id], passed: false, knockedBack: new Date().toISOString() }; return s }), [update])
   // Code from a lesson try-it, kept like build code (key '<stage id> tryit').
   const recordCode = useCallback((key, code, lang) => update(s => { if (typeof code === 'string' && code.trim()) { s.code ??= {}; s.code[key] = { code, lang, at: new Date().toISOString() } } return s }), [update])
+  // Daily run: today's best score, and a streak of consecutive days played.
+  const recordDaily = useCallback(right => update(s => {
+    const d = today(), prev = s.daily || {}
+    if (prev.last === d) s.daily = { ...prev, best: Math.max(prev.best || 0, right) }
+    else s.daily = { last: d, count: prev.last === addDays(-1) ? (prev.count || 0) + 1 : 1, best: right, top: Math.max(prev.top || 0, prev.count || 0) }
+    s.daily.top = Math.max(s.daily.top || 0, s.daily.count)
+    return s
+  }), [update])
   const recordEvent = useCallback((name, n = 1) => update(s => { s.events ??= {}; s.events[name] = (s.events[name] || 0) + n; return s }), [update])
   const setSetting = useCallback((k, v) => update(s => { s.settings[k] = v; return s }), [update])
   const replace = useCallback(obj => setP({ ...fresh(), ...obj, settings: { ...DEFAULT_SETTINGS, ...obj.settings } }), [])
   const reset = useCallback(() => setP(fresh()), [])
 
-  return { p, recordResult, recordAnswer, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
+  return { p, recordResult, recordAnswer, recordDaily, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
 }
 
 // ---- rules ----
 export const isPassed = (p, id) => !!p.stages[id]?.passed
-const phoneStages = c => (c.stages || []).filter(s => s.mode === 'phone')
-const keyboardStages = c => (c.stages || []).filter(s => s.mode === 'keyboard')
+// Bonus pitches (the route puzzles) are optional extras: they never lock a later pitch and
+// never count toward clearing or finishing a camp.
+const phoneStages = c => (c.stages || []).filter(s => s.mode === 'phone' && !s.bonus)
+const keyboardStages = c => (c.stages || []).filter(s => s.mode === 'keyboard' && !s.bonus)
 export const campBossPassed = (p, c) => (c.stages || []).some(s => s.type === 'boss' && isPassed(p, s.id))
 export const campKeyboardDone = (p, c) => keyboardStages(c).every(s => isPassed(p, s.id))
-export const campDone = (p, c) => !!c.stages && c.stages.every(s => isPassed(p, s.id))
+export const campDone = (p, c) => !!c.stages && c.stages.filter(s => !s.bonus).every(s => isPassed(p, s.id))
 // Cleared = every phone pitch and the boss. Computer builds are optional for climbing;
 // they're needed only for the full summit certificate (see buildsLeft).
 export const campClear = (p, c) => !!c.stages && phoneStages(c).every(s => isPassed(p, s.id))
@@ -196,10 +210,10 @@ export function campStatus(p, i) {
 export function stageOpen(p, camp, stage) {
   if (isPassed(p, stage.id)) return true
   const i = camp.stages.indexOf(stage)
-  return camp.stages.slice(0, i).filter(s => s.mode === 'phone').every(s => isPassed(p, s.id))
+  return camp.stages.slice(0, i).filter(s => s.mode === 'phone' && !s.bonus).every(s => isPassed(p, s.id))
 }
 
-export const campFraction = (p, c) => c.stages ? c.stages.filter(s => isPassed(p, s.id)).length / c.stages.length : 0
+export const campFraction = (p, c) => { const l = (c.stages || []).filter(s => !s.bonus); return l.length ? l.filter(s => isPassed(p, s.id)).length / l.length : 0 }
 
 export function estimate(p) {
   const left = CAMPS.reduce((a, c) => a + c.hours * (1 - campFraction(p, c)), 0)
@@ -262,6 +276,7 @@ export function cleanProgress(o) {
     journal: pick(o.journal, 500, k => ID.test(k), v => str(v, 4000)),
     events: pick(o.events, 200, k => /^[\w-]{1,40}$/.test(k), v => clamp(v, 0, 1e6)),
     oxygen: clamp(o.oxygen, 0, 3),
+    daily: o.daily && typeof o.daily === 'object' && day(o.daily.last) ? { last: day(o.daily.last), count: Math.round(clamp(o.daily.count, 0, 100000) || 0), best: Math.round(clamp(o.daily.best, 0, 5) || 0), top: Math.round(clamp(o.daily.top, 0, 100000) || 0) } : undefined,
     bestStreak: clamp(o.bestStreak, 0, 100000),
     started: when(o.started),
     code: pick(o.code, 1000, k => /^[0-9A-Za-z-]{1,24}( tryit)?$/.test(k), cleanCode),
@@ -290,6 +305,8 @@ export function mergeProgress(a, raw, { keepLocalCode = false } = {}) {
   for (const k of ['xp', 'oxygen', 'bestStreak']) if (typeof a[k] === 'number' || typeof b[k] === 'number') out[k] = Math.max(a[k] || 0, b[k] || 0)
   const sa = a.streak || {}, sb = b.streak || {}
   out.streak = (sb.last || '') > (sa.last || '') ? sb : (sa.last || '') > (sb.last || '') ? sa : (sa.count || 0) >= (sb.count || 0) ? sa : sb
+  const da = a.daily || {}, db = b.daily || {}
+  if (da.last || db.last) out.daily = (db.last || '') > (da.last || '') ? { ...db, top: Math.max(da.top || 0, db.top || 0) } : (da.last || '') > (db.last || '') ? { ...da, top: Math.max(da.top || 0, db.top || 0) } : { ...da, best: Math.max(da.best || 0, db.best || 0), count: Math.max(da.count || 0, db.count || 0), top: Math.max(da.top || 0, db.top || 0) }
   out.events = { ...b.events }; for (const [k, v] of Object.entries(a.events || {})) out.events[k] = Math.max(v, out.events[k] || 0)
   // the same session can appear in both saves (from an earlier transfer): keep one copy
   const seen = new Set(); out.sessions = [...(b.sessions || []), ...(a.sessions || [])].filter(x => { const k = JSON.stringify(x); return seen.has(k) ? false : seen.add(k) }).sort((x, y) => (x.date > y.date ? 1 : -1)).slice(-400)

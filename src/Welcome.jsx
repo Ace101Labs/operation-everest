@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PLATFORMS } from './platforms.js'
 import { APP_NAME } from './progress.js'
 import { Snow, Range } from './Snow.jsx'
 import { HowToPlay, InstallGuide } from './HowTo.jsx'
-import { deviceKind, isInstalled } from './install.js'
+import { deviceKind, isInstalled, onInstallChange, wasJustInstalled } from './install.js'
 
 // First launch: the story, install, how it works, name, your computer, your pace.
 export function Welcome({ setSetting }) {
@@ -11,6 +11,8 @@ export function Welcome({ setSetting }) {
   const [name, setName] = useState('')
   const [platform, setPlatform] = useState(null)
   const [hours, setHours] = useState(7)
+  // Installed while on the install step: move straight on to how the climb works.
+  useEffect(() => onInstallChange(() => { if (isInstalled() || wasJustInstalled()) setStep(s => (s === 1 ? 2 : s)) }), [])
   const finish = () => { setSetting('playerName', name.trim()); setSetting('weeklyHours', hours); setSetting('platform', platform) }
   return (
     <div className="screen welcome">
@@ -18,6 +20,10 @@ export function Welcome({ setSetting }) {
       <Range />
       <div className="welcome-body">
         {step === 0 && <>
+          <div className="arrival">
+            <small>✈️ NOW ARRIVING · LUKLA · 2,860 m</small>
+            <p><strong>Thanks for flying into Lukla</strong>, the gateway to Everest. Real climbers trek 8 to 10 days up the valley from here to reach Base Camp. We've walked your pack up the trail for you, so your climb starts at <strong>Base Camp, 5,364 m</strong>. Enjoy your hike!</p>
+          </div>
           <div className="big">🏔️</div>
           <h1>{APP_NAME}</h1>
           <p>Climb 13 camps, from base camp to the summit. Each camp teaches a real developer skill: the terminal, JavaScript, the web, databases, AI and more.</p>

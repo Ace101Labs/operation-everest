@@ -4,10 +4,15 @@
 let deferred = null
 const subs = new Set()
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; subs.forEach(f => f()) })
-addEventListener('appinstalled', () => { deferred = null; subs.forEach(f => f()) })
+// Installing from a tab: Chrome often moves the open page into the new app window, so the
+// page has to notice the switch itself (display-mode changes) as well as the install event.
+let justInstalled = false
+addEventListener('appinstalled', () => { deferred = null; justInstalled = true; subs.forEach(f => f()) })
+matchMedia('(display-mode: standalone)').addEventListener?.('change', () => subs.forEach(f => f()))
 export const onInstallChange = f => { subs.add(f); return () => subs.delete(f) }
 export const canPrompt = () => !!deferred
 export async function promptInstall() { if (!deferred) return false; deferred.prompt(); const r = await deferred.userChoice; deferred = null; subs.forEach(f => f()); return r.outcome === 'accepted' }
+export const wasJustInstalled = () => justInstalled
 export const isInstalled = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true
 export function deviceKind() {
   const ua = navigator.userAgent

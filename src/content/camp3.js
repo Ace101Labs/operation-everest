@@ -334,6 +334,48 @@ export const camp3 = [
     ],
   },
 
+  // ───────────────────────────── Bonus: route puzzles (your code moves the climber) ─────────────────────────────
+  {
+    id: '3-r1', type: 'route', mode: 'phone', bonus: true, xp: 20, mins: 8,
+    title: 'Route puzzle: the long ladder',
+    uses: ['for-loop'],
+    prompt: 'Your code moves the climber. Each `up()` is one step up the map; `down()`, `left()` and `right()` work the same way.\n\nThe flag is **6 steps straight up**. You could write `up()` six times, but the Sherpa only lets you write it **once**: put it inside a **for** loop that runs 6 times.',
+    map: ['F', '.', '.', '.', '.', '.', 'S'],
+    starter: '// Repeat up() 6 times with a for loop\n\n',
+    maxCalls: 1,
+    hints: [
+      'A loop that runs 6 times: `for (let i = 0; i < 6; i++) { … }`. What goes inside the braces?',
+      '```\nfor (let i = 0; i < 6; i++) {\n  up()\n}\n```',
+    ],
+  },
+  {
+    id: '3-r2', type: 'route', mode: 'phone', bonus: true, xp: 25, mins: 10,
+    title: 'Route puzzle: the ice staircase',
+    uses: ['for-loop'],
+    prompt: 'The ice here makes a staircase: **one step right, one step up**, again and again, until the flag. Rocks 🪨 block everything else, and walking into one stops your climber.\n\nYou may write each move command **once** (two in total), so the loop has to do the repeating. Count the stairs on the map: how many times does the pattern repeat?',
+    map: ['####F', '###..', '##..#', '#..##', 'S.###'],
+    starter: '// right, then up, repeated with a for loop\n\n',
+    maxCalls: 2,
+    hints: [
+      'One "stair" is `right()` then `up()`. Follow the snow from the start to the flag and count the stairs: there are 4.',
+      '```\nfor (let i = 0; i < 4; i++) {\n  right()\n  up()\n}\n```',
+    ],
+  },
+  {
+    id: '3-r3', type: 'route', mode: 'phone', bonus: true, xp: 30, mins: 12,
+    title: 'Route puzzle: climb by feel',
+    uses: ['while-loop', 'if-else', 'strict-equality', 'logical-operators'],
+    prompt: 'Fog. You can\'t plan the route ahead, so your climber has to **decide at every step**.\n\n`look("up")` tells you what is one step up: `"snow"`, `"rock"`, `"flag"` or `"edge"`. `atFlag()` is `true` once you stand on the flag.\n\nThe rule: **keep going until you reach the flag. Each step, if the way up is blocked (rock or edge), step right; otherwise step up.** Use a **while** loop and an **if / else**. You may write each move once.',
+    map: ['###F', '##..', '#..#', '#.##', '..##', '.###', 'S###'],
+    starter: '// while you are not at the flag:\n//   if up is a rock or the edge, step right\n//   otherwise, step up\n\n',
+    maxCalls: 2,
+    hints: [
+      '"Not at the flag" is `!atFlag()`, so the loop starts `while (!atFlag()) { … }`.',
+      'Blocked means `look("up") === "rock" || look("up") === "edge"`. Inside the loop, `if (blocked) { right() } else { up() }`.',
+      '```\nwhile (!atFlag()) {\n  if (look("up") === "rock" || look("up") === "edge") {\n    right()\n  } else {\n    up()\n  }\n}\n```',
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: '3-7', type: 'code', mode: 'phone', xp: 40, mins: 15,

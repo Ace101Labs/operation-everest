@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { DEFAULT_SETTINGS } from './progress.js'
 import { PLATFORMS } from './platforms.js'
 import { HowToPlay, InstallGuide } from './HowTo.jsx'
+import { SuggestBox } from './Suggest.jsx'
 
 const ACCENTS = ['#5CC8FF', '#7DD3C0', '#A78BFA', '#60A5FA', '#E8642C', '#F472B6']
 
@@ -74,9 +75,10 @@ export function Settings({ p, back, replace, reset, setSetting, net, sync }) {
         </div>
         <div className="lesson-card">
           <h3>🔒 Where your progress lives</h3>
-          <p>Your progress is saved on this device, in this browser. Nothing is sent anywhere unless you link your devices below. Then only an encrypted copy is sent, locked with your link code, which the server can't open. There are no accounts or emails.</p>
+          <p>Your progress is saved on this device, in this browser. Nothing is sent anywhere unless you link your devices below (or send a message through the suggestion box, which carries no name or address). Then only an encrypted copy is sent, locked with your link code, which the server can't open. There are no accounts or emails.</p>
           <p>If you clear this browser's data or use a different device, your progress is gone <strong>unless you linked your devices or saved a backup code</strong>.</p>
         </div>
+        <details className="lesson-card"><summary><strong>📮 Suggestion box: report a problem or an idea</strong></summary><SuggestBox /></details>
         <details className="lesson-card"><summary><strong>❓ How the game works</strong></summary><HowToPlay /></details>
         <details className="lesson-card"><summary><strong>📲 Install the app</strong></summary><InstallGuide /></details>
         <SyncCard sync={sync} net={net} />

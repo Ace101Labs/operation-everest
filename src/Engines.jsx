@@ -274,4 +274,82 @@ export function ServerEngine({ task, onPass }) {
   </div>
 }
 
-export const ENGINES = { code: CodeEngine, web: WebEngine, react: ReactEngine, sql: SqlEngine, server: ServerEngine }
+// ---------- route puzzle: your code moves the climber ----------
+// The map is rows of characters: S start, F flag, # rock, . snow. The player's code calls
+// up() / down() / left() / right() (one step each), look(direction) (what's there: 'snow',
+// 'rock', 'flag' or 'edge') and atFlag(). It runs in the same sandboxed worker as every
+// drill; each step is reported back as a marker line and the climber then acts the path out.
+const MARK = '\u001f'
+const routeWorld = map => `const __MAP = ${JSON.stringify(map)}; let __y = 0, __x = 0, __n = 0
+for (let r = 0; r < __MAP.length; r++) { const c = __MAP[r].indexOf('S'); if (c > -1) { __y = r; __x = c } }
+const __at = (r, c) => r < 0 || c < 0 || r >= __MAP.length || c >= __MAP[0].length ? 'edge' : ({ '#': 'rock', F: 'flag' }[__MAP[r][c]] || 'snow')
+const __D = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }
+const __step = d => {
+  if (++__n > 200) throw new Error('Too many steps (over 200). Is your loop running forever?')
+  const [dy, dx] = __D[d], t = __at(__y + dy, __x + dx)
+  if (t === 'rock' || t === 'edge') { console.log('${MARK}BUMP ' + d); throw new Error(t === 'rock' ? 'Ouch! You walked into a rock going ' + d + '.' : 'You stepped off the edge of the map going ' + d + '.') }
+  __y += dy; __x += dx; console.log('${MARK}MOVE ' + __y + ' ' + __x)
+}
+function up() { __step('up') } function down() { __step('down') } function left() { __step('left') } function right() { __step('right') }
+function look(d) { if (!__D[d]) throw new Error('look() needs "up", "down", "left" or "right" (in quotes).'); return __at(__y + __D[d][0], __x + __D[d][1]) }
+function atFlag() { return __at(__y, __x) === 'flag' }
+`
+const CELL = { '#': '🪨', F: '🚩', '.': '', S: '' }
+const moveCalls = code => (code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '').match(/\b(up|down|left|right)\s*\(/g) || []).length
+
+export function RouteEngine({ task, onPass }) {
+  const map = task.map
+  const start = (() => { for (let r = 0; r < map.length; r++) { const c = map[r].indexOf('S'); if (c > -1) return [r, c] } return [0, 0] })()
+  const [code, setCode] = useState(task.starter || '')
+  const [pos, setPos] = useState(start)
+  const [res, setRes] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [fx, setFx] = useState('')
+  const timer = useRef(null)
+  useEffect(() => () => clearInterval(timer.current), [])
+  const run = async () => {
+    clearInterval(timer.current); setPos(start); setFx(''); setRes(null); setBusy(true)
+    const r = await runCode(routeWorld(map).replace(/\n/g, ';') + code) // world on line 1's left, so error line numbers match the player's code
+    const path = [], out = []
+    let bump = null
+    for (const l of r.out) {
+      if (!l.startsWith(MARK)) { out.push(l); continue }
+      const [kind, a, b] = l.slice(1).split(' ')
+      if (kind === 'MOVE') path.push([+a, +b]); else bump = a
+    }
+    const end = path.at(-1) || start
+    const reached = !r.error && map[end[0]][end[1]] === 'F'
+    const calls = moveCalls(code)
+    const report = [{ label: 'The climber reaches the flag 🚩', ok: reached }]
+    if (task.maxCalls) report.push({ label: `At most ${task.maxCalls} move command${task.maxCalls > 1 ? 's' : ''} written in your code (let a loop repeat them)`, ok: calls <= task.maxCalls, detail: `you wrote ${calls}` })
+    if (r.error) emit('error-seen')
+    const pass = report.every(x => x.ok)
+    const finish = () => { setBusy(false); setFx(r.error ? 'fall' : reached ? 'win' : ''); setRes({ ...r, out, pass, report }); if (pass) onPass?.(code) }
+    if (document.body.classList.contains('calm') || !path.length) { setPos(end); return finish() }
+    let k = 0
+    timer.current = setInterval(() => {
+      if (k < path.length) { setPos(path[k++]); return }
+      clearInterval(timer.current); if (bump) setFx('bump'); setTimeout(finish, bump ? 450 : 150)
+    }, 230)
+  }
+  return <div className="code route-puzzle">
+    <Prompt text={task.prompt} />
+    <div className={`route-grid ${fx}`} style={{ '--cols': map[0].length }} role="img" aria-label="The route map">
+      {map.flatMap((row, r) => [...row].map((ch, c) => (
+        <div key={`${r}-${c}`} className={`rc ${ch === '#' ? 'rc-rock' : 'rc-snow'}${pos[0] === r && pos[1] === c ? ' rc-here' : ''}`}>
+          {pos[0] === r && pos[1] === c ? <span className="rc-me">{fx === 'fall' ? '💫' : fx === 'win' ? '🙌' : '🧗'}</span> : CELL[ch]}
+        </div>
+      )))}
+    </div>
+    <Editor value={code} onChange={setCode} lang="js" />
+    <div className="row"><button className="btn primary" onClick={run} disabled={busy}>{busy ? 'Climbing…' : '▶ Run the route'}</button></div>
+    <Hints hints={task.hints} />
+    {res && <div className={`console ${res.pass ? 'ok' : res.error ? 'err' : ''}`}><small>What happened</small>
+      <pre>{[...res.out, res.error ? `💥 ${res.error.replace(/^Error: /, '')}` : res.pass ? '🚩 Flag reached!' : ''].filter(Boolean).join('\n') || ' '}</pre>
+      {!res.pass && <p className="note">{res.error ? (/^(Error: )?(Ouch|You stepped)/.test(res.error) ? '⛑️ Your climber stopped there. Read the message: where were you, and which way did you try to go?' : '⛑️ Read the error first: what does it say, and on which line?') : '⛑️ Look at where your climber ended up, then trace your code one step at a time.'}</p>}
+    </div>}
+    {res && <Report items={res.report} />}
+  </div>
+}
+
+export const ENGINES = { code: CodeEngine, web: WebEngine, react: ReactEngine, sql: SqlEngine, server: ServerEngine, route: RouteEngine }

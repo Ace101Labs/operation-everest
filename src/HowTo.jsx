@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { canPrompt, deviceKind, isInstalled, onInstallChange, promptInstall } from './install.js'
+import { canPrompt, deviceKind, isInstalled, onInstallChange, promptInstall, wasJustInstalled } from './install.js'
 
 // "How the climb works": the whole game in a few lines, for total beginners.
 export function HowToPlay() {
@@ -20,9 +20,11 @@ export function InstallGuide() {
   const [, tick] = useState(0)
   useEffect(() => onInstallChange(() => tick(n => n + 1)), [])
   if (isInstalled()) return <p className="note">✅ You're playing the installed app. Nothing more to do.</p>
+  if (wasJustInstalled()) return <p className="note">✅ Installed. Open <strong>Everest</strong> from your apps any time, or carry on here.</p>
   const kind = deviceKind()
   return <div className="install">
-    {canPrompt() && <button className="btn primary wide" onClick={promptInstall}>📲 Install the app</button>}
+    {canPrompt() && <button className="btn primary wide" onClick={promptInstall}>{kind === 'desktop' ? '💻 Install the app on this computer' : '📲 Install the app'}</button>}
+    {kind === 'desktop' && canPrompt() && <p className="note">It gets its own window and an icon in your app list, like any other program. Works on Windows, Mac, Linux and Chromebooks.</p>}
     {kind === 'ios' && <ol>
       <li>Open this page in <strong>Safari</strong>.</li>
       <li>Tap the <strong>Share</strong> button (a square with an arrow pointing up). On newer iPhones it's inside the <strong>•••</strong> menu.</li>
@@ -30,17 +32,17 @@ export function InstallGuide() {
       <li>Open <strong>Everest</strong> from your home screen.</li>
     </ol>}
     {kind === 'android' && !canPrompt() && <ol>
-      <li>In Chrome, tap the <strong>⋮</strong> menu (top right).</li>
+      <li>In Chrome or Brave, tap the <strong>⋮</strong> menu.</li>
       <li>Tap <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
       <li>Open <strong>Everest</strong> from your home screen.</li>
     </ol>}
     {kind === 'desktop' && !canPrompt() && <ol>
-      <li>In Chrome or Edge, click the <strong>install icon</strong> at the right end of the address bar, or open the browser menu and choose <strong>Install Operation Everest</strong>.</li>
+      <li>In Chrome, Edge or Brave, click the <strong>install icon</strong> at the right end of the address bar, or open the browser menu and choose <strong>Install Operation Everest</strong>.</li>
       <li>It opens in its own window, like any other app.</li>
     </ol>}
     {kind === 'mac-safari' && <ol>
       <li>In Safari's menu bar, choose <strong>File → Add to Dock</strong>.</li>
     </ol>}
-    <p className="note">Why install? It opens full screen like a real app, works with no internet, and is one tap away. Do it before you start: on some phones the installed app keeps its own progress, separate from the browser tab (link your devices or use a backup code to copy it across).</p>
+    <p className="note">Why install? {kind === 'desktop' ? 'It opens in its own window' : 'It opens full screen'} like a real app, works with no internet, and is one tap away. Do it before you start: on some phones the installed app keeps its own progress, separate from the browser tab (link your devices or use a backup code to copy it across).</p>
   </div>
 }

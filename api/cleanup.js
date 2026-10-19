@@ -1,5 +1,5 @@
 // Daily cleanup (Vercel cron, see vercel.json): deletes sync saves nobody has written for
-// 180 days, so abandoned or junk uploads don't pile up in the free Blob store forever.
+// 180 days, and suggestion-box messages older than 180 days, so abandoned or junk uploads don't pile up in the free Blob store forever.
 // Safe for players: every linked device keeps its own full copy, and the next sync from any
 // of them uploads it again.
 //
@@ -18,8 +18,8 @@ export default async function handler(req, res) {
   try {
     const cutoff = Date.now() - STALE
     let cursor, checked = 0, deleted = 0
-    do {
-      const page = await list({ prefix: 'sync/', limit: 1000, cursor })
+    for (const prefix of ['sync/', 'suggest/']) do { // suggestions: read, acted on and kept 180 days, then gone
+      const page = await list({ prefix, limit: 1000, cursor })
       checked += page.blobs.length
       const old = page.blobs.filter(b => new Date(b.uploadedAt).getTime() < cutoff).map(b => b.url)
       if (old.length) { await del(old); deleted += old.length }

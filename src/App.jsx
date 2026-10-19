@@ -24,10 +24,19 @@ const Stage = later(() => import('./Stage.jsx'), 'Stage')
 const FieldGuide = later(() => import('./FieldGuide.jsx'), 'FieldGuide')
 const Acclimatize = later(() => import('./Acclimatize.jsx'), 'Acclimatize')
 const Pack = later(() => import('./Pack.jsx'), 'Pack')
+const Storm = later(() => import('./Quick.jsx'), 'Storm')
+const Daily = later(() => import('./Quick.jsx'), 'Daily')
+// After a passed lesson, now and then a storm rolls in on the way back to camp.
+const STORM_CHANCE = 0.3
 
 export default function App() {
-  const { p: saved, recordResult, recordAnswer, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset } = useProgress()
+  const { p: saved, recordResult: saveResult, recordAnswer, recordDaily, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset } = useProgress()
   const mode = useDeviceMode()
+  const stormNext = useRef(false)
+  const recordResult = (stage, score, ...rest) => {
+    stormNext.current = stage.type === 'learn' && score >= saved.settings.passMark / 100 && Math.random() < STORM_CHANCE
+    saveResult(stage, score, ...rest)
+  }
   const p = { ...saved, mode } // mode is detected from the device, never stored
   const net = useOffline()
   // ---- device sync (only when the player has linked devices in Settings) ----
@@ -89,7 +98,7 @@ export default function App() {
       const d = e.detail
       if (d.name === 'quiz-done') {
         const pass = d.score >= saved.settings.passMark / 100
-        if (!pass && !saved.settings.reduceMotion) setWipe(w => w + 1) // failed: avalanche
+        if (!pass && !saved.settings.reduceMotion && d.challenge !== 'storm' && d.challenge !== 'daily') setWipe(w => w + 1) // failed: avalanche
         if (d.score === 1) recordEvent('quiz-perfect')
         if (d.challenge === 'avalanche' && pass && d.cracks === 0) recordEvent('avalanche-clean')
         if (d.challenge === 'yeti' && pass && d.noise < 35) recordEvent('yeti-quiet')
@@ -126,11 +135,13 @@ export default function App() {
   else if (view.name === 'review') screen = <Acclimatize p={p} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
   else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} />
   else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
-    close={() => setView({ name: 'camp', camp: view.camp })} />
+    close={() => { const storm = stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : 'camp', camp: view.camp }) }} />
+  else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: 'camp', camp: view.camp })} />
+  else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} close={() => setView({ name: 'map' })} />
   else if (view.name === 'camp') screen = <Camp p={p} camp={camp} back={() => setView({ name: 'map' })}
     openStage={stage => setView({ name: 'stage', camp: view.camp, stage })} />
   else screen = <Mountain p={p} net={net} openSettings={() => setView({ name: 'settings' })}
-    openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })}
+    openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })}
     openCamp={i => setView({ name: 'camp', camp: i })} />
   return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
 }
