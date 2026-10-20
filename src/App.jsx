@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { CAMPS } from './content/camps.js'
-import { useProgress, APP_NAME } from './progress.js'
+import { useProgress, APP_NAME, upNext } from './progress.js'
 import { Mountain } from './Mountain.jsx'
 import { Camp } from './Camp.jsx'
 import { Settings } from './Settings.jsx'
@@ -127,6 +127,12 @@ export default function App() {
     document.title = APP_NAME
   }, [p.settings.accent, p.settings.reduceMotion, theme, term])
   const [view, setView] = useState({ name: 'map' })
+  // "Next" from a result screen: open the next pitch from the saved progress (or the map if none).
+  useEffect(() => {
+    if (view.name !== 'next') return
+    const n = upNext(saved)
+    setView(n ? { name: 'stage', camp: n.i, stage: n.stage, from: 'map' } : { name: 'map' })
+  }, [view.name, saved])
   const camp = view.camp != null ? CAMPS[view.camp] : null
 
   let screen
@@ -136,8 +142,9 @@ export default function App() {
   else if (view.name === 'review') screen = <Acclimatize p={p} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
   else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} openLocker={() => setView({ name: 'pack', tab: 'locker' })} />
   else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
-    close={done => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? 'map' : (view.from || 'camp'), camp: view.camp }) }} />
-  else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
+    close={(done, next) => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? (next ? 'next' : 'map') : (view.from || 'camp'), camp: view.camp, next }) }} />
+  else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: view.next ? 'next' : 'map' })} />
+  else if (view.name === 'next') screen = null // the effect below opens the next pitch
   else if (view.name === 'chase') screen = <Chase p={p} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
   else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} close={() => setView({ name: 'map' })} />
   else if (view.name === 'camp') screen = <Camp p={p} camp={camp} back={() => setView({ name: 'map' })}

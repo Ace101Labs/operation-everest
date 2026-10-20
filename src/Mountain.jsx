@@ -1,18 +1,13 @@
 import { useState } from 'react'
 import { CAMPS } from './content/camps.js'
 import { SUMMIT, TYPE } from './content/names.js'
-import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen, highestCamp } from './progress.js'
+import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen, highestCamp, nextPitch } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
 import { RECALL } from './content/recall.js'
 
 const LABEL = { done: 'Summited ✓', open: 'Open', locked: 'Locked: beat the previous camp\'s boss', blocked: 'Locked', coming: 'Coming soon' }
 
-// The next thing to play: the first open, unpassed phone pitch in the camp you're on.
-function nextPitch(p, camp) {
-  const open = s => !isPassed(p, s.id) && stageOpen(p, camp, s)
-  return camp.stages?.find(s => open(s) && s.mode === 'phone' && !s.bonus) || camp.stages?.find(open)
-}
 
 export function Mountain({ p, net, paused, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily, openChase }) {
   const canDaily = learnedPool(p).length >= 5

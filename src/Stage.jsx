@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Md } from './md.jsx'
 import { bridgeSafe, runCode, terminalCommand } from './runner.js'
-import { isPassed, knockBackTargets, stagePoints } from './progress.js'
+import { isPassed, knockBackTargets, stagePoints, campClear, upNext } from './progress.js'
 import { TYPE, WIN, LOSE, TAUNT, bossLine, defeatLine } from './content/names.js'
 import { CAMPS, QUESTIONS } from './content/camps.js'
 import { Burst, Range } from './Snow.jsx'
@@ -42,9 +42,19 @@ function xpLine(stage, prev, score) {
   return `no new XP (your best: ${of}). Beat your best score to earn more.`
 }
 
+// Set by the result screen's "Next" button just before it finishes the stage; read once by
+// Stage's finish(), which tells the app to open the next pitch instead of the map.
+let wantNext = false
+
 function Result({ score, stage, onDone, retry, extra, p }) {
   const passMark = p.settings.passMark
   const passed = score >= passMark / 100
+  // What passing this leads to. Clearing a camp goes to the mountain (arrival card, new camp);
+  // otherwise the next pitch can be opened straight from here.
+  const camp = CAMPS.find(c => c.stages?.includes(stage))
+  const after = { ...p, stages: { ...p.stages, [stage.id]: { passed: true, best: score } } }
+  const clearsCamp = passed && camp && !campClear(p, camp) && campClear(after, camp)
+  const next = passed && !clearsCamp ? upNext(after) : null
   const msg = useMemo(() => { const l = passed ? WIN : LOSE; return l[Math.floor(Math.random() * l.length)] }, [passed])
   const surprise = useMemo(() => (passed && p.settings.surprises && Math.random() < 0.25 ? SURPRISES[Math.floor(Math.random() * SURPRISES.length)] : null), [passed])
   return (
@@ -57,7 +67,10 @@ function Result({ score, stage, onDone, retry, extra, p }) {
       {extra}
       <div className="row">
         {!passed && <button className="btn" onClick={retry}>Try again</button>}
-        <button className={`btn ${passed ? 'primary' : ''}`} onClick={() => onDone(score)}>⛰️ Back to the mountain</button>
+        {next
+          ? <><button className="btn" onClick={() => onDone(score)}>⛰️ Mountain</button>
+              <button className="btn primary next-btn" onClick={() => { wantNext = true; onDone(score) }}>▶ Next<small>{next.stage.title}</small></button></>
+          : <button className={`btn ${passed ? 'primary' : ''}`} onClick={() => onDone(score)}>⛰️ {clearsCamp ? `On to ${CAMPS[CAMPS.indexOf(camp) + 1]?.name || 'the summit'}` : 'Back to the mountain'}</button>}
       </div>
     </div>
   )
@@ -383,7 +396,8 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
   const finish = (score, code) => {
     const mins = Math.min(60, Math.max(1, Math.round((Date.now() - t0.current) / 60000)))
     recordResult(stage, score, mins, code)
-    close(true) // back to the mountain, where the climber moves
+    const next = wantNext; wantNext = false
+    close(true, next) // the next pitch, or back to the mountain where the climber moves
   }
   const props = { stage, finish, p, saveJournal, close, recordCode, knockBack, onAnswer: recordAnswer, alreadyPassed: isPassed(p, stage.id) }
   return (

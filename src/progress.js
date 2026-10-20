@@ -246,6 +246,17 @@ export function altAt(t) {
   return Math.round(ALTITUDE[i] + (next - ALTITUDE[i]) * (t - i))
 }
 export const altitude = p => altAt(climbPos(p))
+// The next thing to play: the first open, unpassed phone pitch in the furthest camp reached.
+export function nextPitch(p, camp) {
+  const open = s => !isPassed(p, s.id) && stageOpen(p, camp, s)
+  return camp.stages?.find(s => open(s) && s.mode === 'phone' && !s.bonus) || camp.stages?.find(open)
+}
+export function upNext(p) {
+  const i = highestCamp(p)
+  if (campStatus(p, i) !== 'open') return null
+  const stage = nextPitch(p, CAMPS[i])
+  return stage ? { i, stage } : null
+}
 
 // ---- checking a save that came from somewhere else (sync or a pasted backup code) ----
 // A save from outside can't be trusted: someone could post a "free unlock" code that hides
