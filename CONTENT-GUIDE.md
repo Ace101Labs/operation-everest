@@ -7,6 +7,10 @@ Every camp must match Base Camp's standard: `src/content/camp2.js` (stages) and
 ## Audience and voice
 - Total beginners, mostly on a phone. Plain English first, then the technical term.
 - Short sentences. Everyday analogies (climbing and mountain flavour welcome, not forced).
+- **Every question, game and challenge tests a coding, development or AI skill** (Ace, 2026-10-20). The climb is
+  the setting (map, camps, story, names in example code), never the subject. Nothing may test Everest, trek,
+  geography, mountaineering or game-rule knowledge: `const peak = "Everest"` is fine, "put the trek stops in
+  order" is not. Radio sequences order steps of a process the camp taught (a commit, a request, a debugging loop).
 - **Public game:** never mention any real person, company-internal thing, machine name, or AI product.
   The tutor is "the Sherpa" (⛑️), built into the app. No AI, no outside grader.
 - **Accuracy is non-negotiable.** Describe real JavaScript/Node/Linux/browser behaviour. If unsure, leave it out.

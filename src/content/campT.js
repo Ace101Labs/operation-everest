@@ -1,6 +1,6 @@
 // The approach trek (before Camp 1): Lukla airport (2,860 m) up the Khumbu valley to Base
 // Camp (5,364 m). Short and playful: the player's first code moves the climber, a first bug
-// gets fixed, and a radio check covers how the game works. It teaches no Field Guide
+// gets fixed, and a radio check covers how code runs and how a bug gets fixed. It teaches no Field Guide
 // concepts, so nothing later depends on it, and players who already started are treated as
 // having walked it (see trekWalked in progress.js).
 export const campT = [
@@ -40,20 +40,20 @@ export const campT = [
   {
     id: 'T-4', type: 'radio', mode: 'phone', xp: 20, mins: 5,
     title: 'Tengboche: radio check to Base Camp',
-    prompt: 'You\'re nearly at Base Camp. Radio in the route you walked, then confirm you know how the climb works.',
+    prompt: 'You\'re nearly at Base Camp. Radio in how you fixed the buggy route at Namche, then finish the explanation of how code runs.',
     sequence: [
-      'Land at Lukla airport, 2,860 m',
-      'Walk down the valley to Phakding',
-      'Climb the long hill to Namche Bazaar, the Sherpa capital',
-      'Visit the monastery at Tengboche',
-      'Rest at Dingboche to get used to the thin air',
-      'Cross the glacier moraine to Gorak Shep',
-      'Arrive at Everest Base Camp, 5,364 m',
+      'Write the instructions, one per line',
+      'Press Run: the computer follows them from top to bottom',
+      'The climber walks into a rock and stops',
+      'Read the message to see which move hit the rock',
+      'Find the line in your code that made that move',
+      'Change one thing: swap the lines that are out of order',
+      'Run it again and check the climber reaches the flag',
     ],
     blanks: {
-      text: 'Each camp ends with a ___ fight against one of the Whiteout\'s lieutenants. You need ___% on a quiz to pass. Questions you get wrong come back later in ___. The game\'s built-in guide, who checks your answers and code, is the ___.',
-      answers: ['boss', '80', 'review', 'Sherpa'],
-      extra: ['yeti', '50', 'storms', 'Yak'],
+      text: 'Code is a list of ___ that the computer follows exactly, from ___ to bottom. If two lines are in the wrong ___, the climber walks into a rock. A mistake like that in code is called a ___. To fix it, read what happened, change ___ thing, then run it again.',
+      answers: ['instructions', 'top', 'order', 'bug', 'one'],
+      extra: ['wishes', 'middle', 'colour', 'yeti', 'every'],
     },
   },
 ]
