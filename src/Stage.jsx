@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { SherpaSays } from './Sherpa.jsx'
 import { Md } from './md.jsx'
 import { bridgeSafe, runCode, terminalCommand } from './runner.js'
 import { isPassed, knockBackTargets, stagePoints, campClear, upNext } from './progress.js'
@@ -191,12 +192,12 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
         </>
       )}
       {shown && (
-        <div className={`feedback ${correct ? 'ok' : 'no'}`}>
-          <strong>⛑️ {timedOut ? (challenge === 'yeti' ? 'Too slow. The Yeti stirs.' : 'Out of time.') : challenge === 'boss' ? (correct ? 'Hit! Correct.' : 'It hits back. You lose a rope.') : correct ? 'Correct' : q.kind === 'type' ? `Answer: ${q.accept[0]}` : challenge === 'avalanche' ? 'Wrong. A crack opens in the snow.' : 'Not quite'}</strong>
+        <SherpaSays ok={correct}>
+          <strong>{timedOut ? (challenge === 'yeti' ? 'Too slow. The Yeti stirs.' : 'Out of time.') : challenge === 'boss' ? (correct ? 'Hit! Correct.' : 'It hits back. You lose a rope.') : correct ? 'Correct' : q.kind === 'type' ? `Answer: ${q.accept[0]}` : challenge === 'avalanche' ? 'Wrong. A crack opens in the snow.' : 'Not quite'}</strong>
           {!correct && q.kind === 'mc' && <div className="right-answer">✅ Correct answer: <Md text={q.options[q.answer]} /></div>}
           {!correct && q.kind !== 'mc' && q.accept?.length > 1 && <div className="right-answer">Also accepted: {q.accept.slice(1, 4).map(a => <code key={a}>{a} </code>)}</div>}
           {q.why && <Md text={q.why} />}
-        </div>
+        </SherpaSays>
       )}
       <button className="btn primary wide" disabled={!shown && (q.kind === 'mc' ? pick === null : !typed.trim())}
         onClick={shown ? next : check}>{shown ? (i + 1 >= questions.length ? 'See result' : 'Next question') : 'Check my answer'}</button>

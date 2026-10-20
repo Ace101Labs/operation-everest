@@ -1,16 +1,19 @@
 // Offline mode. On install, download the whole app (page, code, icons, the SQLite
 // engine) so it works with no internet. The build fills in VERSION and FILES. Pages: try the network for 3s (to pick up updates),
 // otherwise use the saved copy. Assets (hashed filenames): saved copy first.
+// A new version installs and then WAITS: the page offers "Reload now" or applies it on the
+// next open (src/update.js), and sends 'skip-waiting' when it's time to take over.
 const CACHE = 'everest-' + '__VERSION__'
 const FILES = [/*__FILES__*/]
 
 self.addEventListener('install', e => {
-  self.skipWaiting()
   e.waitUntil((async () => {
     const cache = await caches.open(CACHE)
     await cache.addAll(['/', ...FILES.filter(f => f !== '/index.html')])
   })())
 })
+
+self.addEventListener('message', e => { if (e.data === 'skip-waiting') self.skipWaiting() })
 
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())

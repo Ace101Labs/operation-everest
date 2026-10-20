@@ -9,6 +9,7 @@ import { useDeviceMode } from './device.js'
 import { Welcome } from './Welcome.jsx'
 import { Landing, Whiteout, AWAY_MS } from './Landing.jsx'
 import { ACHIEVEMENTS, GEAR, patchesFor } from './rewards.js'
+import { UpdateCard } from './UpdateCard.jsx'
 import { cleanCode, getLink, linkWith, syncNow } from './sync.js'
 
 // The heavy screens (lessons and code engines, Field Guide, review, Summit Pack) load
@@ -152,5 +153,5 @@ export default function App() {
   else screen = <Mountain p={p} net={net} paused={intro} openSettings={() => setView({ name: 'settings' })}
     openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })} openChase={() => setView({ name: 'chase' })}
     openCamp={i => setView({ name: 'camp', camp: i })} openStage={(i, stage) => setView({ name: 'stage', camp: i, stage, from: 'map' })} />
-  return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
+  return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}{!intro && <UpdateCard />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
 }

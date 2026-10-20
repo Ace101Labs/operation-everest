@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Md } from './md.jsx'
 import { emit } from './events.js'
+import { SherpaSays } from './Sherpa.jsx'
 
 const shuffle = a => [...a].map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1])
 
@@ -37,8 +38,8 @@ export function Radio({ stage, onFinish, journal, saveJournal }) {
         <li key={s} className={seqShown ? (s === stage.sequence[i] ? 'right' : 'wrong') : ''} onClick={() => !seqShown && setOrder(order.filter(x => x !== s))}>{s}</li>))}
       </ol>
       <div className="chips">{pool.filter(s => !order.includes(s)).map(s => <button key={s} className="chip" onClick={() => setOrder([...order, s])}>{s}</button>)}</div>
-      {seqShown && <div className={`feedback ${seqRight ? 'ok' : 'no'}`}><strong>⛑️ Sherpa: {seqRight ? 'Correct. That\'s the right order.' : 'Not quite. Here\'s the correct order:'}</strong>
-        {!seqRight && <ol>{stage.sequence.map(s => <li key={s}>{s}</li>)}</ol>}</div>}
+      {seqShown && <SherpaSays ok={seqRight}><strong>{seqRight ? 'Correct. That\'s the right order.' : 'Not quite. Here\'s the correct order:'}</strong>
+        {!seqRight && <ol>{stage.sequence.map(s => <li key={s}>{s}</li>)}</ol>}</SherpaSays>}
       {!seqShown
         ? <button className="btn primary wide" disabled={order.length < stage.sequence.length} onClick={() => setSeqShown(true)}>Check my order</button>
         : <button className="btn primary wide" onClick={() => setPart(2)}>Next: Part 2</button>}
@@ -55,8 +56,8 @@ export function Radio({ stage, onFinish, journal, saveJournal }) {
       </div>
       <div className="chips">{bank.filter(w => !fill.includes(w)).map(w => (
         <button key={w} className="chip" disabled={blankShown || fill.length >= stage.blanks.answers.length} onClick={() => setFill([...fill, w])}>{w}</button>))}</div>
-      {blankShown && <div className={`feedback ${blanksRight === stage.blanks.answers.length ? 'ok' : 'no'}`}><strong>⛑️ Sherpa: {blanksRight} of {stage.blanks.answers.length} right.</strong>
-        {blanksRight < stage.blanks.answers.length && <Md text={'Answer: ' + pieces.map((t, i) => t + (i < pieces.length - 1 ? `**${stage.blanks.answers[i]}**` : '')).join('')} />}</div>}
+      {blankShown && <SherpaSays ok={blanksRight === stage.blanks.answers.length}><strong>{blanksRight} of {stage.blanks.answers.length} right.</strong>
+        {blanksRight < stage.blanks.answers.length && <Md text={'Answer: ' + pieces.map((t, i) => t + (i < pieces.length - 1 ? `**${stage.blanks.answers[i]}**` : '')).join('')} />}</SherpaSays>}
       {!blankShown
         ? <button className="btn primary wide" disabled={fill.length < stage.blanks.answers.length} onClick={() => setBlankShown(true)}>Check my answers</button>
         : <button className="btn primary wide" onClick={() => { const sc = ((seqRight ? 1 : 0) + blanksRight / stage.blanks.answers.length) / 2; if (sc === 1) emit('radio-perfect'); onFinish(sc) }}>See my score</button>}

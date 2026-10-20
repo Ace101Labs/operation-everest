@@ -561,3 +561,39 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 .toast { max-width: calc(100% - 24px); text-align: center; line-height: 1.35; }
 .next-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .next-btn small { font-size: 11px; font-weight: 600; opacity: .8; line-height: 1.2; }
+
+/* ---------- Sherpa: the cartoon guide who gives quiz feedback ---------- */
+.sherpa-says { display: flex; align-items: flex-end; gap: 6px; margin: 14px 0 0; }
+.sherpa-says .feedback.bubble { flex: 1; min-width: 0; margin: 0 0 8px; position: relative; animation: bubble-in .3s .18s ease-out both; }
+.sherpa-says .feedback.bubble::before { content: ''; position: absolute; left: -11px; bottom: 36px; border: 11px solid transparent; border-left: 0; }
+.sherpa-says.ok .feedback.bubble { border: 1px solid #2f7a5f; } .sherpa-says.no .feedback.bubble { border: 1px solid #8a3446; }
+.sherpa-says.ok .feedback.bubble::before { border-right-color: #2f7a5f; } .sherpa-says.no .feedback.bubble::before { border-right-color: #8a3446; }
+@keyframes bubble-in { from { opacity: 0; transform: translateX(-8px) scale(.96); } }
+.sherpa-guy { flex: none; width: 84px; height: auto; overflow: visible; animation: sh-pop .55s cubic-bezier(.2, 1.4, .4, 1) both; transform-origin: 50% 100%; filter: drop-shadow(0 4px 6px #0008); }
+.sherpa-guy * { transform-box: view-box; }
+@keyframes sh-pop { from { opacity: 0; transform: translateY(40px) scale(.7); } 60% { opacity: 1; } }
+.sherpa-guy .sh-breathe { animation: sh-breathe 2.8s ease-in-out infinite; transform-origin: 60px 130px; }
+@keyframes sh-breathe { 50% { transform: scale(1.015, 1.03); } }
+.sherpa-guy .sh-head { transform-origin: 60px 96px; animation: sh-bob 3.2s ease-in-out .6s infinite; }
+@keyframes sh-bob { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(3deg) translateY(-1px); } }
+.sherpa-guy.mood-think .sh-head { animation: sh-tilt 1s ease-out .4s both, sh-bob 3.2s ease-in-out 1.6s infinite; }
+@keyframes sh-tilt { 0% { transform: rotate(0); } 40% { transform: rotate(-9deg); } 70% { transform: rotate(-6deg); } 100% { transform: rotate(0); } }
+.sherpa-guy.mood-think .sh-brow { animation: sh-brow 1.4s ease-out .4s both; }
+@keyframes sh-brow { 30%, 70% { transform: translateY(-2px); } }
+.sherpa-guy .sh-blink { transform-origin: 60px 72.5px; animation: sh-blink 3.6s ease-in-out .9s infinite; }
+@keyframes sh-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+.sherpa-guy .sh-talk { transform-origin: 60px 85px; animation: sh-talk .26s ease-in-out .35s 6 alternate; }
+@keyframes sh-talk { to { transform: scaleY(.35); } }
+.sherpa-guy .sh-wave { transform-origin: 92px 106px; animation: sh-wave .5s ease-in-out .3s 4 alternate; }
+@keyframes sh-wave { from { transform: rotate(-10deg); } to { transform: rotate(12deg); } }
+.sherpa-guy .sh-pom { transform-origin: 60px 31px; animation: sh-pom 1.8s ease-in-out infinite; }
+@keyframes sh-pom { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
+/* ---------- New version ready ---------- */
+.update-card { position: fixed; z-index: 60; top: calc(10px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(520px, calc(100% - 20px));
+  display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px 12px; border-radius: 16px; background: linear-gradient(160deg, #10284a, #0b1b33);
+  border: 1px solid var(--or); box-shadow: 0 10px 30px #000c; }
+.update-card .sherpa-guy { width: 62px; }
+.update-card > div { flex: 1; min-width: 0; }
+.update-card p { margin: 0 0 4px; } .update-card small { display: block; color: var(--muted, #9fb0c8); margin-bottom: 10px; line-height: 1.35; }
+.update-card .row { display: flex; gap: 8px; flex-wrap: wrap; } .update-card .row .btn { flex: 1; min-width: 120px; }
