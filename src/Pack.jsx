@@ -27,7 +27,7 @@ export function Pack({ p, back, setSetting, start }) {
       </div>}
 
       {tab === 'achievements' && <div className="list">{ach.map(a => (
-        <div key={a.id} className={`badge ${a.got ? 'got' : ''}`}><span>{a.got ? a.icon : '🔒'}</span><div><strong>{a.title}</strong><small>{a.desc}</small></div></div>))}</div>}
+        <div key={a.id} className={`badge ${a.got ? 'got' : ''}`}><span>{a.got ? a.icon : '🔒'}</span><div><strong>{a.title}</strong><small>{a.got ? a.done : `How: ${a.desc}`}</small></div></div>))}</div>}
 
       {tab === 'locker' && <div className="locker">
         {[['avatar', 'Climber icon', 'avatar'], ['theme', 'Color theme', 'theme'], ['terminal', 'Terminal colors', 'terminalTheme']].map(([kind, label, setting]) => (

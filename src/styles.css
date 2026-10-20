@@ -558,3 +558,4 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 @keyframes dropped { 50% { transform: translateY(-3px) rotate(8deg); } }
 .calm .dropped text { animation: none; }
 .from-old { display: inline-block; margin-bottom: 6px; padding: 3px 8px; border-radius: 8px; background: #2a2210; color: #ffd38a; font-size: 12px; font-weight: 700; }
+.toast { max-width: calc(100% - 24px); text-align: center; line-height: 1.35; }

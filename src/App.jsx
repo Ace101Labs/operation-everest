@@ -35,7 +35,7 @@ export default function App() {
   const mode = useDeviceMode()
   const stormNext = useRef(false)
   const recordResult = (stage, score, ...rest) => {
-    stormNext.current = stage.type === 'learn' && score >= saved.settings.passMark / 100 && Math.random() < STORM_CHANCE
+    stormNext.current = stage.type === 'learn' && score >= saved.settings.passMark / 100 && !saved.stages[stage.id]?.passed && Math.random() < STORM_CHANCE
     saveResult(stage, score, ...rest)
   }
   const p = { ...saved, mode } // mode is detected from the device, never stored
@@ -111,11 +111,11 @@ export default function App() {
   const [toasts, setToasts] = useState([])
   const seen = useRef(null)
   useEffect(() => {
-    const now = [...ACHIEVEMENTS.filter(a => a.test(saved)).map(a => `🏅 Badge: ${a.icon} ${a.title}`), ...patchesFor(saved).filter(x => x.got).map(x => `🏔️ Patch: ${x.title}`)]
+    const now = [...ACHIEVEMENTS.filter(a => a.test(saved)).map(a => `🏅 ${a.icon} ${a.title}: ${a.done}`), ...patchesFor(saved).filter(x => x.got).map(x => `🏔️ Patch: ${x.title}`)]
     if (seen.current) { const fresh = now.filter(t => !seen.current.includes(t)); if (fresh.length) setToasts(t => [...t, ...fresh]) }
     seen.current = now
   }, [saved])
-  useEffect(() => { if (!toasts.length) return; const t = setTimeout(() => setToasts(x => x.slice(1)), 3200); return () => clearTimeout(t) }, [toasts])
+  useEffect(() => { if (!toasts.length) return; const t = setTimeout(() => setToasts(x => x.slice(1)), 5000); return () => clearTimeout(t) }, [toasts])
   const theme = GEAR.theme.find(t => t.id === saved.settings.theme) || GEAR.theme[0]
   const term = GEAR.terminal.find(t => t.id === saved.settings.terminalTheme) || GEAR.terminal[0]
   useEffect(() => {
