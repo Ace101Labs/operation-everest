@@ -1,19 +1,24 @@
 import { useState } from 'react'
 import { CAMPS } from './content/camps.js'
 import { SUMMIT, TYPE } from './content/names.js'
-import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen, highestCamp, nextPitch } from './progress.js'
+import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, isPassed, stageOpen, highestCamp, nextPitch, liveStreak, streakAtRisk } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
 import { RECALL } from './content/recall.js'
+import { useArrival } from './encounters.js'
+import { StreakSave } from './Quick.jsx'
 
 const LABEL = { done: 'Summited ✓', open: 'Open', locked: 'Locked: beat the previous camp\'s boss', blocked: 'Locked', coming: 'Coming soon' }
 
 
-export function Mountain({ p, net, paused, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily, openChase }) {
+export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily, openChase }) {
   const canDaily = learnedPool(p).length >= 5
   const dailyDone = p.daily?.last === new Date().toLocaleDateString('en-CA')
   const due = dueReviews(p).length
   const canChase = RECALL.filter(r => isPassed(p, r.after)).length >= 5 // same rule as Chase.jsx recallPool
+  const yeti = useArrival('yeti'), pickup = useArrival('gear')
+  const [gearNote, setGearNote] = useState(false)
+  const tapGear = () => (pickup ? openReview() : setGearNote(true))
   const est = estimate(p)
   const alt = altitude(p)
   const camps = CAMPS.map((c, i) => ({ c, i, status: campStatus(p, i), frac: campFraction(p, c) }))
@@ -31,16 +36,17 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
           <ShareButton /><button className="icon" onClick={openSettings} aria-label="Settings">⚙︎</button></div>
         </div>
         <div className="chips">
-          <span title="Day streak">🔥 <b>{p.streak.count}</b>{p.oxygen ? <small> 🛟{p.oxygen}</small> : null}</span>
+          <button onClick={() => openPack('oxygen')} title="Streak: days in a row you've played the daily run. 🛟 = streak savers">🔥 <b>{liveStreak(p)}</b>{p.oxygen ? <small> 🛟{p.oxygen}</small> : null}</button>
           <span title="Altitude">⛰️ <b>{alt.toLocaleString()}</b><small> / {SUMMIT.toLocaleString()} m</small></span>
           <button onClick={() => openPack('score')} title="Points">⭐ <b>{pts.toLocaleString()}</b><small> / {MAX_POINTS.toLocaleString()}</small></button>
         </div>
       </header>
 
       <ClimbScene t={climbPos(p)} statuses={camps.map(x => x.status)} avatar={p.settings.avatar || '🧗'} still={p.settings.reduceMotion} paused={paused}
-        onCamp={openCamp} onClimber={() => openPack('locker')} onArrive={setArrived} gear={due} onGear={openReview} />
+        onCamp={openCamp} onClimber={() => openPack('locker')} onArrive={setArrived} gear={due} canPick={pickup} onGear={tapGear} />
 
       <div className="play">
+        {streakAtRisk(p) && !dailyDone && (p.oxygen || 0) > 0 && <StreakSave p={p} saveStreak={saveStreak} />}
         {next
           ? <button className="btn primary wide climb-btn" onClick={() => openStage(current.i, next)}>
               <span className="climb-go">▶ Climb</span>
@@ -51,11 +57,14 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
             : <button className="btn primary wide climb-btn" onClick={() => openCamp(current.i)}><span className="climb-go">▶ {current.c.name}</span></button>}
         <div className="side-btns">
           {canDaily
-            ? <button className="side-btn" onClick={openDaily}>{dailyDone ? `☀️ Done ${p.daily.best}/5` : `☀️ Daily${dailyStreak(p) ? ` 🔥${dailyStreak(p)}` : ''}`}</button>
+            ? <button className="side-btn" onClick={openDaily}>{dailyDone ? `☀️ Done ${p.daily.best}/5 ✓` : '☀️ Daily run'}</button>
             : <button className="side-btn locked" disabled>☀️ Daily run · after your first lesson</button>}
-          {canChase && <button className="side-btn" onClick={openChase}>🦍 Yeti chase</button>}
-          {due > 0 && <button className="side-btn" onClick={openReview}>🧤 Pick up {due}</button>}
+          {canChase && yeti && <button className="side-btn yeti-here" onClick={openChase}>🦍 Yeti spotted! Run</button>}
+          {due > 0 && (pickup
+            ? <button className="side-btn" onClick={openReview} title="Click to pick up your dropped gear: answer the question you missed to get it back">🧤 Pick up 1 of {due}</button>
+            : <button className="side-btn locked" onClick={() => setGearNote(true)}>🧤 {due} dropped</button>)}
         </div>
+        {gearNote && !pickup && <p className="note gear-note" onClick={() => setGearNote(false)}>🧤 Dropped gear is a question you missed. You can pick up one item at a time, a few times a day: check back later.</p>}
         {!net.online && <div className="offline-badge">✈️ Offline: everything works, progress saves on this device.</div>}
       </div>
 

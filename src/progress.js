@@ -27,13 +27,17 @@ export const DEFAULT_SETTINGS = {
 const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local time
 const addDays = n => new Date(Date.now() + n * 864e5).toLocaleDateString('en-CA')
 
-// The streak as it stands right now: still alive if the last climb was today or yesterday,
-// or the missed days since are covered by streak savers; otherwise the next climb starts at 1.
+// The 🔥 streak: one day for each day the daily run is played, in a row. Every 7 days earns a
+// streak saver (max 3). Miss ONE day and the streak is at risk: until the end of the next day
+// the player can tap a saver to keep it (saveStreak). Miss two days, or don't save it, and the
+// next daily run starts again at 1.
+const missedDays = s => (s?.last ? Math.round((new Date(today()) - new Date(s.last)) / 864e5) - 1 : 0)
+export const streakAtRisk = p => !!p.streak?.last && missedDays(p.streak) === 1 && (p.streak.count || 0) > 0
 export function liveStreak(p) {
   const s = p.streak || {}
   if (!s.last) return 0
-  const missed = Math.round((new Date(today()) - new Date(s.last)) / 864e5) - 1
-  return missed <= 0 || (p.oxygen || 0) >= missed ? s.count || 0 : 0
+  const missed = missedDays(s)
+  return missed <= 0 || (missed === 1 && (p.oxygen || 0) > 0) ? s.count || 0 : 0
 }
 // Questions from lessons you've passed: what storms and the daily run draw on.
 export const learnedPool = p => CAMPS.flatMap(c => (c.stages || []).filter(s => s.type === 'learn' && p.stages[s.id]?.passed).flatMap(s => s.questions || []))
@@ -109,15 +113,6 @@ export function useProgress() {
     s.xp += stagePoints(stage, next) - stagePoints(stage, prev) // beating your best pays the difference
     s.stages[stage.id] = next
     const d = today()
-    if (s.streak.last !== d) {
-      // Days missed since the last climb. Oxygen tanks cover missed days so the streak survives.
-      const missed = s.streak.last ? Math.round((new Date(d) - new Date(s.streak.last)) / 864e5) - 1 : 0
-      const keep = s.streak.last && (missed === 0 || (s.oxygen || 0) >= missed)
-      if (keep && missed > 0) s.oxygen -= missed
-      s.streak = { count: keep ? s.streak.count + 1 : 1, last: d }
-      if (s.streak.count % 7 === 0) s.oxygen = Math.min(3, (s.oxygen || 0) + 1)
-      s.bestStreak = Math.max(s.bestStreak || 0, s.streak.count)
-    }
     s.sessions.push({ date: d, mins: mins || stage.mins || 5 })
     s.sessions = s.sessions.slice(-400)
     return s
@@ -139,12 +134,23 @@ export function useProgress() {
   const knockBack = useCallback(ids => update(s => { for (const id of ids) if (s.stages[id]) s.stages[id] = { ...s.stages[id], passed: false, knockedBack: new Date().toISOString() }; return s }), [update])
   // Code from a lesson try-it, kept like build code (key '<stage id> tryit').
   const recordCode = useCallback((key, code, lang) => update(s => { if (typeof code === 'string' && code.trim()) { s.code ??= {}; s.code[key] = { code, lang, at: new Date().toISOString() } } return s }), [update])
-  // Daily run: today's best score, and a streak of consecutive days played.
+  // Daily run: once a day. Playing it is what keeps the 🔥 streak going.
   const recordDaily = useCallback(right => update(s => {
     const d = today(), prev = s.daily || {}
-    if (prev.last === d) s.daily = { ...prev, best: Math.max(prev.best || 0, right) }
-    else s.daily = { last: d, count: prev.last === addDays(-1) ? (prev.count || 0) + 1 : 1, best: right, top: Math.max(prev.top || 0, prev.count || 0) }
+    if (prev.last === d) return s // already played today
+    s.daily = { last: d, count: prev.last === addDays(-1) ? (prev.count || 0) + 1 : 1, best: right, top: Math.max(prev.top || 0, prev.count || 0) }
     s.daily.top = Math.max(s.daily.top || 0, s.daily.count)
+    const keep = s.streak.last === addDays(-1)
+    s.streak = { count: keep ? s.streak.count + 1 : 1, last: d }
+    if (s.streak.count % 7 === 0) s.oxygen = Math.min(3, (s.oxygen || 0) + 1)
+    s.bestStreak = Math.max(s.bestStreak || 0, s.streak.count)
+    return s
+  }), [update])
+  // Spend a streak saver on the one missed day, so today's daily run carries the streak on.
+  const saveStreak = useCallback(() => update(s => {
+    if (!streakAtRisk(s) || (s.oxygen || 0) < 1) return s
+    s.oxygen -= 1
+    s.streak = { ...s.streak, last: addDays(-1) }
     return s
   }), [update])
   const recordEvent = useCallback((name, n = 1) => update(s => { s.events ??= {}; s.events[name] = (s.events[name] || 0) + n; return s }), [update])
@@ -152,7 +158,7 @@ export function useProgress() {
   const replace = useCallback(obj => setP({ ...fresh(), ...obj, settings: { ...DEFAULT_SETTINGS, ...obj.settings } }), [])
   const reset = useCallback(() => setP(fresh()), [])
 
-  return { p, recordResult, recordAnswer, recordDaily, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
+  return { p, recordResult, recordAnswer, recordDaily, saveStreak, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
 }
 
 // ---- rules ----

@@ -32,10 +32,10 @@ export const ACHIEVEMENTS = [
   { id: 'terminal-talker', icon: '⌨️', title: 'Command Line Fluent', desc: 'Run 50 commands in the practice terminal.', done: 'You\'ve run 50 commands in the terminal.', test: p => ev(p, 'term-cmd') >= 50 },
   { id: 'bookworm', icon: '📖', title: 'Read the Docs', desc: 'Read 10 different Field Guide cards.', done: 'You\'ve read 10 different Field Guide cards.', test: p => ev(p, 'guide-open') >= 10 },
   // showing up
-  { id: 'streak-3', icon: '🔥', title: 'Habit Forming', desc: 'Code 3 days in a row.', done: 'You coded 3 days in a row.', test: p => (p.bestStreak || p.streak.count) >= 3 },
-  { id: 'streak-7', icon: '🔥', title: 'One-Week Streak', desc: 'Code 7 days in a row.', done: 'You coded 7 days in a row.', test: p => (p.bestStreak || p.streak.count) >= 7 },
+  { id: 'streak-3', icon: '🔥', title: 'Habit Forming', desc: 'Keep a 3-day streak (daily run 3 days in a row).', done: 'You kept a 3-day streak.', test: p => (p.bestStreak || p.streak.count) >= 3 },
+  { id: 'streak-7', icon: '🔥', title: 'One-Week Streak', desc: 'Keep a 7-day streak (daily run 7 days in a row).', done: 'You kept a 7-day streak.', test: p => (p.bestStreak || p.streak.count) >= 7 },
   { id: 'daily-7', icon: '☀️', title: 'Daily Standup', desc: 'Play the daily run 7 days in a row.', done: 'You played the daily run 7 days in a row.', test: p => (p.daily?.top || 0) >= 7 },
-  { id: 'streak-30', icon: '🌋', title: '30-Day Streak', desc: 'Code 30 days in a row.', done: 'You coded 30 days in a row.', test: p => (p.bestStreak || p.streak.count) >= 30 },
+  { id: 'streak-30', icon: '🌋', title: '30-Day Streak', desc: 'Keep a 30-day streak (daily run 30 days in a row).', done: 'You kept a 30-day streak.', test: p => (p.bestStreak || p.streak.count) >= 30 },
   { id: 'sherpas-friend', icon: '🤝', title: '25 Stops Cleared', desc: 'Clear 25 stops.', done: 'You\'ve cleared 25 stops.', test: p => cleared(p) >= 25 },
   // skills, up the mountain
   { id: 'boss-slayer', icon: '⚔️', title: 'Boss Slayer', desc: 'Beat 3 camp bosses.', done: 'You beat 3 camp bosses.', test: p => bosses(p) >= 3 },

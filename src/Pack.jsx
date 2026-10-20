@@ -44,7 +44,7 @@ export function Pack({ p, back, setSetting, start }) {
         <h3>🛟 Streak savers: {p.oxygen || 0} of 3</h3>
         <div className="tanks">{[0, 1, 2].map(i => <span key={i} className={i < (p.oxygen || 0) ? 'full' : ''}>🛟</span>)}</div>
         <p><strong>{(p.oxygen || 0) >= 3 ? `🔥 Your pack is full: 3 of 3 savers. Keep your streak going to keep them.` : liveStreak(p) > 0 && liveStreak(p) % 7 === 0 ? `🛟 Saver earned at day ${liveStreak(p)}! 0 of 7 days to the next one` : `🔥 ${liveStreak(p) % 7} of 7 days to your next saver`}</strong></p>
-        <p>A streak saver protects your 🔥 day streak. If you miss a day, one saver is used up and your streak keeps going.</p>
+        <p>Your 🔥 streak is the number of days in a row you've played the daily run. If you miss a day, you have until midnight the next day to tap <strong>Save my streak</strong> (on the mountain or the daily run) and spend one saver to keep it. Miss two days in a row, or don't save it, and it starts again at 1.</p>
         <p className="note">You earn one saver every time your streak reaches a multiple of 7 days (7, 14, 21…). You can carry up to 3. Current streak: {liveStreak(p)} · best: {p.bestStreak || p.streak.count}.</p>
       </div>}
 

@@ -4,6 +4,7 @@ import { RECALL, norm, normCode, squash } from './content/recall.js'
 import { isPassed, highestCamp } from './progress.js'
 import { Range } from './Snow.jsx'
 import { SymKeys } from './SymKeys.jsx'
+import { spendArrival } from './encounters.js'
 
 // The Yeti chase: produce commands and code you've already learned, from memory, before the
 // Yeti catches up. Two versions of the same round: on a computer you type the answer; on a
@@ -48,7 +49,6 @@ export function Chase({ p, close, recordEvent }) {
   const [lead, setLead] = useState(LEAD)
   const [log, setLog] = useState([]) // { item, ok, given }
   const [done, setDone] = useState(false)
-  const again = () => { setItems(pickRound(p)); setI(0); setLead(LEAD); setLog([]); setDone(false); setGo(true) }
   if (done) {
     const right = log.filter(x => x.ok).length, caught = lead <= 0
     const missed = log.filter(x => !x.ok)
@@ -58,7 +58,8 @@ export function Chase({ p, close, recordEvent }) {
         <h2>{caught ? 'The Yeti caught you' : right === ROUND ? 'Clean getaway: 5 for 5!' : 'You got away'}</h2>
         <p>{right} of {log.length} right{caught ? '. Nothing is lost: it\'s practice.' : '.'}</p>
       </div>
-      <div className="row"><button className="btn" onClick={again}>Run again</button><button className="btn primary" onClick={close}>Back to the mountain</button></div>
+      <p className="note">The Yeti wanders off. It turns up again a few times a day, at random: watch for it on the mountain.</p>
+      <button className="btn primary wide" onClick={close}>Back to the mountain</button>
       {missed.length > 0 && <div className="lesson-card chase-missed"><h3>Worth another look</h3>
         {missed.map(({ item, given }) => <div key={item.id}><p>{item.prompt}</p><pre><code>{item.answer}</code></pre>{given ? <small>You had: <code>{given}</code></small> : <small>Out of time</small>}</div>)}
       </div>}
@@ -70,7 +71,7 @@ export function Chase({ p, close, recordEvent }) {
       <h2>The Yeti is on your trail</h2>
       <p>{ROUND} things you've learned. {phone ? 'Build' : 'Type'} each one from memory before time runs out. Every miss lets the Yeti close in: {LEAD} misses and it catches you.</p>
       {phone && <p className="note">On a phone you tap the pieces in order. Want to type instead? You can switch on any question (you get a few more seconds).</p>}
-      <button className="btn primary wide" onClick={() => setGo(true)}>🏃 Run</button>
+      <button className="btn primary wide" onClick={() => { spendArrival('yeti'); setGo(true) }}>🏃 Run</button>
     </div>
   </Shell>
   const item = items[i]

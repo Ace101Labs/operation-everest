@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Questions } from './Stage.jsx'
-import { learnedPool } from './progress.js'
+import { learnedPool, streakAtRisk } from './progress.js'
 import { Range } from './Snow.jsx'
 
 // Short timed rounds built from questions you've already met (see learnedPool), so they
@@ -62,12 +62,10 @@ export function Storm({ p, close, recordAnswer, recordEvent }) {
 }
 
 // The daily run: 5 questions from what you've learned, the same set all day, 20 seconds
-// each. Play it on consecutive days to build the daily-run streak. Retakes are allowed;
-// today's best counts.
-export function Daily({ p, close, recordAnswer, recordDaily }) {
+// each. One go per day, and playing it is what keeps the 🔥 streak going.
+export function Daily({ p, close, recordAnswer, recordDaily, saveStreak }) {
   const pool = learnedPool(p)
-  const qs = useMemo(() => seeded(pool, today()).slice(0, 5), [])
-  const [round, setRound] = useState(0)
+  const qs = useMemo(() => seeded(pool, today()), []).slice(0, 5)
   const [go, setGo] = useState(false)
   const [score, setScore] = useState(null)
   const d = p.daily || {}
@@ -78,26 +76,44 @@ export function Daily({ p, close, recordAnswer, recordDaily }) {
       <div className={`result ${right >= 4 ? 'win' : 'lose'}`}>
         <div className="big">{right === qs.length ? '🏆' : right >= 3 ? '☀️' : '🌥️'}</div>
         <h2>{right} of {qs.length}</h2>
-        <p>Daily-run streak: 🔥 {p.daily?.count || 1} day{(p.daily?.count || 1) > 1 ? 's' : ''} · today's best: {p.daily?.best ?? right} of {qs.length}</p>
-        <p className="note">A new run unlocks at midnight. Misses come back in review.</p>
-        <div className="row">
-          {right < qs.length && <button className="btn" onClick={() => { setScore(null); setRound(r => r + 1); setGo(true) }}>Try again</button>}
-          <button className="btn primary" onClick={close}>Back to the mountain</button>
-        </div>
+        <p>🔥 Streak: {p.streak.count} day{p.streak.count === 1 ? '' : 's'}{p.streak.count % 7 === 0 ? ' · 🛟 streak saver earned!' : ''}</p>
+        <p className="note">Your next daily run unlocks at midnight. Misses come back as dropped gear.</p>
+        <button className="btn primary wide" onClick={close}>Back to the mountain</button>
       </div>
     </Shell>
   }
+  if (playedToday) return <Shell title="Daily run" sub="☀️ Done for today" close={close}>
+    <div className="boss-intro">
+      <div className="big">✅</div>
+      <h2>Done for today</h2>
+      <p>You scored {d.best} of 5. 🔥 Streak: {p.streak.count} day{p.streak.count === 1 ? '' : 's'}.</p>
+      <p className="note">The daily run is once a day. A new one unlocks at midnight.</p>
+      <button className="btn primary wide" onClick={close}>Back to the mountain</button>
+    </div>
+  </Shell>
   if (go) return <Shell title="Daily run" sub="☀️ 5 questions · 20 s each" close={close}>
-    <Questions key={round} stage={{ id: 'daily', title: 'Daily run' }} questions={qs} platform={p.settings.platform} challenge="daily" onAnswer={recordAnswer}
+    <Questions stage={{ id: 'daily', title: 'Daily run' }} questions={qs} platform={p.settings.platform} challenge="daily" onAnswer={recordAnswer}
       onFinish={sc => { recordDaily(Math.round(sc * qs.length)); setScore(sc) }} />
   </Shell>
   return <Shell title="Daily run" sub="☀️ Today's 5" close={close}>
     <div className="boss-intro">
       <div className="big">☀️</div>
       <h2>Today's daily run</h2>
-      <p>5 questions from what you've learned so far, 20 seconds each. Same 5 all day, new ones tomorrow. Play every day to grow your daily-run streak.</p>
-      {playedToday && <p className="note">Today's best: {d.best} of 5 · streak 🔥 {d.count}</p>}
-      <button className="btn primary wide" onClick={() => setGo(true)}>{playedToday ? 'Play again' : 'Start the run'}</button>
+      <p>5 questions from what you've learned so far, 20 seconds each. <strong>One go per day.</strong> Play it every day to keep your 🔥 streak; every 7 days in a row earns a 🛟 streak saver.</p>
+      {streakAtRisk(p) && <StreakSave p={p} saveStreak={saveStreak} />}
+      <button className="btn primary wide" onClick={() => setGo(true)}>Start the run</button>
     </div>
   </Shell>
+}
+
+// Missed yesterday: offer a streak saver before today's run starts the streak over.
+export function StreakSave({ p, saveStreak }) {
+  const n = p.streak.count, have = p.oxygen || 0
+  return <div className="lesson-card streak-save">
+    <p><strong>🔥 Your {n}-day streak broke yesterday.</strong></p>
+    {have > 0
+      ? <><p>Use a 🛟 streak saver to keep it? You have {have}. This offer lasts until midnight tonight.</p>
+          <button className="btn primary wide" onClick={saveStreak}>🛟 Save my {n}-day streak</button></>
+      : <p>You have no streak savers, so today's run starts a new streak. Every 7 days in a row earns one.</p>}
+  </div>
 }

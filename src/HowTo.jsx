@@ -11,7 +11,7 @@ export function HowToPlay() {
     <div><span>📱</span><p><strong>Phone:</strong> you can climb the whole mountain on your phone, including the early camp builds.</p></div>
     <div><span>💻</span><p><strong>Computer:</strong> the bigger camp builds higher up need a computer, where you type real code. They appear when you open the game on one. Finish them to earn the full summit certificate.</p></div>
     <div><span>🔗</span><p><strong>Using both?</strong> Link your devices once in Settings and your phone and computer share one climb.</p></div>
-    <div><span>🎒</span><p><strong>Rewards:</strong> camp patches, badges, climber gear, streak savers that protect your day streak, and a summit certificate.</p></div>
+    <div><span>🎒</span><p><strong>Rewards:</strong> camp patches, badges, climber gear, streak savers that rescue your daily-run streak after a missed day, and a summit certificate.</p></div>
   </div>
 }
 
