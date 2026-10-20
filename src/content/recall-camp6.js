@@ -1,0 +1,11 @@
+// "Type it from memory" items for this camp. Format and rules: CONTENT-GUIDE.md, "Recall items".
+export const RECALL_CAMP6 = [
+  { id: '6-r1', after: '6-1', kind: 'js', prompt: 'Read the file packing.txt as text (fs is loaded), as one expression', answer: "fs.readFileSync('packing.txt', 'utf8')", accept: ["fs.readFileSync('packing.txt', 'utf-8')"], tiles: ['fs', '.readFileSync(', "'packing.txt',", "'utf8'", ')'], decoys: ['.readFile(', '.open(', "'utf9'"] },
+  { id: '6-r2', after: '6-2', kind: 'js', prompt: 'Turn the JSON text in text into a real object, stored in trip', answer: 'const trip = JSON.parse(text)', accept: ['const trip = JSON.parse(text);'], tiles: ['const trip =', 'JSON', '.parse(', 'text', ')'], decoys: ['.stringify(', '.read(', 'Object('] },
+  { id: '6-r3', after: '6-2', kind: 'js', prompt: 'Turn the object trip into indented JSON text (2 spaces)', answer: 'JSON.stringify(trip, null, 2)', tiles: ['JSON', '.stringify(', 'trip', ', null, 2', ')'], decoys: ['.parse(', ', 2, null', '.text('] },
+  { id: '6-r4', after: '6-3', kind: 'shell', prompt: 'Turn the current folder into a git repository', answer: 'git init', tiles: ['git', 'init'], decoys: ['start', 'new', 'clone'] },
+  { id: '6-r5', after: '6-3', kind: 'shell', prompt: 'Stage every changed file in this folder', answer: 'git add .', accept: ['git add -A', 'git add --all'], tiles: ['git', 'add', '.'], decoys: ['commit', '-m', '*.txt'] },
+  { id: '6-r6', after: '6-3', kind: 'shell', prompt: 'Save the staged files as a commit with the message Start trip log', answer: 'git commit -m "Start trip log"', tiles: ['git', 'commit', '-m', '"Start trip log"'], decoys: ['push', '-a', 'save'] },
+  { id: '6-r7', after: '6-5', kind: 'shell', prompt: 'Create a new branch called summit-push and switch to it', answer: 'git switch -c summit-push', accept: ['git checkout -b summit-push'], tiles: ['git', 'switch', '-c', 'summit-push'], decoys: ['merge', '-b', 'branch'] },
+  { id: '6-r8', after: '6-6', kind: 'shell', prompt: 'Upload your main branch to origin and remember it as the default', answer: 'git push -u origin main', accept: ['git push --set-upstream origin main'], tiles: ['git', 'push', '-u', 'origin', 'main'], decoys: ['pull', '-f', 'remote'] },
+]

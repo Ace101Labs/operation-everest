@@ -83,7 +83,7 @@ export function TerminalStage({ stage: task, onPass, passLabel = '⛑️ All ste
             onKeyDown={e => { if (e.key === 'ArrowUp' && hist.length) setInput(hist[hist.length - 1]) }} />
         </form>
       </div>
-      <div className="keys">{(stage.keys || ['ls', 'cd ', 'pwd', 'mkdir ', 'edit ', 'node ', 'cat ', '..', '~', '/']).map(k => (
+      <div className="keys">{[...(stage.keys || ['ls', 'cd ', 'pwd', 'mkdir ', 'edit ', 'node ', 'cat ', '..', '~', '/']), ...['-', '.', '|', '>', '"', '*'].filter(k => !(stage.keys || ['/']).includes(k))].map(k => (
         <button key={k} onClick={() => key(k)}>{k.trim()}</button>))}
         <button onClick={submit}>⏎</button></div>
       {allDone

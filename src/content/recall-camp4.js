@@ -1,0 +1,11 @@
+// "Type it from memory" items for this camp. Format and rules: CONTENT-GUIDE.md, "Recall items".
+export const RECALL_CAMP4 = [
+  { id: '4-r1', after: '4-1', kind: 'js', prompt: 'Inside a function, hand back the value of base plus climbed', answer: 'return base + climbed', accept: ['return base + climbed;'], tiles: ['return', 'base', '+', 'climbed'], decoys: ['print', '=>', 'base,'] },
+  { id: '4-r2', after: '4-2', kind: 'js', prompt: 'Make an arrow function toFeet that takes meters and gives back meters times 3.28', answer: 'const toFeet = meters => meters * 3.28', accept: ['const toFeet = (meters) => meters * 3.28'], tiles: ['const toFeet =', 'meters', '=>', 'meters * 3.28'], decoys: ['->', 'function', '=='] },
+  { id: '4-r3', after: '4-3', kind: 'js', prompt: 'Print the FIRST item of the array gear', answer: 'console.log(gear[0])', accept: ['console.log(gear[0]);'], tiles: ['console.log(', 'gear', '[0]', ')'], decoys: ['[1]', '(0)', '{0}'] },
+  { id: '4-r4', after: '4-4', kind: 'js', prompt: 'Add "stove" to the end of the array gear', answer: 'gear.push("stove")', accept: ['gear.push("stove");'], tiles: ['gear', '.push', '("stove")'], decoys: ['.pop', '.add', '[stove]'] },
+  { id: '4-r5', after: '4-4', kind: 'js', prompt: 'Start a loop that visits each item of gear, one at a time, as item', answer: 'for (const item of gear) {', accept: ['for (let item of gear) {'], tiles: ['for', '(const item', 'of', 'gear)', '{'], decoys: ['in', 'let;', 'each'] },
+  { id: '4-r6', after: '4-5', kind: 'js', prompt: 'Set the camp property of the object climber to 2', answer: 'climber.camp = 2', accept: ['climber.camp = 2;'], tiles: ['climber', '.camp', '=', '2'], decoys: ['==', '[camp]', '->'] },
+  { id: '4-r7', after: '4-6', kind: 'js', prompt: 'Make a new array of just the names from the array team (each item is c)', answer: 'team.map(c => c.name)', accept: ['team.map((c) => c.name)'], tiles: ['team', '.map(', 'c => c.name', ')'], decoys: ['.filter(', '.push(', 'c -> c.name'] },
+  { id: '4-r8', after: '4-6', kind: 'js', prompt: 'Keep only the items of team where camp is 2 or more (each item is c)', answer: 'team.filter(c => c.camp >= 2)', accept: ['team.filter((c) => c.camp >= 2)'], tiles: ['team', '.filter(', 'c => c.camp >= 2', ')'], decoys: ['.map(', '.find(', 'c.camp > 2'] },
+]

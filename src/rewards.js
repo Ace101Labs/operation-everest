@@ -10,6 +10,7 @@ const bosses = p => CAMPS.filter(c => c.stages && campBossPassed(p, c)).length
 export const ACHIEVEMENTS = [
   { id: 'first-steps', icon: '👣', title: 'First Steps', desc: 'Clear your first pitch.', test: p => cleared(p) >= 1 },
   { id: 'first-contact', icon: '🐛', title: 'First Contact', desc: 'See your first error message. Every developer sees them, and the Whiteout uses them to scare beginners.', test: p => ev(p, 'error-seen') >= 1 },
+  { id: 'outran-yeti', icon: '🦍', title: 'Outran the Yeti', desc: 'Get all 5 right in a Yeti chase.', test: p => ev(p, 'chase-clean') >= 1 },
   { id: 'perfect-pitch', icon: '🎯', title: 'Perfect Pitch', desc: 'Score 100% on a quiz.', test: p => ev(p, 'quiz-perfect') >= 1 },
   { id: 'never-give-up', icon: '🪢', title: 'Never Give Up', desc: 'Pass a pitch you failed before.', test: p => ev(p, 'retry-pass') >= 1 },
   { id: 'avalanche-survivor', icon: '❄️', title: 'Avalanche Survivor', desc: 'Clear Don\'t Cause an Avalanche without a single crack.', test: p => ev(p, 'avalanche-clean') >= 1 },

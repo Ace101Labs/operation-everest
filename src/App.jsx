@@ -26,6 +26,7 @@ const Acclimatize = later(() => import('./Acclimatize.jsx'), 'Acclimatize')
 const Pack = later(() => import('./Pack.jsx'), 'Pack')
 const Storm = later(() => import('./Quick.jsx'), 'Storm')
 const Daily = later(() => import('./Quick.jsx'), 'Daily')
+const Chase = later(() => import('./Chase.jsx'), 'Chase')
 // After a passed lesson, now and then a storm rolls in on the way back to camp.
 const STORM_CHANCE = 0.3
 
@@ -137,11 +138,12 @@ export default function App() {
   else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
     close={done => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? 'map' : (view.from || 'camp'), camp: view.camp }) }} />
   else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
+  else if (view.name === 'chase') screen = <Chase p={p} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
   else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} close={() => setView({ name: 'map' })} />
   else if (view.name === 'camp') screen = <Camp p={p} camp={camp} back={() => setView({ name: 'map' })}
     openStage={stage => setView({ name: 'stage', camp: view.camp, stage })} />
   else screen = <Mountain p={p} net={net} paused={intro} openSettings={() => setView({ name: 'settings' })}
-    openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })}
+    openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })} openChase={() => setView({ name: 'chase' })}
     openCamp={i => setView({ name: 'camp', camp: i })} openStage={(i, stage) => setView({ name: 'stage', camp: i, stage, from: 'map' })} />
   return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
 }

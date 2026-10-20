@@ -27,7 +27,10 @@ const pathTo = t => {
 }
 const ease = x => (x < 0.5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2)
 
-export function ClimbScene({ t, statuses, avatar, still, paused, onCamp, onClimber, onArrive }) {
+// Missed questions are gear you dropped on the trail behind you: tap one to go and pick it up.
+const GEAR = ['🎒', '🧤', '🧢', '🪢', '🔦']
+
+export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, onCamp, onClimber, onArrive, onGear }) {
   const [shown, setShown] = useState(() => {
     const seen = parseFloat(localStorage.getItem(SEEN))
     return still || Number.isNaN(seen) ? t : seen
@@ -54,7 +57,7 @@ export function ClimbScene({ t, statuses, avatar, still, paused, onCamp, onClimb
     if (paused) return // wait until the landing screen is gone, so the climb is seen
     localStorage.setItem(SEEN, String(t))
     const from = shown
-    if (from === t) return
+    if (Math.abs(from - t) < 0.001) { setShown(t); return } // rounding, not a move
     if (still) { setShown(t); return }
     const diff = altAt(t) - altAt(from)
     const dur = Math.min(2600, 900 + Math.abs(t - from) * 900)
@@ -119,6 +122,12 @@ export function ClimbScene({ t, statuses, avatar, still, paused, onCamp, onClimb
             {k > 0.97 && <text y="-26" textAnchor="middle" className="touchdown">Touchdown · Lukla</text>}
           </g>
         })()}
+        {flight === null && Array.from({ length: Math.min(gear, GEAR.length) }, (_, j) => {
+          const [gx, gy] = pointAt(Math.max(0, t - 0.32 * (j + 1)))
+          return <g key={j} className="dropped" transform={`translate(${gx.toFixed(1)} ${(gy - 4).toFixed(1)})`} onClick={onGear} role="button" aria-label="Dropped gear: review a missed question">
+            <circle r="13" fill="transparent" /><text fontSize="15" textAnchor="middle" dominantBaseline="central" style={{ animationDelay: `${j * 0.3}s` }}>{GEAR[j]}</text>
+          </g>
+        })}
         {/* you */}
         {flight === null && <g className={`me ${moving ? 'moving' : ''} ${landed ? 'landed' : ''}`} transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)})`} onClick={onClimber} role="button" aria-label="Your climber (tap to change)">
           <circle r="22" fill="url(#c-glow)" />

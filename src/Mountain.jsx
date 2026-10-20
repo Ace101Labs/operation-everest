@@ -4,6 +4,7 @@ import { SUMMIT, TYPE } from './content/names.js'
 import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, dailyStreak, isPassed, stageOpen, highestCamp } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
+import { RECALL } from './content/recall.js'
 
 const LABEL = { done: 'Summited ✓', open: 'Open', locked: 'Locked: beat the previous camp\'s boss', blocked: 'Locked', coming: 'Coming soon' }
 
@@ -13,10 +14,11 @@ function nextPitch(p, camp) {
   return camp.stages?.find(s => open(s) && s.mode === 'phone' && !s.bonus) || camp.stages?.find(open)
 }
 
-export function Mountain({ p, net, paused, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily }) {
+export function Mountain({ p, net, paused, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily, openChase }) {
   const canDaily = learnedPool(p).length >= 5
   const dailyDone = p.daily?.last === new Date().toLocaleDateString('en-CA')
   const due = dueReviews(p).length
+  const canChase = RECALL.filter(r => isPassed(p, r.after)).length >= 5 // same rule as Chase.jsx recallPool
   const est = estimate(p)
   const alt = altitude(p)
   const camps = CAMPS.map((c, i) => ({ c, i, status: campStatus(p, i), frac: campFraction(p, c) }))
@@ -41,7 +43,7 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
       </header>
 
       <ClimbScene t={climbPos(p)} statuses={camps.map(x => x.status)} avatar={p.settings.avatar || '🧗'} still={p.settings.reduceMotion} paused={paused}
-        onCamp={openCamp} onClimber={() => openPack('locker')} onArrive={setArrived} />
+        onCamp={openCamp} onClimber={() => openPack('locker')} onArrive={setArrived} gear={due} onGear={openReview} />
 
       <div className="play">
         {next
@@ -54,9 +56,10 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
             : <button className="btn primary wide climb-btn" onClick={() => openCamp(current.i)}><span className="climb-go">▶ {current.c.name}</span></button>}
         <div className="side-btns">
           {canDaily
-            ? <button className="side-btn" onClick={openDaily}>{dailyDone ? `☀️ Daily done · ${p.daily.best}/5` : `☀️ Daily run${dailyStreak(p) ? ` · 🔥${dailyStreak(p)}` : ''}`}</button>
+            ? <button className="side-btn" onClick={openDaily}>{dailyDone ? `☀️ Done ${p.daily.best}/5` : `☀️ Daily${dailyStreak(p) ? ` 🔥${dailyStreak(p)}` : ''}`}</button>
             : <button className="side-btn locked" disabled>☀️ Daily run · after your first lesson</button>}
-          {due > 0 && <button className="side-btn hot" onClick={openReview}>🏕️ Review {due} missed</button>}
+          {canChase && <button className="side-btn" onClick={openChase}>🦍 Yeti chase</button>}
+          {due > 0 && <button className="side-btn" onClick={openReview}>🧤 Pick up {due}</button>}
         </div>
         {!net.online && <div className="offline-badge">✈️ Offline: everything works, progress saves on this device.</div>}
       </div>

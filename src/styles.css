@@ -525,3 +525,36 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 .me.landed .me-body { animation: me-land .6s cubic-bezier(.3,1.6,.5,1) both, me-bob 1.8s ease-in-out .6s infinite; }
 @keyframes me-land { from { transform: scale(.2); opacity: 0; } }
 .touchdown { font-size: 11px; font-weight: 800; fill: var(--hot); paint-order: stroke; stroke: #060A13; stroke-width: 4px; }
+
+/* ---- Yeti chase ---- */
+.chase-track { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 14px; font-size: 24px; margin-bottom: 12px; }
+.chase-track > span { flex: 1; text-align: center; color: var(--mut); font-size: 18px; }
+.chase-track > span:last-of-type { font-size: 26px; }
+.chase-track small { font-size: 12px; color: var(--mut); font-family: var(--mono); }
+.chase-timer { height: 8px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+.chase-timer div { height: 100%; background: linear-gradient(90deg, var(--no), #ffd38a, var(--ok)); transition: width 1s linear; }
+.chase-kind { display: block; margin-top: 8px; color: var(--mut); font-family: var(--mono); font-size: 12px; }
+.chase-prompt { font-size: 20px; line-height: 1.3; margin: 6px 0 14px; }
+.chase-type { display: flex; align-items: center; gap: 8px; background: #02050b; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-family: var(--mono); }
+.chase-type span { color: var(--term-prompt, var(--or)); font-weight: 700; }
+.chase-type input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: var(--term-fg, #d6e6f5); font: 16px var(--mono); }
+.tiles-built { min-height: 58px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #02050b; border: 1px dashed var(--line); border-radius: 12px; padding: 8px; margin-bottom: 10px; }
+.tiles-built small { color: var(--mut); padding: 0 6px; }
+.tiles-bag { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tile { font-family: var(--mono); font-size: 16px; min-height: 44px; min-width: 44px; padding: 8px 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; color: var(--hot); box-shadow: 0 3px 0 var(--line); }
+.tile.on { background: color-mix(in srgb, var(--or) 25%, var(--panel2)); border-color: var(--or); }
+.tile:disabled { opacity: .3; } .tile.on:disabled { opacity: 1; }
+.btn.subtle { background: var(--panel); box-shadow: none; border-style: dashed; font-weight: 500; color: var(--mut); padding: 10px; }
+.chase-verdict { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-weight: 700; }
+.chase-verdict.ok { background: #0f2a22; color: #9be3bf; } .chase-verdict.no { background: #2a1016; color: #ffb3bc; }
+.chase-verdict code { font-family: var(--mono); color: var(--wh); }
+.chase-item.no .chase-prompt { animation: shake .3s; }
+.chase-missed pre { background: #02050b; padding: 8px 10px; border-radius: 8px; overflow-x: auto; margin: 4px 0; }
+.chase-missed > div { border-top: 1px solid var(--line); padding: 8px 0; } .chase-missed > div p { margin: 0 0 4px; }
+.sym-keys { margin-top: 8px; flex-wrap: wrap; overflow: visible; mask-image: none; gap: 5px; }
+.sym-keys button { min-width: 38px; padding: 6px 8px; flex: 1 0 38px; }
+.dropped { cursor: pointer; }
+.dropped text { font-size: 19px; animation: dropped 1.6s ease-in-out infinite; filter: drop-shadow(0 0 4px #ffd38a); }
+@keyframes dropped { 50% { transform: translateY(-3px) rotate(8deg); } }
+.calm .dropped text { animation: none; }
+.from-old { display: inline-block; margin-bottom: 6px; padding: 3px 8px; border-radius: 8px; background: #2a2210; color: #ffd38a; font-size: 12px; font-weight: 700; }

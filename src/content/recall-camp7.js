@@ -1,0 +1,11 @@
+// "Type it from memory" items for this camp. Format and rules: CONTENT-GUIDE.md, "Recall items".
+export const RECALL_CAMP7 = [
+  { id: '7-r1', after: '7-1', kind: 'shell', prompt: 'Create a package.json in this folder, accepting all the defaults', answer: 'npm init -y', accept: ['npm init --yes'], tiles: ['npm', 'init', '-y'], decoys: ['install', '-g', 'start'] },
+  { id: '7-r2', after: '7-1', kind: 'shell', prompt: 'Install the package dayjs into this project', answer: 'npm install dayjs', accept: ['npm i dayjs'], tiles: ['npm', 'install', 'dayjs'], decoys: ['init', 'run', '-y'] },
+  { id: '7-r3', after: '7-3', kind: 'js', prompt: 'At the end of gear.js, export an object that holds the function pack', answer: 'module.exports = { pack }', accept: ['module.exports = { pack };'], tiles: ['module.exports', '=', '{ pack }'], decoys: ['import', '[ pack ]', 'exports.of'] },
+  { id: '7-r4', after: '7-3', kind: 'js', prompt: 'In app.js, load the local file gear.js into a constant called gear', answer: 'const gear = require("./gear")', accept: ['const gear = require("./gear.js")', 'const gear = require("./gear");'], tiles: ['const gear =', 'require(', '"./gear"', ')'], decoys: ['import(', '"gear"', 'load('] },
+  { id: '7-r5', after: '7-5', kind: 'js', prompt: 'Chain a step that turns the response res into JSON', answer: '.then(res => res.json())', accept: ['.then((res) => res.json())'], tiles: ['.then(', 'res => res.json()', ')'], decoys: ['.catch(', 'res.text()', '.json('] },
+  { id: '7-r6', after: '7-6', kind: 'js', prompt: 'Inside an async function, wait for the fetch of url and store the response in res', answer: 'const res = await fetch(url)', accept: ['const res = await fetch(url);'], tiles: ['const res =', 'await', 'fetch(url)'], decoys: ['async', 'then', 'wait'] },
+  { id: '7-r7', after: '7-6', kind: 'js', prompt: 'Start an async function called getCamp that takes id', answer: 'async function getCamp(id) {', tiles: ['async', 'function', 'getCamp(id)', '{'], decoys: ['await', '=>', 'getCamp[id]'] },
+  { id: '7-r8', after: '7-6', kind: 'js', prompt: 'Close the try block and start the block that handles an error called err', answer: '} catch (err) {', tiles: ['}', 'catch', '(err)', '{'], decoys: ['finally', 'except', 'throw'] },
+]

@@ -192,6 +192,26 @@ They prove each task can be passed with the real engines. Verify with the dev se
 (`npx vite --port 4418`) and `PW=/tmp/acetest/node_modules/playwright-core/index.js node scripts/verify-solutions.mjs <ID>`.
 Every solution must pass, and every starter must fail (no free passes).
 
+## Recall items (the Yeti chase)
+The Yeti chase is a timed review: the player is given a task in plain English and has to produce the
+command or line of code from memory. On a computer they type it; on a phone they build it by tapping
+tiles in order (with a few fake tiles mixed in). Items live in `src/content/recall-camp<ID>.js`:
+```js
+export const RECALL_CAMP2 = [
+  { id: '2-r1', after: '2-3', kind: 'shell', prompt: 'Show the full path of the folder you are in', answer: 'pwd', tiles: ['pwd'], decoys: ['ls', 'cd', 'dir'] },
+  { id: '2-r2', after: '2-4', kind: 'shell', prompt: 'Go up one folder', answer: 'cd ..', tiles: ['cd', '..'], decoys: ['cd ~', 'ls', '/'] },
+]
+```
+- `id`: `<camp id>-r<n>`, permanent once shipped (like stage ids).
+- `after`: the stage in this camp that teaches it. The item only appears once that stage is passed. The exact syntax must appear in that stage (or an earlier one): `npm run check` checks the first word.
+- `kind`: `shell` (the practice terminal: Ubuntu-style Linux, bash), `js`, `sql`, `html`, `css`, or `route` (the trek's `up()` puzzles).
+- `prompt`: what to do, in plain words, 8–140 characters. Never contains the answer. Say exactly what's wanted ("…one command", "…as one line") so only one answer fits.
+- `answer`: exactly what to type, at most 48 characters, one line. Short and memorable: the commands and lines people really need in their head. Extra spaces don't matter and `'` equals `"` when checking.
+- `accept`: optional list of other exact answers that are also right (`ls -la` and `ls -al`).
+- `tiles`: the answer cut into 1–7 pieces, in order (prefer items of 2+ pieces; most should be). Joined together (spaces ignored) they must spell the answer. Cut at meaningful points: command / option / argument, or `console.log(` / `"hi"` / `)`. A one-word answer is one tile.
+- `decoys`: 2–4 plausible wrong pieces (a wrong flag, a neighbouring command, a typo'd bracket). Never equal to a tile.
+- Platform-neutral: commands are for the game's practice terminal (Linux), never Mac/Windows-specific.
+
 ## Stage ids are permanent
 Players' progress is saved by stage id. Never rename or delete one. If it truly must change, add `'old': 'new'` to `src/content/renames.js` and progress moves across on load. `npm run check` fails if any id listed in `scripts/stage-ids.json` disappears. New ids are added to that list automatically. Never reorder or delete a quiz's questions either: a question's position is its id, and alternate versions are keyed by it.
 

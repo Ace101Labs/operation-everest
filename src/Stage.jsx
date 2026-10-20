@@ -11,6 +11,8 @@ import { Lesson, getPlace, setPlace } from './Lesson.jsx'
 import { ENGINES } from './Engines.jsx'
 import { emit } from './events.js'
 import { deal } from './deal.js'
+import { SymKeys } from './SymKeys.jsx'
+import { useDeviceMode } from './device.js'
 
 const SURPRISES = ['🃏 Bonus: you found a playing card in the snow.', '🦅 Tip: read an error message from the top line first.', '☕ Nice work. Take a short break if you like.', '🧭 Fun fact: the first website (1991) is still online.']
 
@@ -91,6 +93,8 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
   const [i, setI] = useState(0)
   const [pick, setPick] = useState(null)
   const [typed, setTyped] = useState('')
+  const typedField = useRef(null)
+  const phone = useDeviceMode() === 'phone'
   const [shown, setShown] = useState(false)
   const [right, setRight] = useState(0)
   const q = questions[i]
@@ -154,7 +158,8 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
           <span className={`fuse ${left < 6 ? 'low' : ''}`}>⏱ {Math.ceil(left)}s</span>
         </div>
       )}
-      <div className="q-text" role="heading" aria-level="3"><Md text={q.q} /></div>
+      {challenge === 'boss' && QUESTIONS[q.qid] && QUESTIONS[q.qid].camp.id !== stage.id.split('-')[0] && <small className="from-old">🔙 Flashback · from {QUESTIONS[q.qid].camp.name}</small>}
+      <div className="q-text" role="heading" aria-level="3" data-qid={q.qid}><Md text={q.q} /></div>
       {q.code && <pre><code>{q.code}</code></pre>}
       {q.kind === 'mc' ? (
         <div className="options">
@@ -166,8 +171,11 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
           ))}
         </div>
       ) : (
-        <input className="typed" value={typed} disabled={shown} onChange={e => setTyped(e.target.value)}
-          autoCapitalize="off" autoCorrect="off" spellCheck="false" placeholder="Type your answer" />
+        <>
+          <input ref={typedField} className="typed" value={typed} disabled={shown} onChange={e => setTyped(e.target.value)}
+            autoCapitalize="off" autoCorrect="off" spellCheck="false" placeholder="Type your answer" />
+          {phone && !shown && <SymKeys field={typedField} value={typed} onChange={setTyped} />}
+        </>
       )}
       {shown && (
         <div className={`feedback ${correct ? 'ok' : 'no'}`}>
@@ -334,6 +342,15 @@ function Challenge({ stage, finish, p, onAnswer, knockBack, alreadyPassed }) {
   )
 }
 
+function flashbacks(p, campId) {
+  const here = CAMPS.findIndex(c => c.id === campId)
+  if (here < 2) return [] // Base Camp has no earlier camp to look back on (the trek has no quizzes)
+  const pool = CAMPS.slice(1, here).flatMap(c => (c.stages || []).filter(s => s.type === 'learn' && isPassed(p, s.id)).flatMap(s => s.questions || []))
+  const out = [], n = here < 4 ? 2 : 3
+  while (out.length < n && out.length < pool.length) { const q = pool[Math.floor(Math.random() * pool.length)]; if (!out.includes(q)) out.push(q) }
+  return out
+}
+
 function Boss({ stage, finish, p, onAnswer }) {
   const [go, setGo] = useState(false)
   const [score, setScore] = useState(null)
@@ -341,9 +358,12 @@ function Boss({ stage, finish, p, onAnswer }) {
   const campId = stage.id.split('-')[0]
   const campName = CAMPS.find(c => c.id === campId)?.name
   const [downed, setDowned] = useState(false)
+  // Flashbacks: from Khumbu Icefall on, a boss also asks 2 (3 from Western Cwm on) questions
+  // from lessons you passed in earlier camps, so old camps keep coming back. Fresh each fight.
+  const questions = useMemo(() => [...stage.questions, ...flashbacks(p, campId)], [round])
   if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setDowned(false); setRound(r => r + 1) }}
     extra={score >= p.settings.passMark / 100 ? <p className="villain cleared">☀️ {defeatLine(campId, campName)}</p> : downed && <p className="villain">🌫️ Out of ropes. The lieutenant knocked you back down the slope. Everything you've cleared stays cleared: catch your breath and go again.</p>} />
-  if (go) return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} challenge="boss" passMark={p.settings.passMark} taunt={TAUNT[campId]}
+  if (go) return <Questions key={round} stage={stage} questions={questions} platform={p.settings.platform} challenge="boss" passMark={p.settings.passMark} taunt={TAUNT[campId]}
     onFinish={(sc, how) => { setDowned(how === 'boss'); setScore(sc) }} onAnswer={onAnswer} />
   return (
     <div className="boss-intro">
@@ -351,7 +371,7 @@ function Boss({ stage, finish, p, onAnswer }) {
       <h2>{stage.title}</h2>
       <p className="villain">🌫️ {bossLine(campId)}</p>
       {TAUNT[campId] && <p className="boss-say">“{TAUNT[campId]}”</p>}
-      <p>Every right answer is a hit. Every wrong one and it hits back: you lose a rope. Knock its health to zero before your ropes run out. {stage.questions.length} questions from the whole camp, graded by the Sherpa. Score {p.settings.passMark}% to clear it.</p>
+      <p>Every right answer is a hit. Every wrong one and it hits back: you lose a rope. Knock its health to zero before your ropes run out. {stage.questions.length} questions from the whole camp{questions.length > stage.questions.length ? `, plus ${questions.length - stage.questions.length} flashbacks from earlier camps` : ''}, graded by the Sherpa. Score {p.settings.passMark}% to clear it.</p>
       <button className="btn primary wide" onClick={() => setGo(true)}>⚔️ Fight</button>
     </div>
   )
