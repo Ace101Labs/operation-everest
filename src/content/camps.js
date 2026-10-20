@@ -1,4 +1,4 @@
-// The 13 camps up Everest. Each camp is a card rank (2 up to the Ace).
+// The 13 camps up Everest, after the trek from Lukla. (`card` is an old id-style label, not shown.)
 // `hours` = rough total effort (phone + keyboard). `stages` live in their own file.
 import { campT } from './campT.js'
 import { camp2 } from './camp2.js'

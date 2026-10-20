@@ -103,7 +103,7 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, onCam
             <g key={k} className={`mk ${st} ${tap ? 'tap' : ''}`} onClick={tap || undefined} role={tap ? 'button' : undefined} aria-label={tap ? `Open ${camp.name}` : undefined}>
               {tap && <circle cx={x} cy={y} r="18" fill="transparent" />}
               <circle cx={x} cy={y} r={k === 13 ? 9 : 7.5} className="mk-dot" />
-              <text x={x} y={y + 0.5} className="mk-card" textAnchor="middle" dominantBaseline="central">{isLukla ? '✈' : k === 13 ? '🚩' : st === 'done' ? '✓' : camp.card}</text>
+              <text x={x} y={y + 0.5} className="mk-card" textAnchor="middle" dominantBaseline="central">{isLukla ? '✈' : k === 13 ? '🚩' : st === 'done' ? '✓' : ''}</text>
               <text x={left ? x - 13 : x + 13} y={y + 1} className="mk-name" textAnchor={left ? 'end' : 'start'} dominantBaseline="central">
                 {isLukla ? 'Lukla' : k === 13 ? 'Summit' : camp.name}
               </text>

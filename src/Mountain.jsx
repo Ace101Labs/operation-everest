@@ -65,7 +65,7 @@ export function Mountain({ p, net, paused, openCamp, openStage, openSettings, op
           <button key={c.id} style={{ '--i': k }}
             className={`camp ${status} ${current.i === i ? 'current' : ''}`}
             onClick={() => status !== 'coming' && status !== 'locked' && openCamp(i)}>
-            <div className="card-face"><span>{c.card}</span><i>♠</i></div>
+            <div className="card-face"><span>{c.trek ? '🥾' : status === 'done' ? '✓' : i === CAMPS.length - 1 ? '🚩' : status === 'open' ? '⛺' : '🔒'}</span></div>
             <div className="camp-info">
               <small>{c.trek ? 'The approach · ✈️ from Lukla airport' : `Camp ${c.n} of 13 · ${c.name}`}</small>
               <strong>{c.topic}</strong>

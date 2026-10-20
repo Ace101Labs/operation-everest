@@ -17,7 +17,7 @@ export function Camp({ p, camp, back, openStage }) {
       <Range still={p.settings.reduceMotion} />
       <header className="bar-top">
         <button className="icon" onClick={back}>‹</button>
-        <div><small>{camp.trek ? 'The approach · Lukla 2,860 m → Base Camp 5,364 m' : `Camp ${camp.n} of 13 · ${camp.name} · the ${camp.card} card`}</small><strong>{camp.topic}</strong></div>
+        <div><small>{camp.trek ? 'The approach · Lukla 2,860 m → Base Camp 5,364 m' : `Camp ${camp.n} of 13 · ${camp.name}`}</small><strong>{camp.topic}</strong></div>
       </header>
       <div className="stages route">
         {camp.trek ? <>

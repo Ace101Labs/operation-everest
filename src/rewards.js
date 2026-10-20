@@ -52,8 +52,8 @@ export const ACHIEVEMENTS = [
 ]
 
 export const patchesFor = p => CAMPS.flatMap(c => c.stages ? [
-  { id: `summit-${c.id}`, icon: c.trek ? '🥾' : '🏔️', title: c.trek ? 'The Trek walked: Lukla to Base Camp' : `${c.name} summited`, card: c.card, got: campClear(p, c) },
-  ...(c.boss ? [{ id: `boss-${c.id}`, icon: '⚔️', title: `${c.boss} defeated`, card: c.card, got: campBossPassed(p, c) }] : []),
+  { id: `summit-${c.id}`, icon: c.trek ? '🥾' : '🏔️', title: c.trek ? 'The Trek walked: Lukla to Base Camp' : `${c.name} summited`, card: c.trek ? '🥾' : c.n, got: campClear(p, c) },
+  ...(c.boss ? [{ id: `boss-${c.id}`, icon: '⚔️', title: `${c.boss} defeated`, card: c.n, got: campBossPassed(p, c) }] : []),
 ] : [])
 
 const has = (p, id) => ACHIEVEMENTS.find(a => a.id === id)?.test(p)

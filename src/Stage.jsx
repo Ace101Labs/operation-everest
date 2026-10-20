@@ -14,7 +14,7 @@ import { deal } from './deal.js'
 import { SymKeys } from './SymKeys.jsx'
 import { useDeviceMode } from './device.js'
 
-const SURPRISES = ['🃏 Bonus: you found a playing card in the snow.', '🦅 Tip: read an error message from the top line first.', '☕ Nice work. Take a short break if you like.', '🧭 Fun fact: the first website (1991) is still online.']
+const SURPRISES = ['🦅 Tip: read an error message from the top line first.', '☕ Nice work. Take a short break if you like.', '🧭 Fun fact: the first website (1991) is still online.']
 
 async function copy(text) {
   try { await navigator.clipboard.writeText(text); return true } catch { return false }
