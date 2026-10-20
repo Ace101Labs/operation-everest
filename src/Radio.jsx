@@ -33,7 +33,7 @@ export function Radio({ stage, onFinish, journal, saveJournal }) {
 
   if (part === 1) return (
     <div className="radio">
-      <div className="lesson-card"><h3>📻 Part 1 of 2: put it in order</h3><p className="note">Tap the steps in the order they happen. Tap a step in your list to remove it.</p></div>
+      <div className="lesson-card"><h3>📻 Part 1 of 2: put it in order</h3><div className="radio-ask"><Md text={stage.prompt} /></div><p className="note">Tap the steps in the order they happen. Tap a step in your list to remove it.</p></div>
       <ol className="built">{order.map((s, i) => (
         <li key={s} className={seqShown ? (s === stage.sequence[i] ? 'right' : 'wrong') : ''} onClick={() => !seqShown && setOrder(order.filter(x => x !== s))}>{s}</li>))}
       </ol>

@@ -597,3 +597,6 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 .update-card > div { flex: 1; min-width: 0; }
 .update-card p { margin: 0 0 4px; } .update-card small { display: block; color: var(--muted, #9fb0c8); margin-bottom: 10px; line-height: 1.35; }
 .update-card .row { display: flex; gap: 8px; flex-wrap: wrap; } .update-card .row .btn { flex: 1; min-width: 120px; }
+
+/* Radio check: the question being put in order */
+.radio-ask { margin: 6px 0 4px; font-size: 16px; line-height: 1.45; color: var(--hot); } .radio-ask p { margin: 0; }
