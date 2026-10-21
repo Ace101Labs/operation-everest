@@ -33,6 +33,13 @@ const addDays = n => new Date(Date.now() + n * 864e5).toLocaleDateString('en-CA'
 // next daily run starts again at 1.
 const missedDays = s => (s?.last ? Math.round((new Date(today()) - new Date(s.last)) / 864e5) - 1 : 0)
 export const streakAtRisk = p => !!p.streak?.last && missedDays(p.streak) === 1 && (p.streak.count || 0) > 0
+// A 7-day milestone (7, 14, 21 …) reached by today's daily run and not yet celebrated. The
+// celebrated one is kept as { n, day } (streak count + the day it was reached), so it shows once
+// per milestone, ever, but a streak that starts over can celebrate its own 7 later.
+export function milestoneDue(p) {
+  const s = p.streak || {}, n = s.count || 0, m = p.milestone || {}
+  return n > 0 && n % 7 === 0 && s.last === today() && !(m.n === n && m.day === s.last)
+}
 export function liveStreak(p) {
   const s = p.streak || {}
   if (!s.last) return 0
@@ -156,6 +163,7 @@ export function useProgress() {
     return s
   }), [update])
   // Spend a streak saver on the one missed day, so today's daily run carries the streak on.
+  const celebrateMilestone = useCallback(() => update(s => { s.milestone = { n: s.streak.count, day: s.streak.last }; return s }), [update])
   const saveStreak = useCallback(() => update(s => {
     if (!streakAtRisk(s) || (s.oxygen || 0) < 1) return s
     s.oxygen -= 1
@@ -167,7 +175,7 @@ export function useProgress() {
   const replace = useCallback(obj => setP({ ...fresh(), ...obj, settings: { ...DEFAULT_SETTINGS, ...obj.settings } }), [])
   const reset = useCallback(() => setP(fresh()), [])
 
-  return { p, recordResult, recordAnswer, recordDaily, saveStreak, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
+  return { p, recordResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset }
 }
 
 // ---- rules ----
@@ -318,6 +326,7 @@ export function cleanProgress(o) {
     oxygen: clamp(o.oxygen, 0, 3),
     daily: o.daily && typeof o.daily === 'object' && day(o.daily.last) ? { last: day(o.daily.last), count: Math.round(clamp(o.daily.count, 0, 100000) || 0), best: Math.round(clamp(o.daily.best, 0, 5) || 0), top: Math.round(clamp(o.daily.top, 0, 100000) || 0) } : undefined,
     bestStreak: clamp(o.bestStreak, 0, 100000),
+    milestone: o.milestone && typeof o.milestone === 'object' && day(o.milestone.day) ? { n: Math.round(clamp(o.milestone.n, 0, 100000) || 0), day: day(o.milestone.day) } : undefined,
     started: when(o.started),
     code: pick(o.code, 1000, k => /^[0-9A-Za-z-]{1,24}( tryit)?$/.test(k), cleanCode),
     settings: drop({
@@ -345,6 +354,9 @@ export function mergeProgress(a, raw, { keepLocalCode = false } = {}) {
   for (const k of ['xp', 'oxygen', 'bestStreak']) if (typeof a[k] === 'number' || typeof b[k] === 'number') out[k] = Math.max(a[k] || 0, b[k] || 0)
   const sa = a.streak || {}, sb = b.streak || {}
   out.streak = (sb.last || '') > (sa.last || '') ? sb : (sa.last || '') > (sb.last || '') ? sa : (sa.count || 0) >= (sb.count || 0) ? sa : sb
+  // the celebrated milestone: the later one wins, so neither device shows it again
+  const ma = a.milestone, mb = b.milestone
+  if (ma || mb) out.milestone = !mb ? ma : !ma ? mb : (mb.day > ma.day || (mb.day === ma.day && mb.n > ma.n)) ? mb : ma
   const da = a.daily || {}, db = b.daily || {}
   if (da.last || db.last) out.daily = (db.last || '') > (da.last || '') ? { ...db, top: Math.max(da.top || 0, db.top || 0) } : (da.last || '') > (db.last || '') ? { ...da, top: Math.max(da.top || 0, db.top || 0) } : { ...da, best: Math.max(da.best || 0, db.best || 0), count: Math.max(da.count || 0, db.count || 0), top: Math.max(da.top || 0, db.top || 0) }
   out.events = { ...b.events }; for (const [k, v] of Object.entries(a.events || {})) out.events[k] = Math.max(v, out.events[k] || 0)

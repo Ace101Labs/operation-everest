@@ -523,6 +523,14 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 .arrival-card { background: linear-gradient(180deg, var(--panel2), var(--panel)); border: 1px solid var(--or); border-radius: 20px; padding: 22px 20px 12px; text-align: center; max-width: 380px; width: 100%; box-shadow: 0 0 40px color-mix(in srgb, var(--or) 40%, transparent); }
 .arrival-card h2 { margin: 6px 0 10px; }
 .arrival-card p { margin: 6px 0; color: var(--hot); line-height: 1.4; }
+/* 7-day streak milestone pop-up (Quick.jsx Milestone) */
+.milestone-card { position: relative; }
+.milestone-card .big { animation: drop .5s cubic-bezier(.3,1.6,.5,1) both, pop 1.6s ease-in-out .6s infinite; }
+.milestone-tag { display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--or); font-weight: 700; }
+.milestone-card h2 { color: var(--hot); text-shadow: 0 0 18px var(--or); }
+.milestone-saver { background: color-mix(in srgb, var(--or) 12%, transparent); border-radius: 12px; padding: 8px 10px; }
+.milestone-card p.milestone-cheer { color: var(--mut); font-style: italic; margin-bottom: 14px; }
+@media (prefers-reduced-motion: reduce) { .milestone-wrap, .milestone-card .big { animation: none; } }
 .arrival-card.down { border-color: var(--no); box-shadow: 0 0 40px #ff6b7a55; }
 .calm .me-body, .calm .climb-btn, .calm .mk.open .mk-dot { animation: none !important; }
 .pick-climber { display: flex; gap: 12px; justify-content: center; margin: 10px 0; }

@@ -32,7 +32,7 @@ const Chase = later(() => import('./Chase.jsx'), 'Chase')
 const STORM_CHANCE = 0.3
 
 export default function App() {
-  const { p: saved, recordResult: saveResult, recordAnswer, recordDaily, saveStreak, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset } = useProgress()
+  const { p: saved, recordResult: saveResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset } = useProgress()
   const mode = useDeviceMode()
   const stormNext = useRef(false)
   const recordResult = (stage, score, ...rest) => {
@@ -110,13 +110,17 @@ export default function App() {
   }, [saved.settings.passMark, saved.settings.reduceMotion, recordEvent])
   // "Unlocked!" toasts when a badge or patch is newly earned.
   const [toasts, setToasts] = useState([])
+  // A pop-up of its own (the streak milestone) holds the toasts; streak and daily-run badge toasts are dropped
+  // (the pop-up says the same thing; the badges still show in the Pack).
+  const [hold, setHold] = useState(false)
+  const holdToasts = on => { setHold(on); if (on) setToasts(t => t.filter(x => !/streak|daily run/i.test(x))) }
   const seen = useRef(null)
   useEffect(() => {
     const now = [...ACHIEVEMENTS.filter(a => a.test(saved)).map(a => `🏅 ${a.icon} ${a.title}: ${a.done}`), ...patchesFor(saved).filter(x => x.got).map(x => `🏔️ Patch: ${x.title}`)]
     if (seen.current) { const fresh = now.filter(t => !seen.current.includes(t)); if (fresh.length) setToasts(t => [...t, ...fresh]) }
     seen.current = now
   }, [saved])
-  useEffect(() => { if (!toasts.length) return; const t = setTimeout(() => setToasts(x => x.slice(1)), 5000); return () => clearTimeout(t) }, [toasts])
+  useEffect(() => { if (!toasts.length || hold) return; const t = setTimeout(() => setToasts(x => x.slice(1)), 5000); return () => clearTimeout(t) }, [toasts, hold])
   const theme = GEAR.theme.find(t => t.id === saved.settings.theme) || GEAR.theme[0]
   const term = GEAR.terminal.find(t => t.id === saved.settings.terminalTheme) || GEAR.terminal[0]
   useEffect(() => {
@@ -147,11 +151,11 @@ export default function App() {
   else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: view.next ? 'next' : 'map' })} />
   else if (view.name === 'next') screen = null // the effect below opens the next pitch
   else if (view.name === 'chase') screen = <Chase p={p} recordEvent={recordEvent} close={() => setView({ name: 'map' })} />
-  else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} saveStreak={saveStreak} close={() => setView({ name: 'map' })} />
+  else if (view.name === 'daily') screen = <Daily p={p} recordAnswer={recordAnswer} recordDaily={recordDaily} saveStreak={saveStreak} celebrateMilestone={celebrateMilestone} holdToasts={holdToasts} close={() => setView({ name: 'map' })} />
   else if (view.name === 'camp') screen = <Camp p={p} camp={camp} back={() => setView({ name: 'map' })}
     openStage={stage => setView({ name: 'stage', camp: view.camp, stage })} />
   else screen = <Mountain p={p} net={net} paused={intro} saveStreak={saveStreak} openSettings={() => setView({ name: 'settings' })}
     openGuide={() => setView({ name: 'guide' })} openReview={() => setView({ name: 'review' })} openPack={tab => setView({ name: 'pack', tab: typeof tab === 'string' ? tab : undefined })} openDaily={() => setView({ name: 'daily' })} openChase={() => setView({ name: 'chase' })}
     openCamp={i => setView({ name: 'camp', camp: i })} openStage={(i, stage) => setView({ name: 'stage', camp: i, stage, from: 'map' })} />
-  return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}{!intro && <UpdateCard />}<div className="toasts">{toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
+  return <><Suspense fallback={<div className="loading">Loading…</div>}>{screen}</Suspense>{wipe > 0 && <Whiteout key={wipe} onDone={() => setWipe(0)} />}{intro && <Landing calm={p.settings.reduceMotion} onDone={() => setIntro(false)} />}{!intro && <UpdateCard />}<div className="toasts">{!hold && toasts.slice(0, 1).map((t, i) => <div key={t + i} className="toast">{t}</div>)}</div></>
 }
