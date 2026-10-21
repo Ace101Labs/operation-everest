@@ -1,18 +1,26 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CAMPS } from './content/camps.js'
 import { SUMMIT, TYPE } from './content/names.js'
-import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, learnedPool, isPassed, stageOpen, highestCamp, nextPitch, liveStreak, streakAtRisk } from './progress.js'
+import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, isPassed, stageOpen, highestCamp, nextPitch, liveStreak, streakAtRisk } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
 import { RECALL } from './content/recall.js'
 import { useArrival } from './encounters.js'
 import { StreakSave } from './Quick.jsx'
 
+// Time left until the daily run resets at local midnight, e.g. "5h 12m".
+const untilMidnight = () => {
+  const now = new Date(), mid = new Date(now); mid.setHours(24, 0, 0, 0)
+  const m = Math.max(1, Math.ceil((mid - now) / 6e4))
+  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`
+}
+
 const LABEL = { done: 'Summited ✓', open: 'Open', locked: 'Locked: beat the previous camp\'s boss', blocked: 'Locked', coming: 'Coming soon' }
 
 
 export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, openSettings, openGuide, openReview, openPack, openDaily, openChase }) {
-  const canDaily = learnedPool(p).length >= 5
+  const [, tick] = useState(0) // re-render each minute: keeps "next run in" fresh and re-lights the button at midnight
+  useEffect(() => { const t = setInterval(() => tick(n => n + 1), 6e4); return () => clearInterval(t) }, [])
   const dailyDone = p.daily?.last === new Date().toLocaleDateString('en-CA')
   const due = dueReviews(p).length
   const canChase = RECALL.filter(r => isPassed(p, r.after)).length >= 5 // same rule as Chase.jsx recallPool
@@ -56,9 +64,10 @@ export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, open
             ? <div className="climb-btn done">🚩 Summit reached. Every camp cleared.</div>
             : <button className="btn primary wide climb-btn" onClick={() => openCamp(current.i)}><span className="climb-go">▶ {current.c.name}</span></button>}
         <div className="side-btns">
-          {canDaily
-            ? <button className="side-btn" onClick={openDaily}>{dailyDone ? `☀️ Done ${p.daily.best}/5 ✓` : '☀️ Daily run'}</button>
-            : <button className="side-btn locked" disabled>☀️ Daily run · after your first lesson</button>}
+          <button className={`side-btn ${dailyDone ? 'daily-done' : 'daily-ready'}`} onClick={openDaily}
+            title={dailyDone ? 'Done for today. A new daily run unlocks at midnight.' : 'Your daily run is ready: 5 quick questions keep your 🔥 streak going'}>
+            {dailyDone ? <>☀️ Done {p.daily.best}/5 ✓<small>Next run in {untilMidnight()}</small></> : <>☀️ Daily run<small>Ready now</small></>}
+          </button>
           {canChase && yeti && <button className="side-btn yeti-here" onClick={openChase}>🦍 Yeti spotted! Run</button>}
           {due > 0 && (pickup
             ? <button className="side-btn" onClick={openReview} title="Click to pick up your dropped gear: answer the question you missed to get it back">🧤 Pick up 1 of {due}</button>

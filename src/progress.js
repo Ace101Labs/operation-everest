@@ -41,6 +41,15 @@ export function liveStreak(p) {
 }
 // Questions from lessons you've passed: what storms and the daily run draw on.
 export const learnedPool = p => CAMPS.flatMap(c => (c.stages || []).filter(s => s.type === 'learn' && p.stages[s.id]?.passed).flatMap(s => s.questions || []))
+// The daily run's pool: what you've learned, topped up to 5 with questions from the earliest
+// lessons on the route, so anyone can play it (and keep a streak) from day one.
+export const dailyPool = p => {
+  const pool = learnedPool(p)
+  if (pool.length >= 5) return pool
+  const starter = CAMPS.flatMap(c => (c.stages || []).filter(s => s.type === 'learn' && !p.stages[s.id]?.passed))
+  for (const s of starter) { if (pool.length >= 5) break; pool.push(...(s.questions || [])) }
+  return pool
+}
 // The daily-run streak as it stands today (gone if you skipped yesterday).
 export const dailyStreak = p => (p.daily && (p.daily.last === today() || p.daily.last === addDays(-1)) ? p.daily.count || 0 : 0)
 export const dueReviews = p => Object.entries(p.missed || {}).filter(([qid, v]) => v.due <= today() && QUESTIONS[qid]).map(([qid]) => qid)

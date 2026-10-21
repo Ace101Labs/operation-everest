@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Questions } from './Stage.jsx'
-import { learnedPool, streakAtRisk } from './progress.js'
+import { learnedPool, dailyPool, streakAtRisk } from './progress.js'
 import { Range } from './Snow.jsx'
 
 // Short timed rounds built from questions you've already met (see learnedPool), so they
@@ -61,10 +61,10 @@ export function Storm({ p, close, recordAnswer, recordEvent }) {
   </Shell>
 }
 
-// The daily run: 5 questions from what you've learned, the same set all day, 20 seconds
+// The daily run: 5 questions from what you've learned (starter questions before that), the same set all day, 20 seconds
 // each. One go per day, and playing it is what keeps the 🔥 streak going.
 export function Daily({ p, close, recordAnswer, recordDaily, saveStreak }) {
-  const pool = learnedPool(p)
+  const pool = dailyPool(p), starter = learnedPool(p).length < 5
   const qs = useMemo(() => seeded(pool, today()), []).slice(0, 5)
   const [go, setGo] = useState(false)
   const [score, setScore] = useState(null)
@@ -99,7 +99,7 @@ export function Daily({ p, close, recordAnswer, recordDaily, saveStreak }) {
     <div className="boss-intro">
       <div className="big">☀️</div>
       <h2>Today's daily run</h2>
-      <p>5 questions from what you've learned so far, 20 seconds each. <strong>One go per day.</strong> Play it every day to keep your 🔥 streak; every 7 days in a row earns a 🛟 streak saver.</p>
+      <p>5 questions {starter ? 'from the first lessons on the trail' : "from what you've learned so far"}, 20 seconds each. <strong>One go per day.</strong> Play it every day to keep your 🔥 streak; every 7 days in a row earns a 🛟 streak saver.</p>
       {streakAtRisk(p) && <StreakSave p={p} saveStreak={saveStreak} />}
       <button className="btn primary wide" onClick={() => setGo(true)}>Start the run</button>
     </div>
