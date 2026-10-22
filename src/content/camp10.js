@@ -83,6 +83,7 @@ export const camp10 = [
       { concept: 'sql-select', kind: 'mc', q: 'What does `SELECT name, age FROM climbers;` change in the database?', options: ['It sorts the table', 'It hides the other columns for good', 'Nothing: SELECT only reads', 'It locks the table until you finish'], answer: 2, why: 'SELECT never changes data. It\'s always safe to run.' },
       { concept: 'sql-select', kind: 'type', q: 'Type the query that reads every column of every row from the `camps` table.', accept: ['SELECT * FROM camps;', 'SELECT * FROM camps'], why: '`*` means every column.' },
       { concept: 'sql-select', kind: 'mc', q: 'Which value is written correctly as text in SQL?', options: ['Nepal', '[Nepal] (square brackets)', '\'Nepal\' (single quotes)', '`Nepal`'], answer: 2, why: 'Text goes in single quotes. Double quotes are for table and column names (SQLite forgives them, other databases don\'t).' },
+      { concept: "sql-select", kind: "mc", q: "You run this query and get an error. What is wrong?", code: "sqlite> SELECT item FROM gears;\nParse error: no such table: gears", options: ["The item column was never created", "The query needs a WHERE before it can run", "No table has exactly that name: compare it with the CREATE TABLE", "The database file is locked by another program"], answer: 2, why: "`no such table: gears` repeats the name you typed. Compare it letter by letter with the table you created: here the table is called `gear`." },
     ],
   },
 
@@ -140,6 +141,7 @@ export const camp10 = [
       { concept: 'sql-order-limit', kind: 'mc', q: 'Why is `LIMIT 1` without ORDER BY a bad way to find "the oldest climber"?', options: ['LIMIT 1 always returns the youngest row first, so you would get the wrong climber', 'Without sorting, the database promises no order, so you get "some" row, not the oldest', 'LIMIT 1 can only be combined with a WHERE, so the query would fail with an error', 'LIMIT 1 hides every column except the id, so you could not read the climber\'s age'], answer: 1, why: 'Sort first, then limit.' },
       { concept: 'sql-order-limit', kind: 'mc', q: 'In SQLite, where do NULL values appear with `ORDER BY camp_id` (ascending)?', options: ['First', 'Last', 'Wherever they were inserted', 'Sorted as the text \'NULL\''], answer: 0, why: 'SQLite treats NULL as smaller than any value, so NULLs come first when ascending. Use NULLS LAST to move them.' },
       { concept: 'sql-order-limit', kind: 'type', q: 'Type the clause that skips the first 20 rows and then keeps 10 (page 3 of a list).', accept: ['LIMIT 10 OFFSET 20', 'LIMIT 10 OFFSET 20;'], why: 'LIMIT says how many to keep, OFFSET how many to skip first.' },
+      { concept: "sql-select", kind: "mc", q: "The error points at `climbers`, but that word is spelled correctly. Where is the real typo?", code: "sqlite> SELECT name FORM climbers;\nParse error: near \"climbers\": syntax error\n  SELECT name FORM climbers;\n                   ^--- error here", options: ["In the table name, which must be in quotes", "In the word before it: FORM should be FROM", "Nowhere: climbers is a reserved word", "In the column name, which must come last"], answer: 1, why: "SQLite reports the first word where it got stuck, not always the word that is wrong. The mistake is usually at or just before the arrow. `FORM` should be `FROM`." },
     ],
   },
 
@@ -207,6 +209,8 @@ export const camp10 = [
       { concept: 'sql-update-delete', kind: 'mc', q: 'After `BEGIN; DELETE FROM gear;` you realise your mistake. Which command saves you?', options: ['COMMIT;', 'ROLLBACK;', 'UNDO;', 'SELECT * FROM gear;'], answer: 1, why: 'ROLLBACK throws away everything since BEGIN. COMMIT would make it permanent.' },
       { concept: 'sql-update-delete', kind: 'mc', q: 'What is the difference between `DELETE FROM gear;` and `DROP TABLE gear;`?', options: ['DROP removes only the rows; DELETE removes the table itself', 'DELETE removes all rows but keeps the table; DROP removes the table itself', 'DROP only works on empty tables', 'DELETE only works with WHERE'], answer: 1, why: 'Both are destructive. DROP also deletes the structure.' },
       { concept: 'sql-update-delete', kind: 'type', q: 'Type the statement that sets Bo\'s (id 2) age to 42.', accept: ['UPDATE climbers SET age = 42 WHERE id = 2;', 'UPDATE climbers SET age = 42 WHERE id = 2', 'UPDATE climbers SET age=42 WHERE id=2;', 'UPDATE climbers SET age=42 WHERE id=2'], why: 'UPDATE table SET column = value WHERE id = …' },
+      { concept: "sql-insert", kind: "mc", q: "This INSERT fails. What is the fix?", code: "sqlite> INSERT INTO gear (weight_kg, climber_id) VALUES (1.2, 3);\nRuntime error: NOT NULL constraint failed: gear.item (19)", options: ["Set weight_kg to 0 instead of 1.2", "Use UPDATE instead of INSERT", "Give the new row an id of 3", "Add a value for the item column"], answer: 3, why: "`NOT NULL constraint failed: gear.item` names the column that was left empty. The statement did not list `item`, so it got NULL, which that column refuses." },
+      { concept: "sql-update-delete", kind: "mc", q: "You only meant to move the headlamp (id 7). What does the 7 in this output tell you?", code: "sqlite> UPDATE gear SET climber_id = 3;\nsqlite> SELECT changes();\n7", options: ["Every row in gear changed: the UPDATE had no WHERE", "Only the headlamp changed, because 7 is its id", "Seven columns were changed in one row", "The UPDATE stopped at its seventh row because of an error"], answer: 0, why: "`changes()` counts the rows the last statement touched. The table has 7 rows, so all of them changed. Add `WHERE id = 7` to touch one row." },
     ],
   },
 
@@ -268,6 +272,8 @@ export const camp10 = [
       { concept: 'db-index', kind: 'mc', q: 'Why not index every column?', options: ['SQLite only allows one index', 'Every index slows down every INSERT, UPDATE and DELETE and takes space', 'Indexes only work on the primary key', 'An index on every column stops UNIQUE rules working'], answer: 1, why: 'Index the columns you search, join or sort on often.' },
       { concept: 'db-index', kind: 'mc', q: 'Which column most needs an index in a large app?', options: ['users.email, used at every login', 'users.created_at, only shown on the profile page', 'A column with only the values 0 and 1', 'A table with 10 rows'], answer: 0, why: 'Frequent lookups on a big table are exactly what indexes are for.' },
       { concept: 'db-index', kind: 'type', q: 'Type the statement that creates an index named `idx_climbers_country` on the `country` column of `climbers`.', accept: ['CREATE INDEX idx_climbers_country ON climbers(country);', 'CREATE INDEX idx_climbers_country ON climbers(country)', 'CREATE INDEX idx_climbers_country ON climbers (country);', 'CREATE INDEX idx_climbers_country ON climbers (country)'], why: 'CREATE INDEX name ON table(column);' },
+      { concept: "sql-join", kind: "mc", q: "The climbers table has 8 rows, but only 4 names appear here. How do you make the other climbers show too, with an empty item?", code: "sqlite> SELECT climbers.name, gear.item\n   ...> FROM climbers\n   ...> JOIN gear ON gear.climber_id = climbers.id;\nAna|rope\nBo|ice axe\nBo|crampons\nDawa|tent\nDawa|oxygen bottle\nFatima|stove", options: ["Add DISTINCT after SELECT", "Add ORDER BY climbers.name at the end", "Add WHERE gear.item IS NULL at the end", "Change JOIN to LEFT JOIN"], answer: 3, why: "A plain JOIN keeps only rows that match on both sides, so climbers with no gear vanish. LEFT JOIN keeps every climber and fills the missing item with NULL." },
+      { concept: "db-index", kind: "mc", q: "What does this query plan tell you?", code: "sqlite> EXPLAIN QUERY PLAN\n   ...> SELECT * FROM gear WHERE climber_id = 4;\nQUERY PLAN\n`--SEARCH gear USING INDEX idx_gear_climber (climber_id=?)", options: ["SQLite uses the index idx_gear_climber to jump to the matching rows", "SQLite reads every row in gear, one by one", "SQLite is creating the index idx_gear_climber right now", "Only one row in gear can match this query"], answer: 0, why: "`SEARCH ... USING INDEX` means SQLite looks rows up through the index. A full read of the table would say `SCAN gear`." },
     ],
   },
 
@@ -332,6 +338,8 @@ export const camp10 = [
       { concept: 'secrets-management', kind: 'mc', q: 'Where should a database password for a web app live?', options: ['In a config.js file committed to the repository, so every developer has it ready', 'In an environment variable / secret manager on the server, with .env in .gitignore', 'In the JavaScript sent to the browser, so the page can reach the database directly', 'In package.json next to the dependencies, so it is installed along with the app'], answer: 1, why: 'Out of code, out of Git, out of the browser.' },
       { concept: 'least-privilege', kind: 'mc', q: 'Your web app connects to its database as the all-powerful admin account. Why is that dangerous?', options: ['It\'s slower', 'Any bug or SQL injection then runs with full power: read every table, drop everything', 'It uses up the database\'s connection limit', 'It isn\'t: the app\'s own code already limits what it can do'], answer: 1, why: 'Give the app an account with only the permissions it needs.' },
       { concept: 'least-privilege', kind: 'mc', q: 'A reports page only reads data. Least privilege says it should…', options: ['use the admin account to be safe', 'use a read-only connection or user', 'use a separate account that can also write, in case a report needs saving', 'use one shared password so it\'s easy to reach'], answer: 1, why: 'Read-only access means even a bug can\'t change data.' },
+      { concept: "sql-injection", kind: "mc", q: "What happened at 10:41:52?", code: "10:41:07 POST /login name=ana password=x7  -> 401\n10:41:52 POST /login name=admin password=' OR '1'='1  -> 200\n10:41:52 SQL: SELECT * FROM users WHERE name = 'admin'\n  AND password = '' OR '1'='1'", options: ["The admin typed the wrong password and was blocked", "The server's log is out of order", "The password text became part of the SQL, so the check always passed", "The database returned the wrong status code"], answer: 2, why: "The typed password closed the quote and added `OR '1'='1'`, which is always true. So the WHERE matched a row with no real password. This is SQL injection." },
+      { concept: "secrets-management", kind: "mc", q: "You run this before committing. What should you do?", code: "$ git diff --staged\ndiff --git a/.env b/.env\nnew file mode 100644\n--- /dev/null\n+++ b/.env\n@@ -0,0 +1,2 @@\n+DB_FILE=./expedition.db\n+API_KEY=k_live_9f2c41d7e0b8", options: ["Commit it: the repository is private", "Unstage .env and add it to .gitignore before committing", "Delete only the API_KEY line and commit the rest", "Commit it, then delete the file in the next commit"], answer: 1, why: "`new file ... .env` with a key in it means a secret is about to enter the history. Keep it out: unstage it and list `.env` in `.gitignore`." },
     ],
   },
 
@@ -395,6 +403,77 @@ export const camp10 = [
       { concept: 'sensitive-data', kind: 'mc', q: 'What does PII stand for?', options: ['Personal Internet Identity', 'Personally Identifiable Information', 'Primary Integer ID', 'Protected Identity Information'], answer: 1, why: 'Data that identifies a real person.' },
       { concept: 'sensitive-data', kind: 'mc', q: 'A newsletter sign-up asks for email, birth date, home address and phone. What\'s the best change?', options: ['Encrypt all of it', 'Only collect the email: data you don\'t collect can\'t leak', 'Collect it all, but only show it on the admin page', 'Store it in a second database'], answer: 1, why: 'Minimise first. The rest isn\'t needed for a newsletter.' },
       { concept: 'sensitive-data', kind: 'mc', q: 'Which of these calls for the MOST extra care?', options: ['Users\' public display names', 'Children\'s names with their live location', 'Adults\' email addresses', 'The last four digits of a payment card'], answer: 1, why: 'Children\'s data and location can put people in real danger.' },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: '10-read', type: 'read', mode: 'phone', xp: 30, mins: 18,
+    title: 'Read the route: the permit office queries',
+    uses: ['sql-select', 'sql-where', 'sql-order-limit', 'sql-update-delete', 'sql-join', 'sql-injection', 'parameterized-query'],
+    intro: 'A teammate wrote `permits.js` for a permit office. Climbers ask for a permit to climb a peak, and an officer approves it. The file uses the better-sqlite3 package to talk to a SQLite database. The two tables are listed in the first comments. Read every function before you answer.',
+    file: { name: 'permits.js', lang: 'js', code: `// permits.js: queries for the permit office.
+// climbers(id, name, country)
+// permits(id, climber_id, peak, status, requested_on, approved_by)
+const Database = require('better-sqlite3')
+const db = new Database(process.env.DB_FILE)
+
+// Pending permits with the climber who asked, oldest request first.
+function pendingPermits() {
+  return db.prepare(\`
+    SELECT permits.id, climbers.name, permits.peak, permits.requested_on
+    FROM permits
+    JOIN climbers ON climbers.id = permits.climber_id
+    WHERE permits.status = 'pending'
+    ORDER BY permits.requested_on
+  \`).all()
+}
+
+// One climber's permits, newest first.
+function permitsFor(climberId) {
+  return db
+    .prepare('SELECT id, peak, status FROM permits WHERE climber_id = ? ORDER BY requested_on DESC')
+    .all(climberId)
+}
+
+// Climbers whose name contains the search text.
+function searchClimbers(text) {
+  const sql = "SELECT id, name, country FROM climbers WHERE name LIKE '%" + text + "%'"
+  return db.prepare(sql).all()
+}
+
+// Approve one pending permit. Returns true if a permit changed.
+function approvePermit(permitId, officerId) {
+  const result = db.prepare(\`
+    UPDATE permits
+    SET status = 'approved', approved_by = ?
+    WHERE id = ? AND status = 'pending'
+  \`).run(officerId, permitId)
+  return result.changes === 1
+}
+
+// Approve a permit, then say who it was for.
+function approveAndDescribe(permitId, officerId) {
+  if (!approvePermit(permitId, officerId)) return 'Nothing to approve'
+  const row = db.prepare(\`
+    SELECT climbers.name, permits.peak
+    FROM permits
+    JOIN climbers ON climbers.id = permits.climber_id
+    WHERE permits.id = ?
+  \`).get(permitId)
+  return row.name + ' approved for ' + row.peak
+}
+
+module.exports = { pendingPermits, permitsFor, searchClimbers, approvePermit, approveAndDescribe }` },
+    questions: [
+      { concept: 'sql-select', kind: 'mc', q: 'In one sentence, what does this file do?', options: ['It holds the database queries the permit office needs: list pending permits, find climbers by name, and approve a permit', 'It creates the climbers and permits tables and fills them with starting rows', 'It shows a web page where climbers apply for permits', 'It deletes old permits from the database once a day'], answer: 0, why: 'Each function wraps one question or change for the database. Nothing here creates tables, draws a page or runs on a timer.' },
+      { concept: 'sql-join', kind: 'mc', q: 'The tables hold the rows below. Which names does `pendingPermits()` return, in order?', code: "climbers:  1 Asha, 2 Ben, 3 Carla\n\npermits (id, climber_id, peak, status, requested_on)\n1  1  Lhotse  pending   2026-03-02\n2  2  Makalu  approved  2026-03-01\n3  3  Lhotse  pending   2026-02-20\n4  2  Nuptse  pending   2026-02-11", options: ['Asha, Carla, Ben', 'Ben, Carla, Asha', 'Ben, Ben, Carla, Asha', 'Asha, Ben, Carla'], answer: 1, why: 'The `WHERE` on line 13 drops permit 2, which is approved. `ORDER BY permits.requested_on` on line 14 puts the oldest request first: permit 4 (Ben), then 3 (Carla), then 1 (Asha). The `JOIN` on line 12 supplies each name.' },
+      { concept: 'sql-where', kind: 'mc', q: 'Permit 2 is already approved. What does `approveAndDescribe(2, 7)` return?', options: ['Ben approved for Makalu', 'undefined approved for undefined', 'It throws a TypeError on line 50', 'Nothing to approve'], answer: 3, why: 'The `UPDATE` only matches rows with `status = \'pending\'` (line 36). Permit 2 does not match, so `changes` is 0, `approvePermit` returns false and line 43 returns early.' },
+      { concept: 'sql-update-delete', kind: 'mc', q: '`approveAndDescribe(1, 7)` is called for a pending permit. Which SQL statements run, in order?', options: ['The `SELECT` on lines 45 to 48, then the `UPDATE` on lines 34 to 36', 'Only the `SELECT`: `approvePermit` just checks the permit', 'Only the `UPDATE`: it returns the climber\'s name and the peak', 'The `UPDATE` on lines 34 to 36 inside `approvePermit`, then the `SELECT` with a `JOIN` on lines 45 to 48'], answer: 3, why: 'Line 43 calls `approvePermit` first, which runs the `UPDATE`. Only if that changed a row does line 44 run the `SELECT`, which joins to climbers to get the name.' },
+      { concept: 'sql-order-limit', kind: 'mc', q: 'Officers want the newest request first in the pending list. Which line do you change?', options: ['Line 21', 'Line 13', 'Line 10', 'Line 14'], answer: 3, why: '`ORDER BY` on line 14 sets the order of `pendingPermits`. Adding `DESC` there reverses it. Line 21 sorts a different function, `permitsFor`.' },
+      { concept: 'sql-update-delete', kind: 'mc', q: 'A teammate deletes `AND status = \'pending\'` from line 36. What changes?', options: ['Nothing: `id = ?` already picks exactly one permit', 'Every permit in the table is approved', 'An officer can now re-approve a permit that is already approved or rejected, and it still counts as a change', 'The function throws because the `?` count no longer matches'], answer: 2, why: 'The `id = ?` part still picks one row, so not every permit changes. But the status guard is what stopped a second approval, so `approved_by` could be overwritten and `changes` would be 1.' },
+      { concept: 'sql-injection', kind: 'mc', q: 'A reviewer flags one function in this file. Which one, and why?', options: ['`permitsFor`: the `?` placeholder means the value is never checked', '`pendingPermits`: the `JOIN` lets a visitor read every climber\'s name', '`approvePermit`: an `UPDATE` with a `WHERE` is slow', '`searchClimbers`: the search text is glued into the SQL, so whoever types it can change the query'], answer: 3, why: 'Line 27 builds the SQL by adding `text` between quotes. The other functions pass their values through `?` placeholders, which keep input as data.' },
+      { concept: 'parameterized-query', kind: 'mc', q: 'Which version of lines 27 and 28 fixes the problem and still finds names containing the text?', options: ['Put `%?%` inside the quotes and pass `text` to `.all()`', 'Use `LIKE ?` and pass `"%" + text + "%"` to `.all()`', 'Keep the glued string but call `text.trim()` first', 'Write the same glued query as a template literal with `${text}` inside'], answer: 1, why: 'The `?` stands alone and the `%` signs are added to the value, so the input is always data. A `?` inside quotes is just a character, and trimming or a template literal still glue the text into the SQL.' },
     ],
   },
 

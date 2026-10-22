@@ -94,6 +94,7 @@ export const camp7 = [
       { concept: 'dependency', kind: 'mc', q: 'You ask for 1 package and npm says "added 65 packages". Why?', options: ['npm also grabbed similarly named packages by mistake', 'Your package has dependencies of its own, and they came too', 'npm adds a set of helper packages to every install', 'Old versions of it are kept as backups'], answer: 1, why: 'Dependencies have dependencies (transitive dependencies). You now run code from all 65.' },
       { concept: 'dependency', kind: 'mc', q: 'A forum post says `npm install cross-evn`. The popular package is `cross-env`. What do you do?', options: ['Run it: the name is close enough, and npm would install the right one anyway', 'Stop: a near-miss name may be an attacker\'s look-alike. Check the exact name on npmjs.com', 'Run it: npm will warn you first if the package name is wrong or misspelled', 'Run it, then check npm audit afterwards to see whether anything went wrong'], answer: 1, why: 'Typosquatting: attackers register misspellings of popular packages.' },
       { concept: 'npm', kind: 'mc', q: '`sudo apt install nodejs npm` works on this computer, but its version is often behind. What\'s the recommended way to get current Node and npm?', options: ['nvm, then `nvm install --lts`', '`npm install node`', '`sudo apt upgrade npm`', '`node -v`'], answer: 0, why: 'nvm (Node Version Manager) installs the current Node and npm into your home folder, with no sudo. `nvm install --lts` picks the stable long-term-support version.' },
+      { concept: 'npm', kind: 'mc', q: "You run `npm install sumit-dates` and get this. What went wrong?", code: "npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/sumit-dates - Not found\nnpm error 404\nnpm error 404  'sumit-dates@*' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.", options: ["Your internet is down, so npm can't reach the registry", "package.json has a typo that npm can't read", "The registry has no package with that name: check the spelling", "node_modules is full, so npm can't add a package"], answer: 2, why: "`404 Not Found` from the registry means it answered, but no package has that name. A network failure would look different (ENOTFOUND or ETIMEDOUT). Check the name, for example `summit-dates`." },
     ],
   },
 
@@ -154,6 +155,7 @@ export const camp7 = [
       { concept: 'node-modules', kind: 'mc', q: 'You find a bug inside node_modules/dayjs and fix it there. A teammate clones the project and runs `npm install`. Do they get your fix?', options: ['Yes, node_modules is part of the project, so your fix spreads to everyone who clones it', 'No: node_modules is never committed, and your edit is lost whenever the package is reinstalled or updated', 'Yes, as long as you also commit package.json, since that file records your edit', 'Yes, npm detects the change and keeps your edited version instead of downloading it'], answer: 1, why: 'Never edit node_modules. It\'s rebuilt from the registry, so your change doesn\'t travel and doesn\'t last.' },
       { concept: 'package-json', kind: 'mc', q: 'package.json has `"report": "node report.js"` in its scripts. What does `npm run report` do?', options: ['Starts the project with node index.js', 'Runs node report.js', 'Installs a package called report', 'Lists every script in package.json'], answer: 1, why: 'Scripts are named shortcuts. npm runs the command behind the name.' },
       { concept: 'semver', kind: 'mc', q: 'What is package-lock.json for?', options: ['Preventing anyone from editing package.json without the right permissions', 'Recording the exact installed version of every package, so everyone gets the same ones', 'Encrypting the installed packages so other programs can\'t read their code', 'Listing the scripts you can run with npm run, plus what each one does'], answer: 1, why: 'package.json allows a range; the lock file pins exactly what was installed.' },
+      { concept: 'dependency', kind: 'mc', q: "You run `npm install` and it finishes with this summary. What is a sensible next step?", code: "added 57 packages, and audited 58 packages in 3s\n\n8 packages are looking for funding\n  run `npm fund` for details\n\n1 high severity vulnerability\n\nTo address all issues, run:\n  npm audit fix\n\nRun `npm audit` for details.", options: ["Run npm audit to see which package it is, then try npm audit fix", "Ignore it: the install finished, so nothing is wrong", "Delete node_modules and install again until the line goes away", "Delete package.json so npm stops checking"], answer: 0, why: "The install worked, but npm found a known security problem in a package. Read the details first, then let `npm audit fix` try a safe update." },
     ],
   },
 
@@ -204,6 +206,7 @@ export const camp7 = [
       { concept: 'modules', kind: 'mc', q: 'What prints?', code: '// rules.js\nmodule.exports = { MAX_WIND: 50 }\n\n// app.js\nconst { MAX_WIND } = require("./rules")\nconsole.log(MAX_WIND)', options: ['MAX_WIND', '50', 'undefined', '{ MAX_WIND: 50 }'], answer: 1, why: 'Destructuring pulls MAX_WIND out of the exported object.' },
       { concept: 'modules', kind: 'mc', q: 'You see `Error: Cannot find module \'gear\'`, but gear.js is right there. Most likely fix?', options: ['Install it with npm install gear', 'Add ./ : require("./gear")', 'Add the extension: require("gear.js")', 'Move gear.js into node_modules'], answer: 1, why: 'Without ./ Node searches node_modules for a package called gear.' },
       { concept: 'modules', kind: 'type', q: 'Finish the line that makes `pack` available to other files: `module.exports = ___`', accept: ['{ pack }', '{pack}', '{ pack: pack }', '{pack: pack}'], why: 'Export an object holding the things you want to share.' },
+      { concept: 'modules', kind: 'mc', q: "You run `node app.js` and get this. What do you check first?", code: "Error: Cannot find module './gear'\nRequire stack:\n- /home/climber/trip/app.js\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)\n    at Module._load (node:internal/modules/cjs/loader:1038:27)\n    at Module.require (node:internal/modules/cjs/loader:1289:19)\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [ '/home/climber/trip/app.js' ]", options: ["That you ran npm install gear", "That Node is reinstalled and up to date", "That gear.js exists in the same folder as app.js, spelled the same", "That app.js is renamed to gear.js"], answer: 2, why: "`./` means 'in this folder'. The require stack shows app.js is the file that asked for `./gear`. Check that a file called gear.js sits beside it." },
     ],
   },
 
@@ -262,6 +265,7 @@ export const camp7 = [
       { concept: 'api', kind: 'mc', q: 'What is an API?', options: ['A programming language used for writing the code that talks to other services', 'The set of requests a program or service accepts from other programs, and what it returns', 'A type of database that stores the data other programs ask a service for', 'A website\'s visual design: its buttons, colours and layout that visitors interact with'], answer: 1, why: 'Application Programming Interface: a menu other programs can order from.' },
       { concept: 'api', kind: 'mc', q: 'Where should an API key live?', options: ['In your code, pushed to GitHub so teammates can find it easily', 'In an environment variable or a .env file listed in .gitignore', 'In the page\'s HTML, where the browser can send it with each request', 'In package.json, next to the project\'s name and its dependencies'], answer: 1, why: 'Keys are passwords. Keep them out of anything you share or commit.' },
       { concept: 'json-api', kind: 'mc', q: 'What prints?', code: 'const body = \'{"camp":"Camp II","tempC":-12}\'\nconsole.log(body.tempC)', options: ['-12', 'undefined', 'Camp II', 'SyntaxError'], answer: 1, why: 'body is still text. JSON.parse(body).tempC would give -12.' },
+      { concept: 'status-codes-basics', kind: 'mc', q: "You send a request with `curl -i` and see this. What does the first line tell you?", code: "HTTP/1.1 404 Not Found\nContent-Type: application/json; charset=utf-8\nContent-Length: 31\n\n{\"error\":\"Gear item not found\"}", options: ["The server is working, but nothing exists at the address you asked for", "The server crashed while it was handling your request", "Your request body was missing a required field", "The server is down, so nothing could answer"], answer: 0, why: "Any reply at all means the server is up. 404 means the thing you asked for isn't there: check the URL or id. A crash would be a 500." },
     ],
   },
 
@@ -313,6 +317,7 @@ export const camp7 = [
       { concept: 'fetch', kind: 'mc', q: 'Why does `res.json()` need its own `.then` (or await)?', options: ['It doesn\'t', 'It returns a promise too: the body may still be arriving', 'To check the status code before reading it', 'The JSON must be fetched from a second URL'], answer: 1, why: 'Reading the body is a second wait.' },
       { concept: 'promise', kind: 'mc', q: 'When does `.catch` run?', options: ['Always, at the end', 'When any earlier step in the chain rejects', 'Only on a 404', 'Only when fetch itself fails, not later steps'], answer: 1, why: 'One catch at the end handles a failure anywhere above it.' },
       { concept: 'fetch', kind: 'mc', q: 'Which tells you the response was a success (status 200–299)?', options: ['res.body', 'res.ok', 'res.success', 'res.json'], answer: 1, why: 'res.ok is true for any 2xx status.' },
+      { concept: 'fetch', kind: 'mc', q: "Your script calls `fetch('http://localhost:3000/gear')` and prints this. What does it tell you?", code: "TypeError: fetch failed\n    at node:internal/deps/undici/undici:14976:13 {\n  [cause]: Error: connect ECONNREFUSED 127.0.0.1:3000\n      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {\n    errno: -111,\n    code: 'ECONNREFUSED',\n    syscall: 'connect',\n    address: '127.0.0.1',\n    port: 3000\n  }\n}", options: ["The server answered with a 404 for /gear", "The JSON from the server is broken", "Nothing is listening on port 3000: start the server", "fetch isn't available in this version of Node"], answer: 2, why: "`fetch failed` is the short message. The real reason is in `[cause]`: ECONNREFUSED means the request never found a program on that port." },
     ],
   },
 
@@ -370,6 +375,62 @@ export const camp7 = [
       { concept: 'try-catch', kind: 'mc', q: 'A report loops over 4 camps. One station fails. Where should the try/catch go so the other 3 still print?', options: ['Around the whole loop', 'Inside the loop, around each camp\'s fetch', 'Around the console.log that prints each camp', 'Once, after the loop finishes'], answer: 1, why: 'Inside the loop, one failure only skips that camp.' },
       { concept: 'midterm-planning', kind: 'mc', q: 'Best first step before coding a new tool?', options: ['Write all the code, then run it once', 'Write down the goal, inputs, exact output, steps and failure cases', 'Write the first function, then plan as you go', 'Find a finished tool and copy it'], answer: 1, why: 'A one-screen plan. The sample output becomes your test.' },
       { concept: 'midterm-planning', kind: 'mc', q: 'Your plan covers what happens when every request works. What\'s missing?', options: ['Nothing: a plan only needs the happy path, since errors can be handled later', 'The failure cases: what the tool does when a request fails or data is missing', 'A faster way to run the happy path, because speed matters more than errors', 'A list of every package you could install, so nothing is missing later'], answer: 1, why: 'Real APIs fail. Plan for it, or the code won\'t handle it.' },
+      { concept: 'try-catch', kind: 'mc', q: "Nothing catches the error thrown inside this async function, and Node prints this. Which fix stops the crash?", code: "/home/climber/trip/app.js:2\n  throw new Error('No gear for day 4')\n        ^\n\nError: No gear for day 4\n    at load (/home/climber/trip/app.js:2:9)\n    at Object.<anonymous> (/home/climber/trip/app.js:4:1)\n\nNode.js v20.20.2", options: ["Handle it where load() is called: try/catch around the await, or .catch() on the call", "Call load() twice so one of the calls works", "Move the throw to after the console.log", "Change the throw into a return"], answer: 0, why: "The trace shows an error nothing handled, so Node stopped. Catching it where the function is called lets you print a short message and carry on." },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: '7-read', type: 'read', mode: 'phone', xp: 30, mins: 16,
+    title: 'Read the route: the wind check',
+    uses: ['modules', 'request-response', 'status-codes-basics', 'json-api', 'fetch', 'promise', 'async-await', 'try-catch'],
+    intro: 'A teammate wrote `summit-window.js` to ask a forecast service for tomorrow\'s wind and print a GO or HOLD call. It loads a rule from a second file, `rules.js`. That file is not shown, so the comment at the top copies what is inside it. The URL is made up; read the code as if the service were real.',
+    file: { name: 'summit-window.js', lang: 'js', code: `// summit-window.js: checks tomorrow's wind and prints a GO / HOLD call.
+//
+// rules.js sits next to this file. It contains:
+//   const MAX_WIND = 50
+//   function verdict(windKph) {
+//     return windKph > MAX_WIND ? "HOLD" : "GO"
+//   }
+//   module.exports = { MAX_WIND, verdict }
+const { MAX_WIND, verdict } = require("./rules")
+
+const FORECAST_URL = "https://api.example.com/forecast?site=ridge&day=tomorrow"
+
+// The service answers with JSON like: { "site": "ridge", "windKph": 42 }
+async function getWind() {
+  const response = await fetch(FORECAST_URL)
+  if (!response.ok) {
+    throw new Error("Forecast service said " + response.status)
+  }
+  const data = await response.json()
+  return data.windKph
+}
+
+async function main() {
+  console.log("Checking the forecast...")
+  try {
+    const wind = await getWind()
+    console.log(\`Wind: \${wind} km/h (limit \${MAX_WIND})\`)
+    console.log("Call: " + verdict(wind))
+  } catch (error) {
+    console.error("Could not check the wind: " + error.message)
+    process.exitCode = 1
+  }
+  console.log("Done")
+}
+
+main()
+console.log("Request sent")` },
+    questions: [
+      { concept: 'fetch', kind: 'mc', q: 'In one sentence, what does `summit-window.js` do?', options: ['Asks a forecast service for the wind and prints a GO or HOLD call, or an error message if that fails', 'Starts a small web server that other programs can ask for the wind', 'Saves the wind speed into rules.js', 'Prints GO every time, then checks the wind'], answer: 0, why: '`fetch` asks the service, `verdict` turns the wind into GO or HOLD, and the `catch` block reports a failure.' },
+      { concept: 'modules', kind: 'mc', q: 'The service answers `{ "site": "ridge", "windKph": 65 }`. What does the `Call:` line print?', options: ['Call: HOLD', 'Call: GO', 'Call: 65', 'Wind: HOLD'], answer: 0, why: '`verdict(65)` runs the code from `rules.js`. 65 is greater than `MAX_WIND` (50), so it returns "HOLD".' },
+      { concept: 'async-await', kind: 'mc', q: 'The service answers normally. Which output line comes second?', options: ['Request sent', 'Wind: 42 km/h (limit 50)', 'Checking the forecast...', 'Done'], answer: 0, why: 'The first line prints, then `await` pauses `main` while it waits for the answer. The code after `main()` on line 37 runs in the meantime, so `Request sent` comes second.' },
+      { concept: 'async-await', kind: 'mc', q: '`main` is defined on line 23. Which line makes it run?', options: ['Line 36', 'Line 26', 'Line 14', 'Line 9'], answer: 0, why: 'A definition does nothing until it is called. `main()` on line 36 is the call that starts everything.' },
+      { concept: 'modules', kind: 'mc', q: 'The team wants the wind limit to be 40 km/h instead of 50. Where do you change it?', options: ['`MAX_WIND` in rules.js: this file only imports it', 'Line 9 of this file', 'Line 11 of this file', 'Line 27 of this file'], answer: 0, why: 'The number lives in `rules.js`. Line 9 only pulls the name in, and line 27 only prints it.' },
+      { concept: 'try-catch', kind: 'mc', q: 'The service answers with HTTP status 503. What does the script report?', options: ['Could not check the wind: Forecast service said 503', 'Wind: 503 km/h (limit 50)', 'Call: HOLD', 'Nothing: it crashes with an unhandled error'], answer: 0, why: '`response.ok` is false for 503, so line 17 throws. The `catch` block on line 29 handles it and prints the message with the status.' },
+      { concept: 'json-api', kind: 'mc', q: 'The service answers 200 OK, but the JSON is `{ "site": "ridge" }` with no `windKph`. What does the script call?', options: ['Call: GO, even though it has no wind figure', 'Call: HOLD', 'Could not check the wind', 'It crashes with a stack trace'], answer: 0, why: '`data.windKph` is undefined, and `undefined > 50` is false, so `verdict` returns "GO". Nothing throws, so the `catch` block never runs. A reviewer would flag a safe-looking GO built on missing data.' },
+      { concept: 'status-codes-basics', kind: 'mc', q: 'What does `response.ok` on line 16 tell the script?', options: ['Whether the server answered with a success status', 'Whether the JSON is valid', 'Whether the wind is below the limit', 'Whether the computer is online'], answer: 0, why: '`ok` is true for success statuses (200 to 299). A 404 or 503 makes it false, even though the request itself reached the server.' },
     ],
   },
 

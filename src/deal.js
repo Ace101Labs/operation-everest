@@ -26,7 +26,7 @@ export function deal(questions, platform) {
     const fresh = versions.map((_, k) => k).filter(k => versions.length === 1 || k !== last[base.qid])
     const k = fresh[Math.floor(Math.random() * fresh.length)]
     if (base.qid) last[base.qid] = k
-    const v = { ...versions[k], qid: base.qid, concept: base.concept, kind: base.kind }
+    const v = { ...versions[k], qid: base.qid, concept: base.concept, kind: base.kind, file: base.file }
     delete v.alts; delete v.os
     if (v.kind !== 'mc') return v
     const order = shuffle(v.options.map((_, j) => j))

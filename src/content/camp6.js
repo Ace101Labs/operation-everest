@@ -64,6 +64,7 @@ export const camp6 = [
       { concept: 'read-file', kind: 'mc', q: 'You forget the `\'utf8\'`. What prints when you log the result?', options: ['The text', '[object Object]', 'Something like <Buffer 63 72 61 …>', 'Error: encoding is required'], answer: 2, why: 'You get raw bytes (a Buffer). Add `\'utf8\'` to get text.' },
       { concept: 'fs-module', kind: 'mc', q: 'You\'re in your home folder and run `node app/report.js`. The code reads `\'data.json\'`. Where does Node look?', options: ['In app/', 'In your home folder, where you ran the command', 'In the folder where Node is installed', 'In app/ first, then your home folder'], answer: 1, why: 'Relative paths start from where you ran node, not where the script lives.' },
       { concept: 'write-file', kind: 'type', q: 'gear.txt holds the text `rope`. You run `fs.writeFileSync(\'gear.txt\', \'axe\')`. Type exactly what gear.txt holds now.', accept: ['axe'], why: 'writeFileSync replaces the whole file, so rope is gone. To keep it and add to the end, use appendFileSync.' },
+      { concept: 'read-file', kind: 'mc', q: "You run `node load.js` and get this. Which file and line of YOUR code do you open first?", code: "node:fs:448\n    return binding.readFileUtf8(path, stringToFlags(options.flag));\n                   ^\n\nError: ENOENT: no such file or directory, open 'gear.json'\n    at Object.readFileSync (node:fs:448:20)\n    at Object.<anonymous> (/home/climber/trip/load.js:2:17)\n    at Module._compile (node:internal/modules/cjs/loader:1521:14)", options: ["load.js, line 2: that is where your code calls readFileSync", "node:fs, line 448: that is the line that failed", "Module._compile, line 1521: the last line of the trace", "gear.json, line 1: the file the error names"], answer: 0, why: "Read the trace for the first path that is YOUR file. `node:fs` and `Module._compile` are Node's own code, and `gear.json` doesn't exist, so there is nothing to open. Line 2 of load.js asked for it." },
     ],
   },
 
@@ -122,6 +123,7 @@ export const camp6 = [
       { concept: 'json-parse-stringify', kind: 'mc', q: 'What prints?', code: 'console.log(JSON.stringify({ a: 1, b: undefined }))', options: ['{"a":1,"b":undefined}', '{"a":1,"b":null}', '{"a":1}', '{"a":1,"b":""}'], answer: 2, why: 'stringify silently leaves out keys whose value is undefined.' },
       { concept: 'json-parse-stringify', kind: 'mc', q: '`JSON.parse(\'\')` on an empty file gives…', options: ['SyntaxError: Unexpected token { in JSON at position 0', 'TypeError: Cannot convert an empty string to an object', 'SyntaxError: Unexpected end of JSON input', 'RangeError: JSON input must not be empty'], answer: 2, why: 'Empty text isn\'t JSON. Put `{}` or `[]` in new files.' },
       { concept: 'json', kind: 'type', q: 'In JSON, what kind of quotes must keys and strings use? Type `single` or `double`.', accept: ['double', 'double quotes', '"'], why: 'Always double quotes in JSON.' },
+      { concept: 'json-parse-stringify', kind: 'mc', q: "Your program crashes with this. What is wrong?", code: "SyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at Object.<anonymous> (/home/climber/trip/scores.js:2:19)\n    at Module._compile (node:internal/modules/cjs/loader:1521:14)", options: ["The JSON has single quotes where double quotes are needed", "The file scores.js has a typo on line 2", "The text given to JSON.parse is empty or cut off, for example an empty file", "JSON.parse can't be called from a .js file"], answer: 2, why: "`Unexpected end of JSON input` means the text stopped before a complete value. An empty file does this. Line 2 of scores.js is where parse was called." },
     ],
   },
 
@@ -188,6 +190,7 @@ export const camp6 = [
       { concept: 'git-log', kind: 'mc', q: 'Plain `git log` filled the screen and you see `:` at the bottom. How do you get your prompt back?', options: ['Ctrl+D', 'Press q', 'Type exit', 'Press Esc'], answer: 1, why: 'Long output opens a pager. q quits.' },
       { concept: 'commit', kind: 'type', q: 'Type the full command to commit with the message `Add notes`.', accept: ['git commit -m "Add notes"', 'git commit -m \'Add notes\''], why: '`git commit -m "message"`, with quotes.' },
       { concept: 'git', kind: 'mc', q: 'Your computer doesn\'t have Git yet. Which command installs it?', options: ['sudo apt install git', 'git --version', 'sudo git install', 'sudo install git'], answer: 0, why: 'apt is this computer\'s package manager, and sudo lets it install for the whole system. `git --version` only checks that Git is there.' },
+      { concept: 'staging-area', kind: 'mc', q: "You run `git status`. If you run `git commit -m \"Pack\"` now, which file goes into the commit?", code: "On branch main\nChanges to be committed:\n  (use \"git restore --staged <file>...\" to unstage)\n\tmodified:   gear.txt\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   notes.txt\n\nUntracked files:\n  (use \"git add <file>...\" to include in what will be committed)\n\tmap.txt", options: ["gear.txt only", "gear.txt and notes.txt", "gear.txt, notes.txt and map.txt", "notes.txt and map.txt"], answer: 0, why: "Only what is under 'Changes to be committed' is staged. notes.txt is changed but not staged, and map.txt is not tracked yet." },
     ],
   },
 
@@ -250,6 +253,7 @@ export const camp6 = [
       { concept: 'gitignore', kind: 'mc', q: 'You committed `.env` yesterday. Today you add `.env` to .gitignore. Is it safe now?', options: ['Yes, it\'s ignored now, so Git will never include the file in anything again', 'No: it\'s still tracked and in history. Untrack it, and treat the secret as leaked', 'Yes, the secret disappears from every commit made after this one', 'Yes, adding it to .gitignore makes Git rewrite the old commits to remove it'], answer: 1, why: '.gitignore only affects untracked files. History keeps the old copy.' },
       { concept: 'gitignore', kind: 'mc', q: 'Should the `.gitignore` file itself be committed?', options: ['No, it\'s a private settings file that only belongs on your computer', 'Yes, so everyone on the project ignores the same things', 'Only on the main branch, since other branches don\'t need an ignore list', 'No, Git hides it automatically, so it never shows up in a commit'], answer: 1, why: 'Commit it. The secrets it lists stay out; the list itself is harmless.' },
       { concept: 'gitignore', kind: 'type', q: 'Type the .gitignore line that ignores the whole `backups` folder.', accept: ['backups/', 'backups', '/backups/', '/backups'], why: 'A folder name, usually with a trailing slash: `backups/` ignores the folder and everything inside it.' },
+      { concept: 'git-diff', kind: 'mc', q: "What does this `git diff` tell you?", code: "diff --git a/gear.txt b/gear.txt\nindex 982fe5b..0127ed9 100644\n--- a/gear.txt\n+++ b/gear.txt\n@@ -1,2 +1,3 @@\n rope\n stove\n+tent", options: ["The line stove was removed from gear.txt", "The line stove was changed to tent", "One new line, tent, was added at the end of gear.txt", "gear.txt is a new file with three lines"], answer: 2, why: "A line starting with `+` was added and one starting with `-` was removed. Lines with a space in front are unchanged context. Only `+tent` shows up, and nothing starts with `-`." },
     ],
   },
 
@@ -312,6 +316,8 @@ export const camp6 = [
       { concept: 'merge-conflict', kind: 'mc', q: 'In a conflicted file, what\'s between `<<<<<<< HEAD` and `=======`?', options: ['The version from the branch you\'re merging in', 'Your current branch\'s version', 'The version from the common starting point', 'Only the lines both branches agree on'], answer: 1, why: 'HEAD = where you are. The other side follows `=======`.' },
       { concept: 'merge-conflict', kind: 'mc', q: 'You edited the conflicted file into shape and removed the markers. What next?', options: ['git push', 'git add the file, then git commit', 'git switch main', 'Run git merge again to retry'], answer: 1, why: '`git add` marks it resolved; `git commit` finishes the merge.' },
       { concept: 'merge-conflict', kind: 'mc', q: 'Mid-conflict you panic and want everything back how it was before the merge. Real Git command?', options: ['git revert HEAD', 'git merge --abort', 'git restore .', 'git checkout main'], answer: 1, why: '`git merge --abort` cancels the merge safely.' },
+      { concept: 'merge-conflict', kind: 'mc', q: "After `git merge summit` you open gear.txt and see this. What do you do?", code: "rope\nstove\ntent\n<<<<<<< HEAD\nbase tent\n=======\nsummit tent\n>>>>>>> summit", options: ["Edit the file to the lines you want, delete the three marker lines, then git add and git commit", "Run git merge summit again until the markers go away", "Delete gear.txt and run git restore to get a clean copy", "Commit as it is, because the markers are only comments"], answer: 0, why: "Git can't choose between two edits on the same lines, so it writes both with markers and waits. You decide the final text, remove `<<<<<<<`, `=======` and `>>>>>>>`, then stage and commit." },
+      { concept: 'branch', kind: 'mc', q: "You run `git log --oneline --decorate`. Which branch are you on, and what does the other name mean?", code: "74ce2f8 (HEAD -> main) Pack base tent\nb462630 (summit) Pack summit tent\ned278df Add tent\ncc9417d Add gear list", options: ["On summit; main's newest commit is b462630", "On main; summit and main both point at 74ce2f8", "On main; the summit branch's newest commit is b462630", "On a detached commit; neither branch is checked out"], answer: 2, why: "`HEAD -> main` is where you are now. A name in brackets on another commit is a branch pointing there, so summit's newest commit is b462630." },
     ],
   },
 
@@ -374,6 +380,76 @@ export const camp6 = [
       { concept: 'push-pull', kind: 'mc', q: '`git pull` is really two steps. Which?', options: ['add + commit', 'fetch + merge', 'fetch + push', 'clone + checkout'], answer: 1, why: 'Download the new commits, then merge them into your branch.' },
       { concept: 'push-pull', kind: 'mc', q: '`git status` says "Your branch is ahead of \'origin/main\' by 2 commits." Meaning?', options: ['GitHub has 2 commits you don\'t', 'You have 2 commits GitHub doesn\'t: push them', 'You have 2 uncommitted files', 'Your branch and origin/main have diverged by 2'], answer: 1, why: 'Ahead = you have unpushed commits.' },
       { concept: 'push-pull', kind: 'type', q: 'You made two commits on your laptop, and the upstream is already set. Type the command that puts them on GitHub.', accept: ['git push'], why: 'Plain `git push` sends your commits up once the upstream is set. `git pull` goes the other way.' },
+      { concept: 'push-pull', kind: 'mc', q: "You run `git push` and it prints this. What is the right next step?", code: "To github.com:climber/summit-log.git\n ! [rejected]        main -> main (fetch first)\nerror: failed to push some refs to 'github.com:climber/summit-log.git'\nhint: Updates were rejected because the remote contains work that you do\nhint: not have locally. This is usually caused by another repository pushing\nhint: to the same ref. You may want to first integrate the remote changes\nhint: (e.g., 'git pull ...') before pushing again.", options: ["Run git pull, fix any conflict, then git push again", "Run git push --force so your copy replaces the remote", "Run git commit again so the push has something new", "Delete the folder and clone the repository again"], answer: 0, why: "The remote has commits you don't have. Pull them in first, then push. A force push would erase that work." },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: '6-read', type: 'read', mode: 'phone', xp: 30, mins: 16,
+    title: 'Read the route: the check-in board',
+    uses: ['fs-module', 'read-file', 'write-file', 'json', 'json-parse-stringify', 'git-diff', 'git-log', 'process-argv', 'template-literal'],
+    intro: 'A teammate wrote `checkin.js` to keep a board of which camp each climber has reached. It saves the board in `checkins.json` and the project lives in git, so a couple of questions show git output about it. Read the script, then answer.',
+    file: { name: 'checkin.js', lang: 'js', code: `// checkin.js: node checkin.js <name> <camp>
+// Records the furthest camp each climber has reached in checkins.json.
+const fs = require("fs")
+const FILE = "checkins.json"
+
+function load() {
+  if (!fs.existsSync(FILE)) {
+    return {}
+  }
+  const text = fs.readFileSync(FILE, "utf8")
+  return JSON.parse(text)
+}
+
+function save(data) {
+  fs.writeFileSync(FILE, JSON.stringify(data, null, 2) + "\\n")
+}
+
+const name = process.argv[2]
+const camp = Number(process.argv[3])
+
+if (!name || !Number.isInteger(camp) || camp < 1) {
+  console.error("Usage: node checkin.js <name> <camp>")
+  process.exit(1)
+}
+
+const data = load()
+const previous = data[name] || 0
+
+if (camp <= previous) {
+  console.log(\`\${name} is already at camp \${previous}\`)
+} else {
+  data[name] = camp
+  save(data)
+  console.log(\`\${name} moved to camp \${camp}\`)
+}
+
+const names = Object.keys(data)
+console.log(\`\${names.length} climbers on the board\`)` },
+    questions: [
+      { concept: 'json', kind: 'mc', q: 'In one sentence, what does `checkin.js` do?', options: ['Stores the furthest camp each named climber has reached in a JSON file and prints what changed', 'Prints every climber in checkins.json and the camp they are at', 'Deletes a climber from checkins.json', 'Adds one new line of text to a log file on every run'], answer: 0, why: 'The script loads the board, updates one name\'s camp if it is higher than before, saves it, and prints a short message.' },
+      { concept: 'json-parse-stringify', kind: 'mc', q: '`checkins.json` holds `{ "mira": 2 }`. You run `node checkin.js tomas 3`. What does `previous` hold on line 27?', options: ['0', 'undefined', '2', '3'], answer: 0, why: '`data["tomas"]` does not exist, so it is undefined. `|| 0` swaps undefined for 0.' },
+      { concept: 'git-diff', kind: 'mc', q: 'Before these runs, `checkins.json` held `{ "mira": 2 }`. Which pair of runs produced this `git diff`?', code: `diff --git a/checkins.json b/checkins.json
+index e8d607b..137d397 100644
+--- a/checkins.json
++++ b/checkins.json
+@@ -1,3 +1,4 @@
+ {
+-  "mira": 2
++  "mira": 4,
++  "tomas": 3
+ }`, options: ['`node checkin.js mira 4` and `node checkin.js tomas 3`', '`node checkin.js mira 2` and `node checkin.js tomas 3`', '`node checkin.js tomas 3` only', '`node checkin.js mira 1` and `node checkin.js mira 4`'], answer: 0, why: 'The `-` line is removed and the `+` lines are added. Mira\'s number went from 2 to 4 and tomas was added at 3. Running `mira 2` would change nothing, because 2 is not higher than 2.' },
+      { concept: 'read-file', kind: 'mc', q: 'Line 10 reads the file from disk. Which line of the script makes that code run?', options: ['Line 26', 'Line 6', 'Line 3', 'Line 18'], answer: 0, why: 'Line 6 only defines `load`. Line 26 calls it, and that is when line 10 runs.' },
+      { concept: 'write-file', kind: 'mc', q: 'The board should be saved in `climbers.json` instead. Which line do you change?', options: ['Line 15', 'Line 4', 'Line 10', 'Line 3'], answer: 1, why: 'The file name is stored once, in `FILE` on line 4. Lines 7, 10 and 15 all use that name.' },
+      { concept: 'json-parse-stringify', kind: 'mc', q: 'A crash while saving left `checkins.json` empty. Now every run fails with this error. What went wrong?', code: `SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at load (/home/climber/checkin.js:11:15)
+    at Object.<anonymous> (/home/climber/checkin.js:26:14)`, options: ['`JSON.parse` on line 11 was given empty text, which is not valid JSON', 'The existsSync check on line 7 returned false', 'Line 21 rejected the arguments', 'writeFileSync on line 15 could not find the file'], answer: 0, why: 'The file exists, so `load` reads it, but an empty string is not JSON. The top frame, `JSON.parse` called from `load` at line 11, shows where it broke.' },
+      { concept: 'template-literal', kind: 'mc', q: 'On the very first run, the script ends with `1 climbers on the board`. What causes that wording?', options: ['Line 38 always writes "climbers", whatever the count is', 'Line 37 counts one name too many', 'Line 33 saves the data with the wrong count', 'JSON.stringify on line 15 changes the number'], answer: 0, why: 'The word is fixed text in the template literal, so it never changes to "climber". A reviewer would flag it as a small wording bug.' },
+      { concept: 'git-log', kind: 'mc', q: 'Reading this `git log --oneline`, which change was made most recently?', code: `c83a1f0 Stop lowering a climber's camp
+5d2e9b7 Add check-in script`, options: ['Stop lowering a climber\'s camp', 'Add check-in script', 'Add checkins.json', 'The log does not show the order'], answer: 0, why: '`git log` lists the newest commit first, so the top line is the latest change.' },
     ],
   },
 

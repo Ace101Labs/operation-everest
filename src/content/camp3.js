@@ -334,6 +334,44 @@ export const camp3 = [
     ],
   },
 
+  // ───── Code reading ─────
+  {
+    id: '3-read', type: 'read', mode: 'phone', xp: 30, mins: 12,
+    title: 'Read the route: the oxygen planner',
+    uses: ['variable', 'let-const', 'arithmetic', 'template-literal', 'string-concat', 'comparison', 'if-else', 'logical-operators', 'while-loop', 'increment'],
+    intro: 'A teammate wrote `oxygen.js` to plan how many days one bottle will last. The numbers are made up, but the code is the kind you will meet every day: a few variables, a loop and an `if`. Read it before you run it in your head.',
+    file: { name: 'oxygen.js', lang: 'js', code: `// oxygen.js: plans how long one bottle lasts on the push
+const startPressure = 300
+const dailyUse = 70
+const reserve = 50
+
+let pressure = startPressure
+let day = 1
+
+while (pressure >= dailyUse) {
+  pressure = pressure - dailyUse
+  console.log(\`Day \${day}: \${pressure} bar left\`)
+  day++
+}
+
+if (day > 4 && pressure < reserve) {
+  console.log("Order a refill")
+} else {
+  console.log("One bottle is enough")
+}
+console.log("Days planned: " + day)` },
+    questions: [
+      { concept: 'while-loop', kind: 'mc', q: 'In one sentence, what does `oxygen.js` do?', options: ['Takes 70 off the pressure again and again, printing each day, until too little is left for another day, then says whether to order a refill', 'Adds 70 to the pressure each day until it reaches 300, then prints a refill message', 'Prints the pressure once, then asks the climber whether to order a refill', 'Orders a refill every time it runs, whatever the numbers are'], answer: 0, why: 'The loop on lines 9 to 13 subtracts `dailyUse` from `pressure` and prints a line each time. Lines 15 to 19 then print one of two messages.' },
+      { concept: 'while-loop', kind: 'mc', q: 'How many lines ending in `bar left` does the program print?', options: ['3', '4', '5', '6'], answer: 1, why: 'Pressure goes 300, 230, 160, 90, 20. The loop runs while pressure is at least 70, so it runs four times and the fifth check (20 >= 70) is false.' },
+      { concept: 'increment', kind: 'mc', q: 'What does `day` hold when line 15 runs?', options: ['4', '5', '1', '70'], answer: 1, why: '`day` starts at 1 and `day++` on line 12 runs once per pass. Four passes make it 5.' },
+      { concept: 'while-loop', kind: 'mc', q: 'Which line is the first one in the file to print anything?', options: ['Line 1', 'Line 11', 'Line 16', 'Line 20'], answer: 1, why: 'Line 1 is a comment, so it never runs. Lines 2 to 7 only set up variables. The first print is inside the loop, on line 11.' },
+      { concept: 'let-const', kind: 'mc', q: 'The team wants to keep 80 bar in reserve instead of 50. Which line do you change?', options: ['Line 15', 'Line 6', 'Line 4', 'Line 3'], answer: 2, why: 'The reserve value lives on line 4. Line 15 only uses the name `reserve`, so changing line 4 updates it everywhere.' },
+      { concept: 'while-loop', kind: 'mc', q: 'A teammate changes line 2 to `const startPressure = 60`. What does the program print?', options: ['One bottle is enough, then Days planned: 1', 'Day 1: -10 bar left, then One bottle is enough', 'Nothing at all', 'Order a refill, then Days planned: 1'], answer: 0, why: '60 is already below 70, so the `while` check on line 9 is false straight away and the loop body never runs. `day` stays 1, and `day > 4` is false.' },
+      { concept: 'increment', kind: 'mc', q: 'The output ends with `Days planned: 5`, but the bottle only covers 4 days. Why?', options: ['`day` starts at 1 and goes up after every pass, so it ends one higher than the number of days that were covered', 'The loop runs five times instead of four', 'Line 10 subtracts the daily use twice on the last pass', 'Line 20 adds 1 when it joins the text and the number'], answer: 0, why: 'After the fourth pass, `day++` still runs and makes `day` 5. That is also why `day > 4` on line 15 is true after only four days. The count is one too high.' },
+      { concept: 'logical-operators', kind: 'mc', q: 'Why does line 16 print `Order a refill` in this program?', options: ['Both sides of `&&` on line 15 are true: day is 5 and pressure is 20', 'Only the left side is true, and `&&` needs just one side', 'Pressure is higher than the reserve', 'The else branch runs whenever the loop ends'], answer: 0, why: '`&&` needs both sides true. `5 > 4` is true and `20 < 50` is true, so the `if` branch runs.' },
+    ],
+  },
+
   // ───────────────────────────── Bonus: route puzzles (your code moves the climber) ─────────────────────────────
   {
     id: '3-r1', type: 'route', mode: 'phone', bonus: true, xp: 20, mins: 8,

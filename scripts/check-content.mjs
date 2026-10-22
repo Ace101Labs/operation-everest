@@ -3,6 +3,7 @@
 // a question is malformed. Run automatically by `npm run build`.
 import { ALTS, CAMPS, QUESTIONS } from '../src/content/camps.js'
 import { OS_QUESTIONS } from '../src/content/os-questions.js'
+import { PREDICT } from '../src/content/predict.js'
 import { PLATFORMS } from '../src/platforms.js'
 import { DUPLICATE_CARDS, GUIDE } from '../src/content/guide.js'
 import { TYPE } from '../src/content/names.js'
@@ -24,7 +25,7 @@ const problems = []
   if (added.length) writeFileSync(BASE, JSON.stringify([...shipped, ...added]) + '\n')
 }
 for (const id of DUPLICATE_CARDS) problems.push(`card id "${id}" is defined in two guide files; the later one silently replaces the earlier`)
-const QUIZ = ['learn', 'audit', 'avalanche', 'yeti', 'boss']
+const QUIZ = ['learn', 'read', 'audit', 'avalanche', 'yeti', 'boss']
 let questions = 0, lessons = 0, alts = 0
 
 for (const camp of CAMPS) {
@@ -55,6 +56,14 @@ for (const camp of CAMPS) {
       lessons++
       for (const part of ['idea', 'example', 'tryit', 'mistakes', 'recap']) if (!s[part]) problems.push(`${where}: lesson is missing its "${part}" part`)
       if ((s.questions || []).length < 5) problems.push(`${where}: quiz needs at least 5 questions so one slip still passes at 80%`)
+    }
+    // Code reading: someone else's file, read before the camp's drills. Questions point at its lines.
+    if (s.type === 'read') {
+      const n = s.file?.code?.split('\n').length || 0
+      if (!s.file?.name || !n) problems.push(`${where}: a code-reading stage needs file: { name, lang, code }`)
+      if ((s.questions || []).length < 6) problems.push(`${where}: a code-reading stage needs at least 6 questions`)
+      for (const [i, q] of (s.questions || []).entries()) for (const v of [q, ...(q.alts || [])])
+        for (const m of `${v.q} ${(v.options || []).join(' ')} ${v.why || ''}`.matchAll(/\blines? (\d+)/gi)) if (+m[1] > n) problems.push(`${where} Q${i + 1}: mentions line ${m[1]} but ${s.file.name} has ${n} lines`)
     }
     const nowTaught = new Set([...taught, ...(s.teaches || [])])
     for (const c of s.uses || []) if (!nowTaught.has(c)) problems.push(`${where}: uses "${c}" before any lesson teaches it`)
@@ -112,8 +121,35 @@ for (const [id, byOs] of Object.entries(OS_QUESTIONS)) {
   }
 }
 
+// Predict-first stops: each one sits on a real step of a lesson's worked example and has a
+// clear right answer. Options are shuffled on screen, so none may point at another by position.
+let predicts = 0
+const STAGES = Object.fromEntries(CAMPS.flatMap(c => (c.stages || []).map(s => [s.id, s])))
+for (const [id, list] of Object.entries(PREDICT)) {
+  const s = STAGES[id]
+  if (!s || s.type !== 'learn') { problems.push(`predict ${id}: no lesson has that id`); continue }
+  if (list.length > 3) problems.push(`predict ${id}: at most 3 stops per lesson (the walkthrough is still a walkthrough)`)
+  const lines = new Set()
+  for (const pr of list) {
+    const at = `predict ${id} line ${pr.line}`
+    predicts++
+    if (!s.example.steps.some(st => st.line === pr.line)) problems.push(`${at}: the worked example has no step on that line`)
+    if (lines.has(pr.line)) problems.push(`${at}: two stops on one line`)
+    lines.add(pr.line)
+    if (!pr.q) problems.push(`${at}: needs q`)
+    const n = s.example.code.split('\n').length
+    if (pr.hide && (!Array.isArray(pr.hide) || pr.hide.some(l => !Number.isInteger(l) || l < 1 || l > n))) problems.push(`${at}: hide must list line numbers of the example`)
+    if (!Array.isArray(pr.options) || pr.options.length < 2 || pr.options.length > 4) problems.push(`${at}: needs 2-4 options`)
+    else {
+      if (new Set(pr.options).size !== pr.options.length) problems.push(`${at}: options repeat`)
+      if (pr.answer == null || pr.answer < 0 || pr.answer >= pr.options.length) problems.push(`${at}: answer index out of range`)
+      if (pr.options.some(o => /\b(above|below|first|second|third|both|none of|all of)\b/i.test(o))) problems.push(`${at}: an option refers to other options, but options are shuffled`)
+    }
+  }
+}
+
 if (problems.length) {
   console.error(`\n✗ Content check failed (${problems.length}):\n  ` + problems.join('\n  ') + '\n')
   process.exit(1)
 }
-console.log(`✓ Content check: ${lessons} lessons, ${questions} questions (+${alts} alternate versions, +${osVersions} computer-specific), ${taught.size} concepts. Everything tested was taught first.`)
+console.log(`✓ Content check: ${lessons} lessons, ${questions} questions (+${alts} alternate versions, +${osVersions} computer-specific, +${predicts} predict-first stops), ${taught.size} concepts. Everything tested was taught first.`)

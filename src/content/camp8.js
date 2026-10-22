@@ -82,6 +82,7 @@ export const camp8 = [
       { concept: 'html-attribute', kind: 'mc', q: 'Which attribute may only be used by ONE element on a page?', options: ['class', 'id', 'href', 'alt'], answer: 1, why: 'Each `id` must be unique. Use `class` for groups.' },
       { concept: 'devtools', kind: 'type', q: 'On a computer, you right-click any part of a web page. Which menu item opens the devtools on that element? (one word)', accept: ['Inspect', 'inspect', 'Inspect Element', 'inspect element'], why: '**Inspect** jumps straight to that element in the Elements panel.' },
       { concept: 'devtools', kind: 'mc', q: 'You change a heading\'s text in the devtools, then reload the page. What do you see?', options: ['Your change, saved', 'The original text: devtools edits are temporary', 'Your change, kept until you close the tab', 'The file\'s text with your change merged in'], answer: 1, why: 'The devtools edit the live page in memory, not your file.' },
+      { concept: 'devtools', kind: 'mc', q: "The page loads with no styling. In DevTools, the Network tab lists these requests. What does it tell you?", code: "Name         Status   Type\nindex.html   200      document\nstyle.css    404      stylesheet\napp.js       200      script", options: ["The browser blocked style.css because it has a CSS typo", "app.js changed the page and removed the styles", "The browser asked for style.css, but the server has no file at that path", "index.html loaded, so the stylesheet loaded too"], answer: 2, why: "Status 404 means not found. Check the `href` in the `<link>` tag and that the file is really where it says." },
     ],
   },
 
@@ -170,6 +171,8 @@ export const camp8 = [
       { concept: 'accessibility', kind: 'mc', q: 'Why is `<button>` better than a `<div>` with a click handler?', options: ['It\'s shorter to type, and shorter code means fewer bugs in the page', 'It can be reached with Tab, pressed with Enter or Space, and is announced as a button', 'Click handlers only run on buttons, so a div with one never responds at all', 'Buttons run JavaScript noticeably faster than divs do in the browser'], answer: 1, why: 'Real buttons come with keyboard support and the right announcement, free.' },
       { concept: 'accessibility', kind: 'mc', q: 'WCAG level AA asks normal-size text to have a contrast ratio of at least…', options: ['3:1', '7:1', '4.5:1', '21:1'], answer: 2, why: '4.5:1 for normal text, 3:1 for large text. 21:1 is the maximum (black on white).' },
       { concept: 'accessibility', kind: 'mc', q: 'A form says "Fields in red are required." What\'s the accessibility problem?', options: ['The message sits above the form instead of below it, where people look', 'Colour-blind users and screen reader users can\'t tell which fields are required', 'Screen readers can\'t pronounce the word red, so the sentence makes no sense', 'Nothing: red is the standard colour for required fields, so everyone understands'], answer: 1, why: 'Never rely on colour alone. Add text like "(required)" and the `required` attribute.' },
+      { concept: 'html-element', kind: 'mc', q: "An HTML validator prints this. What does it mean?", code: "Error: Unclosed element ul.\nFrom line 12, column 5; to line 12, column 8\n    <ul>", options: ["The ul opened on line 12 never got its closing tag", "The ul on line 12 is closed twice", "The ul tag is not allowed in HTML", "Line 12 is missing an li element"], answer: 0, why: "'Unclosed' means a start tag with no matching end tag. The location is where the start tag begins." },
+      { concept: 'accessibility', kind: 'mc', q: "An HTML validator prints this. What do you add?", code: "Error: An img element must have an alt attribute, except under certain conditions.\nFrom line 8, column 5; to line 8, column 32\n    <img src=\"tent.png\">", options: ["A title tag in the head", "A width attribute on the image", "An alt attribute that describes the image", "A closing </img> tag"], answer: 2, why: "Alt text is what a screen reader says, and what shows if the image fails to load." },
     ],
   },
 
@@ -254,6 +257,7 @@ export const camp8 = [
       { concept: 'box-model', kind: 'mc', q: 'Which part of the box is the space between the content and the border, filled by the background colour?', options: ['Margin', 'Padding', 'Content', 'Outline'], answer: 1, why: 'Padding is inside the border; margin is outside and transparent.' },
       { concept: 'box-model', kind: 'mc', q: 'With default sizing, how wide is this box on screen?', code: '.box { width: 200px; padding: 20px; border: 2px solid black; }', options: ['200px', '220px', '242px', '244px'], answer: 3, why: '200 + 20 + 20 + 2 + 2 = 244. `box-sizing: border-box` would make it exactly 200.' },
       { concept: 'box-model', kind: 'mc', q: '`.card { border-width: 4px; }` shows no border. What\'s missing?', options: ['A colour value, like `red`', 'A border style, like `solid`', 'A border-radius, like `8px`', 'Padding, like `padding: 4px`'], answer: 1, why: 'The style defaults to none, which means no border. Colour is optional (it defaults to the text colour).' },
+      { concept: 'css', kind: 'mc', q: "In DevTools the Styles panel shows this. The card has no colour. What does the warning tell you?", code: ".card {                    style.css:14\n  display: flex;\n  colour: red;   <- crossed out, with a warning: Unknown property name\n}", options: ["The property is spelled wrong: CSS says color", "The value red isn't a valid colour in CSS", "display: flex has to come after the colour line", "The rule needs a semicolon after the last line"], answer: 0, why: "A crossed-out line means the browser ignored it. 'Unknown property name' means the property isn't one it knows." },
     ],
   },
 
@@ -420,6 +424,8 @@ export const camp8 = [
       { concept: 'query-selector', kind: 'mc', q: 'What does `document.querySelector(".item")` return when there are four `.item` elements?', options: ['All four, in a list', 'The first one only', 'The last one only', 'An error'], answer: 1, why: 'querySelector returns the first match. Use querySelectorAll for all of them.' },
       { concept: 'query-selector', kind: 'mc', q: 'What does `document.querySelector("#missing")` return if no element has that id?', options: ['undefined', 'null', 'An empty string', 'It throws an error'], answer: 1, why: '`null`. The error only comes when you then try to use it.' },
       { concept: 'query-selector', kind: 'mc', q: 'How do you count how many items have both classes `item` and `packed`?', options: ['document.querySelector(".item.packed").length', 'document.querySelectorAll(".item.packed").length', 'document.querySelectorAll(".item .packed").count', 'document.count(".packed")'], answer: 1, why: 'querySelectorAll returns a NodeList, which has `.length`. No space between the two classes.' },
+      { concept: 'query-selector', kind: 'mc', q: "The console shows this when the page loads. The line it points at is `btn.addEventListener('click', go)`. What is null?", code: "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at app.js:3:5\n\n// app.js\n// 1  const btn = document.querySelector('#start')\n// 2\n// 3  btn.addEventListener('click', go)", options: ["go: the function was never defined", "addEventListener: the browser removed it", "btn: querySelector found nothing that matches #start", "click: the event name is misspelled"], answer: 2, why: "'Cannot read properties of null' means the thing before the dot is null. querySelector returns null when nothing matches: check the id, and that the script runs after the element exists." },
+      { concept: 'reference-error', kind: 'mc', q: "The console shows this. What does it mean?", code: "Uncaught ReferenceError: score is not defined\n    at app.js:7:13", options: ["Line 7 uses a name, score, that no code has created in that scope", "Line 7 divides by zero", "The variable score is null", "The page has not finished loading"], answer: 0, why: "ReferenceError means the name doesn't exist where it was used: a typo, a missing let/const, or a variable declared in another scope." },
     ],
   },
 
@@ -504,6 +510,70 @@ export const camp8 = [
       { concept: 'forms', kind: 'mc', q: 'How do you connect a label to `<input id="email">`?', options: ['<label name="email">', '<label for="email">', '<label id="email">', '<label href="email">'], answer: 1, why: 'The label\'s `for` matches the input\'s `id`.' },
       { concept: 'forms', kind: 'mc', q: 'An input with `type="number"` holds 5. What does `input.value + 1` give?', options: ['6', '"51"', 'NaN', 'An error'], answer: 1, why: '`.value` is always a string, so + glues text. Use `Number(input.value) + 1`.' },
       { concept: 'forms', kind: 'mc', q: 'Why isn\'t a `placeholder` enough on its own?', options: ['It can\'t be styled with CSS, so you can\'t match it to the design', 'It disappears once you type, is often faint, and isn\'t a reliable label for screen readers', 'It only works on `type="text"` inputs, so other field types ignore it', 'It stops the field being reached with Tab, so keyboard users skip past it'], answer: 1, why: 'Use a real `<label>`; keep placeholders for small hints.' },
+      { concept: 'events', kind: 'mc', q: "You click the button and the console shows this. The HTML is `<button onclick=\"go()\">`. What do you check?", code: "Uncaught ReferenceError: go is not defined\n    at HTMLButtonElement.onclick (index.html:14:1)", options: ["That the button has an id attribute", "That click is spelled in lowercase", "That a function named go exists, and its script file loaded", "That the button is inside a form"], answer: 2, why: "The click worked and the browser tried to run go(), but found no such name. Look for a typo, or a script tag with a wrong path." },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: '8-read', type: 'read', mode: 'phone', xp: 30, mins: 18,
+    title: 'Read the route: the wind check page',
+    uses: ['html-element', 'html-attribute', 'css-selector', 'flexbox', 'dom', 'query-selector', 'events', 'forms', 'accessibility'],
+    intro: 'A teammate wrote one web page, `wind.html`, where a visitor types the wind speed and presses a button to get a GO or HOLD call. The styling and the script sit in the same file as the page, so read all three parts: the HTML, the `<style>` and the `<script>`.',
+    file: { name: 'wind.html', lang: 'html', code: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Wind check</title>
+  <style>
+    body { font-family: sans-serif; max-width: 20rem; margin: 2rem auto; }
+    .field { display: flex; gap: 0.5rem; }
+    .field input { flex: 1; }
+    #result { margin-top: 1rem; padding: 0.75rem; }
+    #result.go { background: #d6f5d6; }
+    #result.hold { background: #f9d6d6; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>Wind check</h1>
+  <form id="wind-form">
+    <label for="wind">Wind speed (km/h)</label>
+    <div class="field">
+      <input id="wind" type="number" min="0">
+      <button type="submit">Check</button>
+    </div>
+  </form>
+  <p id="result" class="hidden"></p>
+
+  <script>
+    const LIMIT = 50
+    const form = document.querySelector("#wind-form")
+    const input = document.querySelector("#wind")
+    const result = document.querySelector("#result")
+
+    form.addEventListener("submit", event => {
+      event.preventDefault()
+      const wind = Number(input.value)
+      const ok = wind <= LIMIT
+      const word = ok ? "GO" : "HOLD"
+
+      result.textContent = word + ": wind is " + wind + " km/h"
+      result.classList.remove("hidden", "go", "hold")
+      result.classList.add(ok ? "go" : "hold")
+    })
+  </script>
+</body>
+</html>` },
+    questions: [
+      { concept: 'forms', kind: 'mc', q: 'In one sentence, what does this page do?', options: ['Shows a box for the wind speed, and when the form is submitted shows a coloured GO or HOLD message under it', 'Shows the current wind speed from a weather service', 'Sends the wind speed to a server and waits for a reply', 'Shows a GO or HOLD message as soon as the page loads'], answer: 0, why: 'The form has one input and a button. The script on lines 33 to 42 runs on submit and fills in the hidden paragraph.' },
+      { concept: 'events', kind: 'mc', q: 'A visitor types 65 and presses Check. What does the result paragraph say?', options: ['HOLD: wind is 65 km/h', 'GO: wind is 65 km/h', 'HOLD: wind is 50 km/h', 'GO'], answer: 0, why: '`65 <= 50` is false, so `ok` is false and `word` is "HOLD". Line 39 then joins the pieces together.' },
+      { concept: 'dom', kind: 'mc', q: 'A visitor submits 20. Which classes does the result paragraph have afterwards?', options: ['go', 'hidden and go', 'hold', 'hidden'], answer: 0, why: 'Line 40 removes `hidden`, `go` and `hold`, then line 41 adds back just one of them. `go` is added because 20 is within the limit, and the paragraph becomes visible.' },
+      { concept: 'events', kind: 'mc', q: 'A visitor opens the page and has not touched anything yet. Which of these has already run?', options: ['The four `const` lines in the script, and the `addEventListener` call', 'The code inside the arrow function on lines 34 to 41', 'Line 39, which fills in the message', 'Nothing: the script waits until a click'], answer: 0, why: 'The script runs top to bottom when the page loads: it finds the three elements and registers the listener. The function inside only runs later, when the form is submitted.' },
+      { concept: 'css-selector', kind: 'mc', q: 'The GO message should have a blue background instead of green. Which line do you change?', options: ['Line 12', 'Line 10', 'Line 11', 'Line 41'], answer: 2, why: 'The rule `#result.go` on line 11 sets the background for a result that has the class `go`.' },
+      { concept: 'forms', kind: 'mc', q: 'A teammate deletes line 34, `event.preventDefault()`. What happens when a visitor submits the form?', options: ['The browser reloads the page, so the message disappears straight away', 'Nothing changes, because preventDefault is optional', 'The message shows twice', 'The page shows an error message'], answer: 0, why: 'Without `preventDefault`, the browser does its normal form submit, which reloads the page. The new message is wiped before anyone can read it.' },
+      { concept: 'forms', kind: 'mc', q: 'A visitor leaves the box empty and presses Check. What does the page show?', options: ['GO: wind is 0 km/h', 'HOLD: wind is NaN km/h', 'Nothing: the message stays hidden', 'An error message from the browser'], answer: 0, why: '`input.value` is an empty string, and `Number("")` is 0. Since 0 is within the limit, the page says GO. A reviewer would ask for an empty box to be rejected, for example with the `required` attribute on line 21.' },
+      { concept: 'accessibility', kind: 'mc', q: 'What does `for="wind"` on the label on line 19 do?', options: ['It links the label to the input whose id is "wind", so tapping the label focuses the box and screen readers can name it', 'It makes the label show the word "wind" in bold', 'It tells the script which element to read', 'It stops the label from being hidden'], answer: 0, why: 'A label\'s `for` matches an input\'s `id`. That link helps everyone: a bigger tap target, and a name for screen readers.' },
     ],
   },
 

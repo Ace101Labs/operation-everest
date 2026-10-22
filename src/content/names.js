@@ -10,6 +10,7 @@ export const TYPE = {
   keyboard: { icon: '🏕️', name: 'Camp build' },
   radio:    { icon: '📻', name: 'Radio check' },
   audit:    { icon: '🌨️', name: 'Weather check' },
+  read:     { icon: '🔍', name: 'Code reading' },
   avalanche:{ icon: '❄️', name: "Don't cause an avalanche" },
   yeti:     { icon: '💤', name: "Don't wake the Yeti" },
   boss:     { icon: '🧊', name: 'Whiteout boss' },

@@ -101,4 +101,21 @@ export const ALTS_CAMP5 = {
   '5-boss#9': [{ q: 'For `node pack.js rope axe`, what is `process.argv.slice(2).length`?', options: ['2', '4', '3', '1'], answer: 0 }],
   '5-boss#10': [{ q: '`node check.js || echo "Failed"`: check.js prints an error but exits with 0. What else prints?', options: ['Nothing: || only runs the next command on failure', 'Failed, because an error was printed', 'The same error a second time', 'A stack trace from check.js'], answer: 0 }],
   '5-boss#11': [{ q: 'Best response to `node planner.js 9`, with the end hour missing?', options: ['Print `Done!` and exit with 0, because nothing was asked for so nothing failed', 'Quietly use 17 as the end hour and run the plan anyway', 'Print `Usage: node planner.js <start> <end>` and exit with 1', 'Print nothing and exit with 0, so the tool never annoys anyone'], answer: 2 }],
+  // Code reading: ration.js
+  '5-read#0': [{ q: 'What is the job of the `readNumber` function?', options: ['Turn an argument into a whole number of at least 1, or print an error and stop', 'Read a number from a file', 'Multiply people, days and meals', 'Print the usage message'], answer: 0, why: 'It converts the text with `Number`, checks the result, and either returns it or exits with code 1.' }],
+  '5-read#1': [{ q: 'You run `node ration.js 6 2`. What does `process.argv[1]` hold?', options: ['The full path of ration.js', '"6", as text', 'The path of the node program', '"2", as text'], answer: 0, why: 'Position 0 is node, position 1 is the script being run, and your own arguments start at position 2.' }],
+  '5-read#2': [{ q: 'You run `node ration.js 2 5`. What is the last line printed?', options: ['Carry 30 meal packs', 'Warning: that is a heavy load', '2 people, 5 days', 'Carry 10 meal packs'], answer: 0, why: '2 x 5 x 3 = 30, which is not above 100, so the warning on line 31 does not run. The last line is the `Carry` line.' }],
+  '5-read#3': [{ q: 'In the same error, which line of `ration.js` made the call to `readNumber` that led to the crash?', code: `/home/climber/ration.js:10
+  const value = Number(text.trim())
+                            ^
+
+TypeError: Cannot read properties of undefined (reading 'trim')
+    at readNumber (/home/climber/ration.js:10:29)
+    at Object.<anonymous> (/home/climber/ration.js:24:14)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)`, options: ['Line 24', 'Line 23', 'Line 10', 'Line 18'], answer: 0, why: 'Read the frames from the top. The second one, `Object.<anonymous>`, is the main body of the file, and it points at line 24, where `readNumber` is called.' }],
+  '5-read#4': [{ q: 'The warning should appear above 200 packs instead of 100. Which line do you change?', options: ['Line 30', 'Line 31', 'Line 6', 'Line 3'], answer: 0, why: 'The threshold is the number in the `if` test on line 30.' }],
+  '5-read#5': [{ q: 'You run `node ration.js 3 0`. What happens?', options: ['It prints an error about days and exits with code 1', 'It prints Carry 0 meal packs', 'It prints the usage message and exits with code 2', 'It crashes with a TypeError'], answer: 0, why: 'There are 4 items in `process.argv`, so the usage check passes. `0` is an integer but is less than 1, so the second call to `readNumber` prints the days error and exits with 1.' }],
+  '5-read#6': [{ q: 'Which change to line 18 makes `node ration.js 4` print the usage message?', options: ['`process.argv.length < 4`', '`process.argv.length < 2`', '`process.argv.length > 4`', '`process.argv.length === 3`'], answer: 0, why: 'Two numbers mean 4 items in `process.argv`, so anything shorter needs the usage message. The other tests either miss one-argument runs or fire for the wrong cases.' }],
+  '5-read#7': [{ q: 'You run `node ration.js abc 3`. What exit code does it finish with? Type the number.', accept: ['1', 'one'], why: '`Number("abc")` is NaN, so the check on line 11 is true. Line 12 prints the error and line 13 exits with code 1.' }],
 }

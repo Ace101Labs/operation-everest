@@ -241,6 +241,7 @@ export const camp9 = [
       { concept: 'route', kind: 'mc', q: 'What does the client get?', code: "app.get('/camp', (req, res) => {\n  res.json({ name: 'Camp III' })\n})\n\n// request: GET /camp", options: ['404 Cannot GET /camp', '200 {"name":"Camp III"}', '201 {"name":"Camp III"}', '200 with the text [object Object]'], answer: 1, why: 'The route matches, res.json sends the JSON, and the status defaults to 200.' },
       { concept: 'route', kind: 'mc', q: 'A client sends **POST /camp** to this server. What happens?', code: "app.get('/camp', (req, res) => {\n  res.json({ name: 'Camp III' })\n})", options: ['The GET route runs anyway, returning { name: \'Camp III\' }', '404 Cannot POST /camp: no route matches that method and path', '405 Method Not Allowed: the path exists but only for GET', '400 Bad Request: the server can\'t understand a POST here'], answer: 1, why: 'A route needs the method AND the path to match. Express answers 404 by itself (not 405).' },
       { concept: 'route', kind: 'type', q: 'Finish the line so GET requests to `/health` run the handler: `app.___(\'/health\', handler)`', accept: ['get'], why: '`app.get` registers a route for GET requests.' },
+      { concept: 'route', kind: 'mc', q: "You open `http://localhost:3000/gear/7` and the browser shows only this. What does it tell you?", code: "Cannot GET /gear/7", options: ["The server is running, but it has no GET route that matches /gear/7", "The server is down, so it cannot answer", "The browser blocked the page because of a missing header", "The server found the item but could not read it"], answer: 0, why: "This is Express's default answer when no route matches. The server answered, so it is up. Check your route paths." },
     ],
   },
 
@@ -310,6 +311,7 @@ export const camp9 = [
       { concept: 'status-codes', kind: 'mc', q: 'What does the client receive?', code: "app.get('/permit', (req, res) => {\n  res.json({ error: 'Permit expired' })\n})", options: ['403 {"error":"Permit expired"}', '200 {"error":"Permit expired"}', '400', '500 {"error":"Permit expired"}'], answer: 1, why: 'No status set, so it\'s 200. That error is invisible to anything that trusts the number.' },
       { concept: 'status-codes', kind: 'mc', q: 'A handler throws an error nobody catches. What does Express send?', options: ['Nothing, the server stops', '500 Internal Server Error, and the server keeps running', '400 Bad Request, then the server keeps running', '200 with the error'], answer: 1, why: 'Express catches it and answers 500 (in Express 5, for async handlers too). The details go to the server log.' },
       { concept: 'status-codes', kind: 'type', q: 'Which status code means "worked, nothing to send back", typical after a DELETE?', accept: ['204'], why: '204 No Content.' },
+      { concept: 'status-codes', kind: 'mc', q: "You run a POST with `curl -i` and see this. What does it tell you?", code: "HTTP/1.1 400 Bad Request\nContent-Type: application/json; charset=utf-8\nContent-Length: 28\n\n{\"error\":\"name is required\"}", options: ["The server crashed, so check its logs", "The route /gear doesn't exist", "The request is missing a name: fix what you send", "You need to log in first"], answer: 2, why: "A 400 means the server understood the request and refused it because of the input. The body says what is missing." },
     ],
   },
 
@@ -378,6 +380,7 @@ export const camp9 = [
       { concept: 'request-body', kind: 'mc', q: 'You forgot to turn on JSON body parsing. What is `req.body` in a POST route?', options: ['{}', 'undefined', 'The raw JSON text', 'null'], answer: 1, why: 'In Express 5 nothing parsed the body, so req.body is undefined, and `req.body.name` throws.' },
       { concept: 'request-body', kind: 'mc', q: 'A client POSTs `{"name":"Rope","kg":4.5,"admin":true}`. What should your create route store?', options: ['req.body, exactly as sent', 'Only the fields you expect: name and kg (checked), plus your own id', 'The body, as long as it is valid JSON', 'Only the fields the client marked as required'], answer: 1, why: 'Copy the expected, validated fields. Storing the body as-is lets clients set things they shouldn\'t.' },
       { concept: 'request-body', kind: 'type', q: 'Type the line that turns on JSON body parsing for every request in an Express app called `app`.', accept: ['app.use(express.json())', 'app.use(express.json());'], why: 'express.json() is built-in middleware; app.use runs it for every request.' },
+      { concept: 'request-body', kind: 'mc', q: "A POST makes the server log this. Which file and line do you open, and what do you suspect?", code: "TypeError: Cannot destructure property 'name' of 'req.body' as it is undefined.\n    at /home/climber/summit-gear/routes/gear.js:12:11\n    at Layer.handle [as handle_request] (/home/climber/summit-gear/node_modules/express/lib/router/layer.js:95:5)\n    at next (/home/climber/summit-gear/node_modules/express/lib/router/route.js:149:13)", options: ["routes/gear.js line 12: req.body is undefined, so express.json() is missing", "node_modules/express layer.js line 95: Express is broken", "routes/gear.js line 95: the route handler is wrong", "node_modules/express route.js line 149: reinstall Express"], answer: 0, why: "Open the first path in your own code. `req.body` stays undefined until `app.use(express.json())` runs before the route." },
     ],
   },
 
@@ -519,6 +522,7 @@ export const camp9 = [
       { concept: 'server-logs', kind: 'mc', q: 'Which log line is safe?', options: ['POST /login {"user":"ana","password":"hunter22"}', '2026-10-17T09:15:02Z POST /login 401', 'Key received: yb-test-key-123', "Headers: { authorization: 'Bearer eyJ…' }"], answer: 1, why: 'Time, method, path, status. No passwords, keys or tokens.' },
       { concept: 'server-logs', kind: 'mc', q: 'Your code catches an error. What should it do with the details?', options: ['Send the stack trace to the client', 'console.error them on the server, and send the client a short safe message', 'Ignore them: catch (err) {}', 'Send the client the full message, but hide the stack'], answer: 1, why: 'Details help you in the log; they help attackers in a response.' },
       { concept: 'server-logs', kind: 'mc', q: 'Why use `new Date().toISOString()` in log lines?', options: ['It\'s shorter and easier to read than the normal date, so logs stay tidy', 'ISO timestamps are in UTC and sort correctly, so logs from different machines line up', 'It converts the time to each reader\'s own timezone as they open the log', 'console.log refuses plain Date objects and throws an error for them'], answer: 1, why: '2026-10-17T09:15:02.481Z: unambiguous, sortable, UTC.' },
+      { concept: 'server-logs', kind: 'mc', q: "This is the server log. Which request asked for something that doesn't exist?", code: "2026-10-22T10:15:02.114Z GET /gear 200\n2026-10-22T10:15:07.380Z GET /gear/7 404\n2026-10-22T10:15:09.901Z POST /gear 400\n2026-10-22T10:15:12.446Z GET /gear 200", options: ["POST /gear, which got a 400", "The first GET /gear, which got a 200", "GET /gear/7, which got a 404", "The second GET /gear, which got a 200"], answer: 2, why: "404 = not found. The 400 is a bad request, and the 200s worked." },
     ],
   },
 
@@ -588,6 +592,7 @@ export const camp9 = [
       { concept: 'dns-domains', kind: 'mc', q: 'Your host says "point www at my-app.host.example". Which record type?', options: ['A', 'CNAME', 'MX', 'TXT'], answer: 1, why: 'CNAME points a name at another name. A records point at IP addresses.' },
       { concept: 'https', kind: 'mc', q: 'A site shows the padlock. What does that prove?', options: ['The site is honest and safe to buy from, since scammers can\'t get one', 'The connection is encrypted and the certificate matches that domain', 'The site has no bugs, because the certificate was checked by the browser', 'The site is not storing any of your data, so your details stay private'], answer: 1, why: 'Scam sites get certificates too. Read the domain name.' },
       { concept: 'https', kind: 'mc', q: 'Which port does HTTPS use by default?', options: ['80', '443', '3000', '22'], answer: 1, why: '443 for HTTPS, 80 for plain HTTP.' },
+      { concept: 'dns-domains', kind: 'mc', q: "You run `curl https://api.summitgear.example/gear` and see this. What does it tell you?", code: "curl: (6) Could not resolve host: api.summitgear.example", options: ["DNS has no address for that name: check the spelling or the DNS record", "The server was found but sent back a 404", "The server is on, but port 443 is closed", "The certificate has expired"], answer: 0, why: "Resolving a name happens first. If it fails, no connection is made at all, so the server's code never ran." },
     ],
   },
 
@@ -663,6 +668,82 @@ export const camp9 = [
       { concept: 'cors', kind: 'mc', q: 'The page sends cookies to the API, and the server answers with `Access-Control-Allow-Origin: *`. What does the browser do?', options: ['Rejects the response: with credentials the server must name the exact origin', 'Accepts it, because * means every origin is allowed', 'Accepts it, but deletes the cookies', 'Retries the request without the cookies'], answer: 0, why: 'A wildcard is not allowed together with credentials. The server must send the exact origin and `Access-Control-Allow-Credentials: true`.' },
       { concept: 'port', kind: 'type', q: 'Type the error code Node prints when a port is already taken. It starts with E and ends with INUSE.', accept: ['EADDRINUSE', 'eaddrinuse'], why: 'EADDRINUSE: the address (the port) is already in use.' },
       { concept: 'cors', kind: 'mc', q: 'A page on one origin sends `fetch(url, { method: \'PUT\' })` to an API on another. What does the browser send first?', options: ['An OPTIONS preflight request asking whether the real request is allowed', 'The PUT request, then it checks the headers of the answer', 'A GET request to /health', 'Nothing: PUT is blocked across origins'], answer: 0, why: 'PUT is not a simple request, so the browser sends an OPTIONS preflight first. The server must answer it with 2xx and the Allow headers.' },
+      { concept: 'systemd-service', kind: 'mc', q: "You run `journalctl -u summitgear` and see these lines. What happened?", code: "Oct 22 10:15:02 summit systemd[1]: summitgear.service: Main process exited, code=exited, status=1/FAILURE\nOct 22 10:15:02 summit systemd[1]: summitgear.service: Failed with result 'exit-code'.\nOct 22 10:15:04 summit systemd[1]: summitgear.service: Scheduled restart job, restart counter is at 1.\nOct 22 10:15:04 summit systemd[1]: Started summitgear.service - Summit Gear API.", options: ["The server was stopped on purpose and stays stopped", "systemd could not find the service file", "The server crashed with exit status 1, and systemd restarted it two seconds later", "The server ran out of memory and the machine rebooted"], answer: 2, why: "`status=1/FAILURE` is a crash. `Scheduled restart job` and `Started` are the process manager doing its job. Read the lines above for why it crashed." },
+      { concept: 'port', kind: 'mc', q: "Your server won't start because port 3000 is in use. `lsof -i :3000` prints this. What now?", code: "COMMAND   PID     USER   FD   TYPE  DEVICE SIZE/OFF NODE NAME\nnode    48213 climber   19u  IPv6  912345      0t0  TCP *:3000 (LISTEN)", options: ["Process 48213 is an old node server: stop it, then start yours", "Port 3000 is closed: open it in the firewall", "Nothing is using the port: just retry", "Change the node version to match the server"], answer: 0, why: "`LISTEN` on `*:3000` is the program that holds the port, and PID is its process number. Stop it (Ctrl+C in its terminal, or `kill 48213`) or pick another port." },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: '9-read', type: 'read', mode: 'phone', xp: 30, mins: 18,
+    title: 'Read the route: the gear API',
+    uses: ['express', 'route', 'status-codes', 'route-params', 'query-string', 'request-body', 'middleware', 'rest-api', 'process-manager', 'server-logs'],
+    intro: 'A teammate wrote `gear-api.js`, a small Express server for a gear shop. It lists gear, looks up one item and takes orders. Nothing is stored in a database yet. Read the whole file before you answer.',
+    file: { name: 'gear-api.js', lang: 'js', code: `// gear-api.js: the Summit Gear API. Lists gear, looks one item up, takes orders.
+const express = require('express')
+const app = express()
+
+const PORT = process.env.PORT || 3000
+const MAX_QTY = 5
+
+const gear = [
+  { id: 1, name: 'Rope', category: 'climbing', stock: 12 },
+  { id: 2, name: 'Ice axe', category: 'climbing', stock: 0 },
+  { id: 3, name: 'Tent', category: 'camping', stock: 4 },
+  { id: 4, name: 'Headlamp', category: 'safety', stock: 9 },
+]
+const orders = []
+
+app.use(express.json())
+
+// Log every request: method, path, then the status once the reply is sent.
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    console.log(req.method + ' ' + req.path + ' ' + res.statusCode)
+  })
+  next()
+})
+
+// GET /gear or GET /gear?category=camping
+app.get('/gear', (req, res) => {
+  const { category } = req.query
+  if (!category) return res.json(gear)
+  res.json(gear.filter(g => g.category === category))
+})
+
+// GET /gear/3
+app.get('/gear/:id', (req, res) => {
+  const item = gear.find(g => g.id === Number(req.params.id))
+  if (!item) return res.status(404).json({ error: 'No such item' })
+  res.json(item)
+})
+
+// POST /orders with { "gearId": 3, "qty": 2 }
+app.post('/orders', (req, res) => {
+  const { gearId, qty } = req.body
+  const item = gear.find(g => g.id === gearId)
+  if (!item) return res.status(404).json({ error: 'No such item' })
+  if (!Number.isInteger(qty) || qty < 1 || qty > MAX_QTY) {
+    return res.status(400).json({ error: 'qty must be 1 to ' + MAX_QTY })
+  }
+  if (item.stock < qty) return res.status(409).json({ error: 'Not enough stock' })
+
+  item.stock -= qty
+  const order = { id: orders.length + 1, gearId, qty }
+  orders.push(order)
+  res.status(201).json(order)
+})
+
+app.listen(PORT, () => console.log('Listening on ' + PORT))` },
+    questions: [
+      { concept: 'express', kind: 'mc', q: 'In one sentence, what does this file do?', options: ['Starts a web server with routes to list gear, look up one item and place orders, keeping everything in memory', 'Stores gear and orders in a database and reads them back', 'Serves a web page where shoppers click gear to buy it', 'Fetches gear prices from another API and shows them'], answer: 0, why: 'The data lives in the two arrays on lines 8 to 14, and the three routes on lines 27, 34 and 41 read and change them. There is no database and no page.' },
+      { concept: 'route-params', kind: 'mc', q: 'A client sends `GET /gear/2`. What comes back?', options: ['Status 404 with `{"error":"No such item"}`', 'Status 409 with `{"error":"Not enough stock"}`', 'Status 200 with an empty array', 'Status 200 with the Ice axe object, stock 0'], answer: 3, why: 'Line 35 finds the item whose id is 2. Stock is only checked when someone places an order, so the lookup still succeeds and shows `stock: 0`.' },
+      { concept: 'server-logs', kind: 'mc', q: 'A client sends `GET /gear?category=camping`. Which line does the logger on lines 19 to 23 print?', options: ['GET /gear?category=camping 200', 'GET /gear/camping 200', 'GET /gear 200', 'GET /gear 404'], answer: 2, why: '`req.path` is only the path. The query string `?category=camping` is not part of it. The status is 200 because the filter route replies normally.' },
+      { concept: 'middleware', kind: 'mc', q: 'A `POST /orders` request arrives. In what order does the code run?', options: ['The logger on line 19, then `express.json()` on line 16, then the `/orders` handler', 'The `/orders` handler on line 41 first, then the logger, then `express.json()`', 'Only the `/orders` handler: middleware runs for GET requests only', '`express.json()` on line 16, then the logger on line 19, then the `/orders` handler on line 41'], answer: 3, why: 'Express runs middleware in the order it was registered with `app.use`, then the route that matches. `express.json()` comes first, so `req.body` is ready by the time the handler runs.' },
+      { concept: 'rest-api', kind: 'mc', q: 'The shop decides one order may hold up to 10 items. Which line do you change?', options: ['Line 48', 'Line 6', 'Line 45', 'Line 5'], answer: 1, why: '`MAX_QTY` on line 6 holds the limit. Line 45 only uses it, and the error message on line 46 reads it too, so one edit fixes both.' },
+      { concept: 'request-body', kind: 'mc', q: 'What does the server answer to this request?', code: "curl -i -X POST localhost:3000/orders \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"gearId\":\"3\",\"qty\":2}'", options: ['201 with a new order', '404 with `{"error":"No such item"}`', '400 with `{"error":"qty must be 1 to 5"}`', '409 with `{"error":"Not enough stock"}`'], answer: 1, why: 'The body has `"gearId":"3"`, which is text. Line 43 compares with `===` against the numbers in the array, so nothing matches and line 44 replies 404.' },
+      { concept: 'process-manager', kind: 'mc', q: 'A reviewer asks: the server crashes and the process manager starts it again. What happens to the orders placed before the crash?', options: ['They are kept, because `orders.push` saves them to disk', 'They are kept, because `express.json()` stores every request body', 'They are lost, because orders only live in an array in memory', 'Only the stock numbers are lost: the orders stay'], answer: 2, why: 'The `orders` array on line 14 is rebuilt empty each time the process starts, and so is the stock in `gear`. A real shop needs a database here.' },
+      { concept: 'status-codes', kind: 'type', q: 'The Tent has stock 4. Two requests `POST /orders` with `gearId` 3 and `qty` 3 arrive one after the other. Type the status code of the second reply.', accept: ['409'], why: 'The first order uses 3 tents and leaves 1. The second fails the check on line 48 (`1 < 3`), so the reply is 409.' },
     ],
   },
 

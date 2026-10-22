@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Md } from './md.jsx'
 import { TerminalStage } from './Terminal.jsx'
 import { DeepCard } from './DeepCard.jsx'
@@ -19,6 +19,8 @@ const places = () => { try { return JSON.parse(localStorage.getItem(PLACE)) || {
 export const getPlace = id => places()[id] || null
 export const setPlace = (id, v) => { const all = places(); if (v) all[id] = v; else delete all[id]; try { localStorage.setItem(PLACE, JSON.stringify(all)) } catch {} }
 
+const shuffle = a => { const out = [...a]; for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]] } return out }
+
 // The 5-part lesson. Calls onDone() when the climber reaches the quiz.
 export function Lesson({ stage, onDone, platform, onTryPass }) {
   const saved = getPlace(stage.id) || {}
@@ -26,7 +28,11 @@ export function Lesson({ stage, onDone, platform, onTryPass }) {
   const [card, setCard] = useState(saved.card || 0)
   const [exStep, setExStep] = useState(saved.exStep || 0)
   const [tried, setTried] = useState(!!saved.tried)
-  useEffect(() => { setPlace(stage.id, { ...getPlace(stage.id), part, card, exStep, tried }) }, [part, card, exStep, tried])
+  // Predict-first stops: guesses made in the worked example (step index -> option index). Practice only, never graded.
+  const [guess, setGuess] = useState(saved.guess || {})
+  useEffect(() => { setPlace(stage.id, { ...getPlace(stage.id), part, card, exStep, tried, guess }) }, [part, card, exStep, tried, guess])
+  // Each stop's options in a random order, fixed while the lesson is open.
+  const orders = useMemo(() => (stage.example?.steps || []).map(st => st.predict ? shuffle(st.predict.options.map((_, j) => j)) : null), [stage.id])
   useEffect(() => { window.scrollTo(0, 0) }, [part])
   const key = PARTS[part].key
   // The idea part = short framing cards, then one full concept card per concept this lesson teaches.
@@ -57,16 +63,32 @@ export function Lesson({ stage, onDone, platform, onTryPass }) {
         <div className="lesson-card"><p className="note">{stage.example.intro}</p>
           <pre className="walk">{stage.example.code.split('\n').map((l, i) => {
             const at = stage.example.steps.findIndex(s => s.line === i + 1)
-            return <div key={i} className={`${stage.example.steps[exStep]?.line === i + 1 ? 'hl' : ''} ${at >= 0 ? 'tap' : ''}`}
-              onClick={at >= 0 ? () => setExStep(at) : undefined}>{l || ' '}</div>
+            // A stop can cover lines that would give its answer away (a command's printed output) until the guess is in.
+            const pr = stage.example.steps[exStep]?.predict
+            const covered = pr && guess[exStep] == null && pr.hide?.includes(i + 1)
+            return <div key={i} className={`${stage.example.steps[exStep]?.line === i + 1 ? 'hl' : ''} ${at >= 0 ? 'tap' : ''} ${covered ? 'covered' : ''}`}
+              onClick={at >= 0 ? () => setExStep(at) : undefined}>{l || ' '}{at >= 0 && stage.example.steps[at].predict && guess[at] == null ? <span className="pr-mark" aria-label="predict first"> 🔮</span> : null}</div>
           })}</pre>
-          <p className="note tap-hint">Tap a marked line, or use Next line.</p>
-          <div className="walk-note" key={exStep}>⛑️ <Md text={stage.example.steps[exStep].note} /></div>
+          <p className="note tap-hint">Tap a marked line, or use Next line.{orders.some(Boolean) ? ' 🔮 lines ask you to predict first.' : ''}</p>
+          {(() => {
+            const st = stage.example.steps[exStep], pr = st.predict, g = guess[exStep]
+            if (!pr) return <div className="walk-note" key={exStep}>⛑️ <Md text={st.note} /></div>
+            if (g == null) return <div className="predict" key={exStep}>
+              <div className="walk-note">🔮 <div><strong>Predict first.</strong> <Md text={pr.q} /></div></div>
+              <div className="options">{orders[exStep].map(j => <button key={j} className="opt" onClick={() => setGuess({ ...guess, [exStep]: j })}><Md text={pr.options[j]} /></button>)}</div>
+            </div>
+            const ok = g === pr.answer
+            return <div className="predict" key={exStep}>
+              <div className={`predict-said ${ok ? 'right' : 'wrong'}`}>{ok ? '✅ You called it: ' : '🤔 Not quite. It\'s '}<Md text={pr.options[pr.answer]} /></div>
+              <div className="walk-note">⛑️ <Md text={st.note} /></div>
+            </div>
+          })()}
         </div>
         <div className="row">
           <button className="btn" onClick={() => exStep > 0 ? setExStep(exStep - 1) : back()}>Back</button>
-          <button className="btn primary" onClick={() => exStep + 1 < stage.example.steps.length ? setExStep(exStep + 1) : nextPart()}>
-            {exStep + 1 < stage.example.steps.length ? 'Next line' : 'Next: Try it'}</button>
+          {(() => { const waiting = stage.example.steps[exStep].predict && guess[exStep] == null
+            return <button className="btn primary" disabled={waiting} onClick={() => exStep + 1 < stage.example.steps.length ? setExStep(exStep + 1) : nextPart()}>
+              {waiting ? 'Pick your guess' : exStep + 1 < stage.example.steps.length ? 'Next line' : 'Next: Try it'}</button> })()}
         </div>
       </>}
 

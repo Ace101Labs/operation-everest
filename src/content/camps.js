@@ -29,6 +29,7 @@ import { ALTS_CAMPK } from './alts-campK.js'
 import { ALTS_CAMPA } from './alts-campA.js'
 
 import { OS_QUESTIONS } from './os-questions.js'
+import { PREDICT } from './predict.js'
 
 // Other versions of quiz questions, keyed by question id. Retries deal a different one.
 export const ALTS = { ...ALTS_CAMP2, ...ALTS_CAMP3, ...ALTS_CAMP4, ...ALTS_CAMP5, ...ALTS_CAMP6, ...ALTS_CAMP7, ...ALTS_CAMP8, ...ALTS_CAMP9, ...ALTS_CAMP10, ...ALTS_CAMPJ, ...ALTS_CAMPQ, ...ALTS_CAMPK, ...ALTS_CAMPA }
@@ -62,5 +63,12 @@ for (const camp of CAMPS) for (const s of camp.stages || []) (s.questions || [])
   q.qid = `${s.id}#${i}`
   if (ALTS[q.qid]) q.alts = ALTS[q.qid]
   if (OS_QUESTIONS[q.qid]) q.os = OS_QUESTIONS[q.qid]
+  if (s.file) q.file = s.file // code-reading questions keep their file on screen, in review too
   QUESTIONS[q.qid] = { q, stage: s, camp }
 })
+// "Predict first" stops in the worked examples: before the Sherpa explains a line, the player
+// guesses what it does. Kept in predict-camp<N>.js, keyed by stage id and the step's line.
+for (const camp of CAMPS) for (const s of camp.stages || []) for (const pr of PREDICT[s.id] || []) {
+  const step = s.example?.steps?.find(st => st.line === pr.line)
+  if (step) step.predict = pr
+}

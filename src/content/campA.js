@@ -418,6 +418,101 @@ export const campA = [
     ],
   },
 
+  // ───── Code reading ─────
+  {
+    id: 'A-read', type: 'read', mode: 'phone', xp: 30, mins: 20,
+    title: 'Read the route: the Summit Log from tap to screen',
+    uses: ['api-contract', 'integration', 'query-string', 'fetch', 'promise', 'use-effect', 'state', 'lists-keys', 'jsx', 'status-codes-basics'],
+    intro: 'A teammate pasted the Summit Log in miniature into one listing: the server routes first (`routes.js`), then the screen (`App.jsx`). In the real project they are two files in two folders. Follow one tap from the screen, through the request and the route, and back to what the screen draws.',
+    file: { name: 'summit-log.jsx', lang: 'jsx', code: `// ── server: routes.js ──
+const express = require('express')
+const app = express()
+app.use(express.json())
+
+const climbs = [
+  { id: 1, peak: 'Island Peak', heightM: 6189, summited: true, date: '2026-04-02' },
+  { id: 2, peak: 'Mera Peak', heightM: 6476, summited: false, date: '2026-04-20' },
+]
+let nextId = 3
+
+app.get('/api/climbs', (req, res) => {
+  let list = climbs
+  if (req.query.summited === 'true') list = climbs.filter(c => c.summited)
+  if (req.query.summited === 'false') list = climbs.filter(c => !c.summited)
+  res.json({ climbs: list })
+})
+
+app.post('/api/climbs', (req, res) => {
+  if (req.headers['x-api-key'] !== process.env.API_KEY) {
+    return res.status(401).json({ error: 'Missing or wrong API key' })
+  }
+  const { peak, heightM, summited, date } = req.body
+  if (!peak || !Number.isInteger(heightM) || heightM < 1 || heightM > 8849) {
+    return res.status(400).json({ errors: ['peak and a valid heightM are required'] })
+  }
+  const climb = { id: nextId++, peak: peak.trim(), heightM, summited: Boolean(summited), date }
+  climbs.push(climb)
+  res.status(201).json(climb)
+})
+
+app.get('/api/stats', (req, res) => {
+  const up = climbs.filter(c => c.summited)
+  const top = up.reduce((best, c) => (!best || c.heightM > best.heightM ? c : best), null)
+  res.json({ total: climbs.length, summited: up.length, highestSummit: top ? top.peak : null })
+})
+
+app.listen(process.env.PORT || 3000)
+
+// ── screen: App.jsx ──
+const api = {
+  listClimbs: summitedOnly =>
+    fetch('/api/climbs' + (summitedOnly ? '?summited=true' : '')).then(res => res.json()),
+  stats: () => fetch('/api/stats').then(res => res.json()),
+}
+
+function App() {
+  const [climbs, setClimbs] = useState(null)
+  const [stats, setStats] = useState(null)
+  const [summitedOnly, setSummitedOnly] = useState(false)
+
+  useEffect(() => {
+    api.listClimbs(summitedOnly).then(data => setClimbs(data.climbs))
+  }, [summitedOnly])
+
+  useEffect(() => {
+    api.stats().then(setStats)
+  }, [])
+
+  if (climbs === null) return <p>Loading...</p>
+
+  return (
+    <main>
+      <h1>Summit Log</h1>
+      {stats && <p>{stats.summited} of {stats.total} summited. Highest: {stats.highestSummit}</p>}
+      <label>
+        <input type="checkbox" checked={summitedOnly} onChange={() => setSummitedOnly(!summitedOnly)} />
+        Summited only
+      </label>
+      <ul>
+        {climbs.map(c => (
+          <li key={c.id}>{c.peak} ({c.heightM} m)</li>
+        ))}
+      </ul>
+    </main>
+  )
+}` },
+    questions: [
+      { concept: 'integration', kind: 'mc', q: 'In one sentence, what does this listing do?', options: ['A server that lists climbs, adds a climb with an API key and reports stats, plus a screen that shows the list with a filter and a summary line', 'A screen that lets anyone add and delete climbs, with a server that only stores them', 'A server that sends each climb by email when it is added', 'A screen that works without any server, because the data is in the file'], answer: 0, why: 'The routes on lines 12, 19 and 32 list, add and summarise. The screen reads the list and the stats; it has no form to add climbs and no delete.' },
+      { concept: 'query-string', kind: 'mc', q: 'The page has loaded and the user ticks "Summited only". Which request does the browser send?', options: ['`GET /api/climbs/true`', '`POST /api/climbs` with `{ "summited": true }` in the body', '`GET /api/climbs?summited=true`', '`GET /api/climbs`, and the filtering is done in the browser afterwards'], answer: 2, why: 'Ticking flips `summitedOnly` (line 67). That value is in the effect\'s list on line 54, so the effect runs again, and `listClimbs` on line 43 adds `?summited=true` to the address.' },
+      { concept: 'api-contract', kind: 'mc', q: 'The server holds the two climbs from lines 6 and 7. What body does the route on line 12 send for `GET /api/climbs?summited=true`?', options: ['`{ "climbs": [Island Peak] }`', '`[Island Peak]`, a bare list', '`{ "climbs": [Island Peak, Mera Peak] }`', '`{ "climbs": [Mera Peak] }`'], answer: 0, why: 'Line 14 keeps only climbs whose `summited` is true. Island Peak is the only one. Line 16 wraps the list in an object under the key `climbs`.' },
+      { concept: 'integration', kind: 'mc', q: 'The screen shows "Highest: Island Peak". Where does the name come from?', options: ['The screen works it out from the list drawn on line 71', 'It is typed into the screen file as text', 'The route on lines 32 to 36 picks the tallest summited climb and sends its peak as `highestSummit`, and line 65 prints it', 'It comes from the filter checkbox'], answer: 2, why: 'Line 34 finds the tallest summited climb, line 35 sends its `peak` as `highestSummit`, and `api.stats()` on line 57 stores the answer in state. Line 65 only prints it.' },
+      { concept: 'jsx', kind: 'mc', q: 'The summary line should say "Tallest summit" instead of "Highest". Which line do you change?', options: ['Line 35', 'Line 34', 'Line 72', 'Line 65'], answer: 3, why: 'The words are on line 65. Line 35 holds the key name `highestSummit` that crosses between server and screen. That is the contract, not the label.' },
+      { concept: 'api-contract', kind: 'mc', q: 'A teammate renames `heightM` to `height` in the server\'s climbs, but not in the screen. What does each list item show for Island Peak?', options: ['`Island Peak (6189 m)`, because the screen reads the old name from its own copy', '`Island Peak ( m)`: the screen reads a field that is no longer there, and `undefined` draws nothing', 'An error page, because the field is missing', '`Island Peak (undefined m)`'], answer: 1, why: 'Line 72 reads `c.heightM`, which is now `undefined`. React draws nothing for `undefined`, so the text around it is left. Nothing throws, which makes this seam bug easy to miss.' },
+      { concept: 'promise', kind: 'mc', q: 'The server is down when the page loads. What does the screen show?', options: ['An error message from the server', '`Loading...` forever: the fetch fails, nothing handles the failure, and `climbs` stays null', 'The Summit Log with an empty list', 'The Summit Log with the last list the browser saw'], answer: 1, why: 'The `.then` calls on lines 53 and 57 have no `.catch`, so a failed request sets no state. `climbs` stays `null` and line 60 keeps returning the loading text. A reviewer would ask for an error state.' },
+      { concept: 'status-codes-basics', kind: 'type', q: 'A `POST /api/climbs` arrives with the right API key, `peak` "K2" and `heightM` 9000. Type the status code of the reply.', accept: ['400'], why: 'The key check on line 20 passes, but line 24 rejects a height above 8849, so line 25 replies 400 with an `errors` list.' },
+    ],
+  },
+
   // ───────────────────────────── Drills ─────────────────────────────
   {
     id: 'A-7', type: 'sql', mode: 'phone', xp: 45, mins: 45,

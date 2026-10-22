@@ -459,6 +459,64 @@ export const camp5 = [
     ],
   },
 
+  // ───── Code reading ─────
+  {
+    id: '5-read', type: 'read', mode: 'phone', xp: 30, mins: 16,
+    title: 'Read the route: the ration calculator',
+    uses: ['cli-tool', 'process-argv', 'exit-codes', 'edge-cases', 'type-conversion', 'stack-trace', 'error-types'],
+    intro: 'A teammate wrote `ration.js`, a small command-line tool that works out how many meal packs a group should carry. It checks its arguments and exits with a code when something is wrong. It has a flaw, and one of the questions will show you what happens when you hit it.',
+    file: { name: 'ration.js', lang: 'js', code: `// ration.js: node ration.js <people> <days>
+// Prints how many meal packs to carry.
+const MEALS_PER_DAY = 3
+
+function packsNeeded(people, days) {
+  return people * days * MEALS_PER_DAY
+}
+
+function readNumber(text, label) {
+  const value = Number(text.trim())
+  if (!Number.isInteger(value) || value < 1) {
+    console.error(\`Error: \${label} must be a whole number of at least 1, got "\${text}"\`)
+    process.exit(1)
+  }
+  return value
+}
+
+if (process.argv.length < 3) {
+  console.error("Usage: node ration.js <people> <days>")
+  process.exit(2)
+}
+
+const people = readNumber(process.argv[2], "people")
+const days = readNumber(process.argv[3], "days")
+const packs = packsNeeded(people, days)
+
+console.log(\`\${people} people, \${days} days\`)
+console.log(\`Carry \${packs} meal packs\`)
+
+if (packs > 100) {
+  console.log("Warning: that is a heavy load")
+}` },
+    questions: [
+      { concept: 'cli-tool', kind: 'mc', q: 'In one sentence, what does `ration.js` do?', options: ['Takes a number of people and days from the command line and prints how many meal packs to carry', 'Asks the user for the people and days while it runs, then prints a menu', 'Reads a list of meals from a file and counts them', 'Counts down the days left before the trip'], answer: 0, why: 'The usage line and `process.argv` show the inputs come from the command line. Line 28 prints the result.' },
+      { concept: 'process-argv', kind: 'mc', q: 'You run `node ration.js 6 2`. What does `process.argv[3]` hold on line 24?', options: ['"2", as text', '2, as a number', '"6", as text', 'The path to ration.js'], answer: 0, why: 'Positions 0 and 1 are node and the script. Your arguments start at position 2, so `6` is at 2 and `2` is at 3. Every argument arrives as text.' },
+      { concept: 'cli-tool', kind: 'mc', q: 'You run `node ration.js 10 4`. What is the last line printed?', options: ['Warning: that is a heavy load', 'Carry 120 meal packs', 'Carry 40 meal packs', 'Nothing: it exits with code 1'], answer: 0, why: '10 x 4 x 3 = 120 packs, which is above 100, so the `if` on line 30 also runs and the warning comes last.' },
+      { concept: 'stack-trace', kind: 'mc', q: 'You run `node ration.js 4` and see the error below. Which line of `ration.js` was running when it crashed?', code: `/home/climber/ration.js:10
+  const value = Number(text.trim())
+                            ^
+
+TypeError: Cannot read properties of undefined (reading 'trim')
+    at readNumber (/home/climber/ration.js:10:29)
+    at Object.<anonymous> (/home/climber/ration.js:24:14)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)`, options: ['Line 10', 'Line 24', 'Line 18', 'Line 3'], answer: 0, why: 'The top frame is where it crashed: `readNumber` at line 10. The next frame down shows who called it.' },
+      { concept: 'cli-tool', kind: 'mc', q: 'Each person should get 4 meals a day instead of 3. Which line do you change?', options: ['Line 6', 'Line 25', 'Line 28', 'Line 3'], answer: 3, why: 'The number of meals lives in `MEALS_PER_DAY` on line 3. Line 6 only uses the name.' },
+      { concept: 'edge-cases', kind: 'mc', q: 'You run `node ration.js 2.5 3`. What happens?', options: ['It prints an error that people must be a whole number of at least 1, and exits with code 1', 'It rounds 2.5 up to 3 and prints Carry 27 meal packs', 'It prints Carry 22.5 meal packs', 'It crashes with a TypeError'], answer: 0, why: '`Number("2.5")` is 2.5, which is not an integer, so `Number.isInteger` on line 11 is false. Line 12 prints the error and line 13 exits with 1.' },
+      { concept: 'process-argv', kind: 'mc', q: 'Running `node ration.js 4` crashes instead of printing the usage message. Why?', options: ['Line 18 only checks for fewer than 3 items, but two numbers need 4, so `process.argv[3]` is undefined', 'Line 3 sets the meals per day too high', '`process.exit(2)` on line 20 never runs', 'The usage text on line 19 has a typo'], answer: 0, why: 'With one number, `process.argv` has 3 items, so the check passes. Then `process.argv[3]` is undefined and `.trim()` on line 10 fails.' },
+      { concept: 'exit-codes', kind: 'type', q: 'You run `node ration.js` with no arguments at all. What exit code does it finish with? Type the number.', accept: ['2', 'two'], why: '`process.argv` has only 2 items, so line 18 is true. Line 19 prints the usage and line 20 exits with 2.' },
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: '5-7', type: 'code', mode: 'phone', xp: 40, mins: 25,

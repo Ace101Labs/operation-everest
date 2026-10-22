@@ -472,6 +472,92 @@ export const campK = [
     ],
   },
 
+  // ───── Code reading ─────
+  {
+    id: 'K-read', type: 'read', mode: 'phone', xp: 30, mins: 20,
+    title: 'Read the route: an AI-written pull request',
+    uses: ['claims-evidence', 'dependency-audit', 'architecture-review', 'cost-analysis', 'ai-coding-assistant', 'reviewing-ai-code', 'package-hallucination'],
+    intro: 'An AI assistant wrote `forecast.js` for a pull request titled "Add caching and retries to the wind forecast". It looks tidy and the tests pass. You are the reviewer. The comment on line 2 is a copy of the project\'s `package.json` dependency list. Read the code like someone who has to sign it off.',
+    file: { name: 'forecast.js', lang: 'js', code: `// forecast.js: PR #42 "Add caching and retries to the wind forecast" (written by an AI assistant)
+// package.json dependencies: dayjs, express
+const dayjs = require('dayjs')
+const { smoothSeries } = require('wind-smooth-pro')
+
+const FORECAST_URL = 'https://api.example.com/v1/wind'
+const API_KEY = process.env.FORECAST_KEY
+const CACHE_MINUTES = 10
+const MAX_TRIES = 3
+const LIMIT_KPH = 50
+
+const cache = new Map()
+
+function cacheKey(site) {
+  return site.trim().toLowerCase()
+}
+
+// Returns saved readings that are still fresh, or null.
+function getCached(site) {
+  const hit = cache.get(cacheKey(site))
+  if (!hit) return null
+  if (dayjs().diff(hit.savedAt, 'minute') >= CACHE_MINUTES) return null
+  return hit.readings
+}
+
+async function fetchOnce(site) {
+  const res = await fetch(FORECAST_URL + '?site=' + encodeURIComponent(site), {
+    headers: { Authorization: 'Bearer ' + API_KEY },
+  })
+  const data = await res.json()
+  return data.readings
+}
+
+// Tries the API up to MAX_TRIES times and remembers a good answer.
+async function fetchReadings(site) {
+  const cached = getCached(site)
+  if (cached) return cached
+
+  let lastError
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    try {
+      const readings = await fetchOnce(site)
+      cache.set(cacheKey(site), { readings, savedAt: dayjs() })
+      return readings
+    } catch (err) {
+      lastError = err
+      console.log('Attempt ' + attempt + ' failed: ' + err.message)
+    }
+  }
+  throw lastError
+}
+
+// Average of the smoothed hourly wind readings, in km/h.
+function averageWind(readings) {
+  const smooth = smoothSeries(readings)
+  const total = smooth.reduce((sum, r) => sum + r, 0)
+  return total / smooth.length
+}
+
+async function summitCall(site) {
+  const readings = await fetchReadings(site)
+  if (!readings || readings.length === 0) return 'NO DATA'
+
+  const avg = averageWind(readings)
+  return avg <= LIMIT_KPH ? 'GO' : 'HOLD'
+}
+
+module.exports = { summitCall, fetchReadings }` },
+    questions: [
+      { concept: 'reviewing-ai-code', kind: 'mc', q: 'In one sentence, what does this change do?', options: ['It fetches wind readings from a forecast API with a cache and up to 3 tries, then answers GO, HOLD or NO DATA for a site', 'It stores every forecast in a database so the team can look at old readings', 'It builds a web page that charts the wind for each site', 'It checks the project\'s dependencies for known problems'], answer: 0, why: '`fetchReadings` handles the cache and the tries, and `summitCall` turns the readings into a call. There is no database, no page and no dependency scan.' },
+      { concept: 'cost-analysis', kind: 'mc', q: 'The forecast API is healthy. `summitCall(" Ridge ")` runs, and five minutes later `summitCall("ridge")` runs. How many requests reach the forecast API?', options: ['1', '2', '0', '3'], answer: 0, why: '`cacheKey` on line 15 trims the name and lowercases it, so both calls share the key `ridge`. Five minutes is less than `CACHE_MINUTES`, so the second call is served from the cache.' },
+      { concept: 'reviewing-ai-code', kind: 'mc', q: '`fetch` rejects with "network down" on the first two tries and works on the third. What happens?', options: ['Two `Attempt … failed` lines are printed, then `summitCall` goes on with the good readings', 'Three `Attempt … failed` lines are printed, then the error is thrown', 'Nothing is printed, because `fetchOnce` swallows the errors', 'One `Attempt 1 failed` line is printed, then the error is thrown'], answer: 0, why: 'Each failure is caught on line 45 and logged on line 47, and the loop goes round again. The third try returns on line 44, so nothing is thrown.' },
+      { concept: 'architecture-review', kind: 'mc', q: 'The cache is empty and the API is healthy. In what order do the functions run for `summitCall("ridge")`?', options: ['`averageWind`, then `fetchReadings`, then `fetchOnce`', '`fetchOnce`, then `getCached`, then `averageWind`', '`fetchReadings` (which calls `getCached`, then `fetchOnce`), then `averageWind`', '`getCached`, then `summitCall`, then `fetchOnce`'], answer: 2, why: '`summitCall` calls `fetchReadings` first. That checks `getCached`, finds nothing and calls `fetchOnce`. With the readings back, `summitCall` calls `averageWind`.' },
+      { concept: 'cost-analysis', kind: 'mc', q: 'The team wants cached readings to stay for 30 minutes. Which line do you change?', options: ['Line 9', 'Line 22', 'Line 10', 'Line 8'], answer: 3, why: '`CACHE_MINUTES` on line 8 holds the number. Line 22 only compares the age against it.' },
+      { concept: 'reviewing-ai-code', kind: 'mc', q: 'The API answers 200 with `{ "readings": [] }`. What does `summitCall` return?', options: ['GO, because 0 is below the limit', 'NaN, because the average of nothing is not a number', 'HOLD, because there is no good news', 'NO DATA, because line 62 catches an empty list before it is averaged'], answer: 3, why: 'Averaging an empty list would divide 0 by 0, which is `NaN`, and `NaN <= 50` is false. Line 62 returns early, so the code never gets there.' },
+      { concept: 'package-hallucination', kind: 'mc', q: 'Line 2 lists `dayjs` and `express`. What should the reviewer notice about line 4?', options: ['`wind-smooth-pro` is not in the dependency list. The assistant may have invented it, so check that it exists and who publishes it before anyone installs it', 'Nothing: any package a `require` names is installed automatically', 'Line 4 should use `import` instead of `require`, and that is the only issue', 'The package name is too long to be real'], answer: 0, why: 'An AI assistant can name a package that does not exist, and an attacker can publish a real package under that name. Installing it runs someone else\'s code on your machine.' },
+      { concept: 'claims-evidence', kind: 'mc', q: 'The PR title says "retries". The diff shows one line the assistant removed from `fetchOnce`. When the forecast service answers 503, what does `summitCall` do?', code: "async function fetchOnce(site) {\n  const res = await fetch(FORECAST_URL + '?site=' + encodeURIComponent(site), {\n    headers: { Authorization: 'Bearer ' + API_KEY },\n  })\n-  if (!res.ok) throw new Error('Forecast error ' + res.status)\n  const data = await res.json()\n  return data.readings\n}", options: ['It tries 3 times, then throws `Forecast error 503`', 'It throws `Forecast error 503` straight away', 'It answers from the cache, which still holds the last readings', 'It returns NO DATA after one request: nothing is thrown, so nothing is retried'], answer: 3, why: 'The retry loop only reacts to a thrown error. Without the `res.ok` check a 503 reply is read as a normal body with no `readings`, so an outage looks like missing data and the claim of retries is not true for it.' },
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: 'K-7', type: 'code', mode: 'phone', xp: 45, mins: 25,

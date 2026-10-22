@@ -350,6 +350,52 @@ export const camp4 = [
     ],
   },
 
+  // ───── Code reading ─────
+  {
+    id: '4-read', type: 'read', mode: 'phone', xp: 30, mins: 14,
+    title: 'Read the route: the gear checker',
+    uses: ['function', 'parameter', 'return-value', 'arrow-function', 'array', 'array-index', 'array-methods', 'for-of', 'object', 'property-access', 'map-filter'],
+    intro: 'A teammate wrote `gear-check.js` to look over the team\'s kit before a trip. It holds a list of objects, a small function and a chain of `filter` and `map`. Read it all first, then answer.',
+    file: { name: 'gear-check.js', lang: 'js', code: `// gear-check.js: weighs the packed kit and flags items of 2 kg or more
+const MAX_KG = 2
+
+const kit = [
+  { name: "tent", kg: 3.4, packed: true },
+  { name: "rope", kg: 1.2, packed: true },
+  { name: "stove", kg: 0.8, packed: false },
+  { name: "boots", kg: 2, packed: true },
+  { name: "jacket", kg: 0.9, packed: true },
+]
+
+function totalWeight(items) {
+  let total = 0
+  for (const item of items) {
+    total += item.kg
+  }
+  return total
+}
+
+const packed = kit.filter(item => item.packed)
+const heavy = packed.filter(item => item.kg > MAX_KG)
+const names = heavy.map(item => item.name)
+
+console.log("Packed:", packed.length, "items")
+console.log("Weight:", totalWeight(packed))
+console.log("Heavy:", names)
+console.log("First item:", kit[0].name)
+console.log("Last item:", kit[kit.length - 1].name)` },
+    questions: [
+      { concept: 'map-filter', kind: 'mc', q: 'In one sentence, what does `gear-check.js` do?', options: ['Keeps the packed items, adds up their weight and lists the names of the heavy ones', 'Sorts the kit from heaviest to lightest', 'Removes the unpacked items from the kit list for good', 'Adds up every item in the kit, packed or not'], answer: 0, why: 'Line 20 keeps the packed items, line 25 totals them, and lines 21 and 22 pick out the heavy ones and their names.' },
+      { concept: 'map-filter', kind: 'mc', q: 'What does the program print on the line that starts `Heavy:`?', options: ['Heavy: [ \'tent\' ]', 'Heavy: [ \'tent\', \'boots\' ]', 'Heavy: tent', 'Heavy: []'], answer: 0, why: 'Only the tent is above 2 kg. `map` turns the one heavy object into its name, and `console.log` shows an array with brackets and quotes.' },
+      { concept: 'for-of', kind: 'mc', q: 'What does `totalWeight(packed)` return on line 25?', options: ['7.5', '8.3', '4', '5.5'], answer: 0, why: 'The packed items are the tent, rope, boots and jacket: 3.4 + 1.2 + 2 + 0.9 = 7.5. The stove is not packed.' },
+      { concept: 'function', kind: 'mc', q: 'Which line makes the code inside `totalWeight` run?', options: ['Line 12', 'Line 14', 'Line 20', 'Line 25'], answer: 3, why: 'Line 12 only defines the function. Its body runs when something calls it, and line 25 is the call.' },
+      { concept: 'object', kind: 'mc', q: 'Boots should be 2.4 kg, not 2 kg. Which line do you change?', options: ['Line 21', 'Line 8', 'Line 2', 'Line 9'], answer: 1, why: 'Each item is one object in the list, and the boots are on line 8. Line 21 only compares weights.' },
+      { concept: 'array-index', kind: 'mc', q: 'A sixth item, the axe, is added at the end of the `kit` list. What does line 28 print?', options: ['axe', 'jacket', 'undefined', 'tent'], answer: 0, why: 'The index `kit.length - 1` always points at the last item, so it moves when the list grows. Line 28 would print the axe.' },
+      { concept: 'map-filter', kind: 'mc', q: 'The comment on line 1 says "items of 2 kg or more", but the boots (2 kg) are missing from the heavy list. Why?', options: ['`>` on line 21 is false for exactly 2, so the boots are left out', 'The boots are not marked as packed', '`map` on line 22 drops the second item', '`MAX_KG` on line 2 is a string'], answer: 0, why: '`2 > 2` is false. The test needs `>=` to match the comment. This is the kind of small mismatch a reviewer flags.' },
+      { concept: 'arrow-function', kind: 'mc', q: 'In `packed.filter(item => item.kg > MAX_KG)` on line 21, what is `item`?', options: ['One element of `packed`, handed over one at a time', 'The whole `packed` array', 'The number of packed items', 'The word "item" as text'], answer: 0, why: '`filter` calls the arrow function once per element, and `item` is the name for the element it is looking at.' },
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: '4-7', type: 'code', mode: 'phone', xp: 45, mins: 20,

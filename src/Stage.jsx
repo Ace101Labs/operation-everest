@@ -173,6 +173,7 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
         </div>
       )}
       {challenge === 'boss' && QUESTIONS[q.qid] && QUESTIONS[q.qid].camp.id !== stage.id.split('-')[0] && <small className="from-old">🔙 Flashback · from {QUESTIONS[q.qid].camp.name}</small>}
+      {q.file && <FileView file={q.file} />}
       <div className="q-text" role="heading" aria-level="3" data-qid={q.qid}><Md text={q.q} /></div>
       {q.code && <pre><code>{q.code}</code></pre>}
       {q.kind === 'mc' ? (
@@ -270,6 +271,47 @@ function RadioStage({ stage, finish, p, saveJournal }) {
   const [round, setRound] = useState(0)
   if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} />
   return <Radio key={round} stage={stage} onFinish={setScore} journal={p.journal?.[stage.id]} saveJournal={t => saveJournal(stage.id, t)} />
+}
+
+// Someone else's file, with line numbers, so questions can say "line 7".
+export function FileView({ file, tall }) {
+  return (
+    <div className={`readfile ${tall ? 'tall' : ''}`}>
+      <div className="readfile-name">📄 {file.name}</div>
+      <pre><code>{file.code.split('\n').map((l, i) => <div key={i}><span className="ln">{i + 1}</span>{l || ' '}</div>)}</code></pre>
+    </div>
+  )
+}
+
+// Code reading: read a file you didn't write, then answer questions about it (PRIMM's
+// predict + investigate, before the camp's drills ask you to write).
+const HOW_TO_READ = [
+  ['First glance', 'Skim the whole file before any detail. Read the file name, the comments and the names of functions and variables. What is this file *for*?'],
+  ['Find where it starts', 'Find the lines that actually run (not inside a function) and start there. When one calls a function, jump to that function and come back.'],
+  ['Follow the values', 'Keep track of what each variable holds as you go, like a note on scrap paper. Most bugs live where a value isn\'t what you thought.'],
+  ['Say it in one sentence', 'When you finish, say what the file does in plain words. If you can\'t, read the part you skipped again.'],
+]
+function ReadStage({ stage, finish, p, onAnswer }) {
+  const [view, setView] = useState('intro')
+  const [score, setScore] = useState(null)
+  const [round, setRound] = useState(0)
+  if (score !== null) return <Result p={p} score={score} stage={stage} onDone={finish} retry={() => { setScore(null); setRound(r => r + 1) }} />
+  if (view === 'quiz') return <Questions key={round} stage={stage} questions={stage.questions} platform={p.settings.platform} onFinish={setScore} onAnswer={onAnswer} />
+  if (view === 'intro') return (
+    <div className="audit">
+      <div className="lesson-card"><h3>🔍 Read it before you write it</h3><Md text={stage.intro} />
+        <ol className="howread">{HOW_TO_READ.map(([h, b]) => <li key={h}><strong>{h}.</strong> <Md text={b} /></li>)}</ol>
+      </div>
+      <button className="btn primary wide" onClick={() => { setView('file'); window.scrollTo(0, 0) }}>Open the file</button>
+    </div>
+  )
+  return (
+    <div className="audit">
+      <FileView file={stage.file} tall />
+      <p className="note">Read the whole file first. It stays on screen during the questions.</p>
+      <button className="btn primary wide" onClick={() => { setView('quiz'); window.scrollTo(0, 0) }}>I've read it: questions</button>
+    </div>
+  )
 }
 
 function Audit({ stage, finish, p, onAnswer }) {
@@ -411,6 +453,7 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
         {stage.type === 'keyboard' && !stage.engine && <Build {...props} />}
         {stage.type === 'radio' && <RadioStage {...props} />}
         {stage.type === 'audit' && <Audit {...props} />}
+        {stage.type === 'read' && <ReadStage {...props} />}
         {stage.type === 'boss' && <Boss {...props} />}
         {(stage.type === 'avalanche' || stage.type === 'yeti') && <Challenge {...props} />}
       </div>

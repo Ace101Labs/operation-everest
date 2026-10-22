@@ -199,7 +199,7 @@ const sum = list => list.reduce((t, s) => t + (s.xp || 0), 0)
 const earned = (p, list) => list.reduce((t, s) => t + stagePoints(s, p.stages[s.id]), 0)
 export const MAX_POINTS = sum(all)
 export const PHONE_MAX = sum(all.filter(s => s.mode === 'phone'))
-const QUIZ_TYPES = ['learn', 'audit', 'avalanche', 'yeti', 'boss']
+const QUIZ_TYPES = ['learn', 'read', 'audit', 'avalanche', 'yeti', 'boss']
 export function score(p) {
   const passed = all.filter(s => isPassed(p, s.id))
   const quizzes = passed.filter(s => QUIZ_TYPES.includes(s.type))

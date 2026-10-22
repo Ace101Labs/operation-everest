@@ -83,6 +83,7 @@ console.log(addAltitude(typed, 450))
       { concept: 'type-annotation', kind: 'mc', q: 'With no annotation, what type does TypeScript give `let height = 8400`?', options: ['any', 'number', 'unknown', 'None: unlabelled variables aren\'t checked'], answer: 1, why: 'Inference: it starts as a number, so `height = "high"` would be an error.' },
       { concept: 'typescript', kind: 'mc', q: '`tsc --noEmit` reports zero errors. Which problem could STILL be there?', options: ['A string passed to a number parameter', 'A logic bug, or bad data arriving from an API while it runs', 'A missing required property in an object you wrote', 'A misspelled property name'], answer: 1, why: 'Types check your code\'s shapes, not its logic, and they\'re gone by the time live data arrives.' },
       { concept: 'typescript', kind: 'type', q: 'Type the npm command that installs TypeScript as a dev dependency.', accept: ['npm install --save-dev typescript', 'npm install -D typescript', 'npm i -D typescript', 'npm i --save-dev typescript', 'npm install typescript --save-dev', 'npm install typescript -D', 'npm i typescript -D', 'npm i typescript --save-dev'], why: '`npm install --save-dev typescript` (or `-D` for short). Then `npx tsc` uses that version.' },
+      { concept: "type-errors", kind: "mc", q: "Which file, line and column do you open first, and what is the problem?", code: "$ tsc\nsrc/gear.ts(4,7): error TS2322: Type 'string' is not assignable to type 'number'.", options: ["Line 7, column 4 of src/gear.ts: a number was given where text is expected", "Line 4, column 7 of src/gear.ts: text was given where a number is expected", "Line 4 of tsc: it could not find the file src/gear.ts", "Line 4, column 7 of src/gear.ts: the type string does not exist"], answer: 1, why: "The path and `(line,column)` come first, then the code and the message. \"Type 'string' is not assignable to type 'number'\" reads: a string was given where a number is expected." },
     ],
   },
 
@@ -190,6 +191,8 @@ console.log(tentLabel(7))
       { concept: 'interface-type', kind: 'mc', q: 'Which of these can a `type` alias name but an `interface` can\'t?', options: ['An object shape', 'A union like `"open" | "full"`', 'An object with optional properties', 'A shape used as a parameter type'], answer: 1, why: 'Both can describe objects; only `type` names unions.' },
       { concept: 'union-type', kind: 'mc', q: '`document.querySelector("#count")` has the type `Element | null`. Why does strict mode make you check it?', options: ['TypeScript cannot tell if the selector string is valid CSS or not', 'The element might not exist, and using null would crash at run time', 'DOM elements cannot be used in TypeScript without first casting them', 'The id "count" might belong to several elements, so one pick is unsafe'], answer: 1, why: 'The union includes null, so you must handle "not found" (TS18047 otherwise).' },
       { concept: 'interface-type', kind: 'mc', q: 'You label a server reply as `Climber`, but the server actually sends `{ nam: "Ana" }`. What happens when the code runs?', options: ['tsc catches the typo when the reply arrives and stops the program', 'Nothing checks it: types are gone at run time, so `climber.name` is undefined', 'TypeScript reports the mismatch in the console, and name is left empty', 'The interface throws an error because the property name is missing'], answer: 1, why: 'Types describe what you expect. Check real data with code.' },
+      { concept: "interface-type", kind: "mc", q: "What is the fix?", code: "$ tsc\nsrc/report.ts(9,22): error TS2551: Property 'nme' does not exist on type 'Climber'. Did you mean 'name'?", options: ["Add a nme property to the Climber interface", "Delete line 9 from src/report.ts", "Change nme to name on line 9", "Make every Climber property optional with a ?"], answer: 2, why: "`Did you mean 'name'?` is TypeScript pointing at a typo. Property names must match the interface exactly. Adding `nme` to the interface would hide the typo, not fix it." },
+      { concept: "union-type", kind: "mc", q: "The message prints the value in quotes. What is wrong with it?", code: "$ tsc\nsrc/trip.ts(3,7): error TS2322: Type '\"windy \"' is not assignable to type 'Weather'.", options: ["Weather must be written in capital letters", "The quotes should be single quotes, not double quotes", "A Weather value cannot be longer than five letters", "There is a space inside the quotes: the text is \"windy \", not \"windy\""], answer: 3, why: "The message prints the exact text it received. A union of exact strings only accepts those exact strings, so a trailing space makes it a different value." },
     ],
   },
 
@@ -383,6 +386,7 @@ function App() {
       { concept: 'react-events', kind: 'mc', q: 'Which prop does React use for clicks?', options: ['onclick', 'onClick', 'click', 'on-click'], answer: 1, why: 'camelCase: onClick, onChange, onSubmit.' },
       { concept: 'state', kind: 'mc', q: '`packed` is 0. One click runs this handler. What is `packed` on the next render?', code: 'setPacked(packed + 1)\nsetPacked(packed + 1)', options: ['2', '1', '0', 'undefined'], answer: 1, why: '`packed` is a snapshot (0) in both lines. Use `setPacked(p => p + 1)` to stack updates.' },
       { concept: 'props', kind: 'mc', q: '`<Bottle litres="4" />`. Inside Bottle, what is `litres + 1`?', options: ['5', '"41"', 'NaN', 'An error'], answer: 1, why: 'Quotes pass a string. Use `litres={4}`.' },
+      { concept: "props", kind: "mc", q: "Line 6 of CampList.jsx is `{camps.map(c => <li key={c.id}>{c.name}</li>)}`. What does this error mean?", code: "Uncaught TypeError: Cannot read properties of undefined (reading 'map')\n    at CampList (CampList.jsx:6:24)\n    at renderWithHooks (react-dom.development.js:16305:18)", options: ["camps is undefined: CampList was used without a camps prop", "The camps list is empty, so there is nothing to map", "map is not allowed inside a component", "Each li is missing its key"], answer: 0, why: "\"Cannot read properties of undefined (reading 'map')\" means the thing before `.map` is undefined. The first line in your own file (CampList.jsx:6) is the one to open. Check that the parent passes `camps={...}`. An empty list would not crash." },
     ],
   },
 
@@ -485,6 +489,7 @@ function App() {
       { concept: 'use-effect', kind: 'mc', q: 'An effect starts `setInterval`. Why should it return a function?', options: ['So the effect can send the timer result back to the component as a value', 'Cleanup: React calls it to clear the interval before re-running and when the component goes away', 'It is required syntax: every effect must return a function or React throws', 'To hand the timer id up to the parent so it can start the next interval'], answer: 1, why: 'Without cleanup, intervals pile up and leak.' },
       { concept: 'use-effect', kind: 'mc', q: 'You need "Packed: 2 of 5" from the items list. Best approach?', options: ['An effect that copies the count into new state', 'Calculate it during render: `items.filter(i => i.packed).length`', 'A ref that is incremented in each click handler', 'A second useState updated whenever an item is toggled'], answer: 1, why: 'Derived values are computed, not stored. No effect needed.' },
       { concept: 'use-effect', kind: 'mc', q: 'On your computer, in development, an effect logs `mounted` twice. Why?', options: ['A bug in React that shows up in development builds and is fixed in production', 'StrictMode mounts, cleans up and mounts again in development, to catch effects with missing cleanup', 'Every effect runs once on mount and again after the first state update', 'The browser ran the script twice, once for the HTML and once for the bundle'], answer: 1, why: 'Development only. Production runs it once.' },
+      { concept: "lists-keys", kind: "mc", q: "You see this warning in the console. What is the fix?", code: "Warning: Each child in a list should have a unique \"key\" prop.\n\nCheck the render method of `CampList`. See https://react.dev/link/warning-keys for more information.\n    at li\n    at CampList (CampList.jsx:7:20)", options: ["Wrap the whole list in a second ul", "Add a key attribute to CampList itself", "Give the li inside the map a unique key, such as key={camp.id}", "Move the map call outside the component"], answer: 2, why: "The warning names the component (`CampList`) and the element (`li`). The key goes on the outer element returned by `map`, using a stable value such as an id." },
     ],
   },
 
@@ -573,6 +578,97 @@ test("enough oxygen means go", () => {
       { concept: 'test-first', kind: 'mc', q: 'Why watch a new test fail before writing the code?', options: ['Test runners refuse to run a test that has never failed', 'To prove the test can actually catch a problem', 'To measure how long the new code will take to write', 'To record the failure in the coverage report for later'], answer: 1, why: 'A test you\'ve never seen fail might pass no matter what.' },
       { concept: 'unit-test', kind: 'mc', q: '`isDeathZone(m)` returns `m >= 8000`. Which pair of tests checks the boundary best?', options: ['5000 and 9000', '8000 and 7999', '0 and 1', '8848 and 8849'], answer: 1, why: 'Right on the line and just below it: where `>` vs `>=` bugs hide.' },
       { concept: 'assertion', kind: 'mc', q: 'Why does this fail: `✗ adds fractions: expected 0.3 but got 0.30000000000000004`?', options: ['The test runner rounds numbers badly; update it to a newer version', 'Decimal maths in binary isn\'t exact; use toBeCloseTo or whole numbers', 'toBe rounds both values to one decimal place before it compares them', 'The code added 0.1 and 0.2 in the wrong order; swap the two operands'], answer: 1, why: '0.1 + 0.2 really is 0.30000000000000004 in JavaScript.' },
+      { concept: "assertion", kind: "mc", q: "What does this test output tell you?", code: "✓ adds up every item\n✗ total adds weights: expected 7.5 but got 7.4\n✓ an empty pack weighs nothing\n\nTests: 1 failed, 2 passed, 3 total", options: ["All three tests need to be rewritten", "The runner is broken, since two tests passed", "The test expects 7.4 but the code returned 7.5", "The code returned 7.4 where the test expects 7.5: open that test and the function"], answer: 3, why: "Read `expected` as what the test wants and `got` as what the code returned. One test fails, so start from its name. Either the function has a bug or the number in the test is wrong, and the test name tells you which behaviour to check." },
+      { concept: "test-first", kind: "mc", q: "You wrote these tests before the function. What does this first run tell you?", code: "✗ 100 m needs 2 ropes: ropeNeeded is not defined\n✗ 120 m needs 3 ropes: ropeNeeded is not defined\n✗ 0 m needs no rope: ropeNeeded is not defined", options: ["The tests are written wrongly and must be deleted", "Expected: the function does not exist yet, so write it and run again", "The runner needs to be updated before it can run tests", "The tests passed, since nothing else failed"], answer: 1, why: "In test-first work the first run should fail. \"Not defined\" means the tests reached a function that has not been written yet. Create it, then watch the failures turn to passes." },
+    ],
+  },
+
+  // ───── Code reading ─────
+  {
+    id: 'J-read', type: 'read', mode: 'phone', xp: 30, mins: 20,
+    title: 'Read the route: the pack list component',
+    uses: ['typescript', 'interface-type', 'component', 'jsx', 'props', 'state', 'react-events', 'lists-keys', 'use-effect', 'unit-test', 'assertion'],
+    intro: 'A teammate wrote `GearList.tsx`, a React component that shows a pack list with checkboxes. Under the component sits a tiny test file, shown here in the same listing. Read the types first, then the component, then the tests.',
+    file: { name: 'GearList.tsx', lang: 'tsx', code: `// GearList.tsx: a pack list. Tick gear off and see how much you have packed.
+import { useEffect, useState } from 'react'
+
+interface Item {
+  id: number
+  name: string
+  kg: number
+  packed: boolean
+}
+
+interface GearListProps {
+  title: string
+  items: Item[]
+  maxKg: number
+}
+
+export function packedWeight(items: Item[]): number {
+  return items.filter(i => i.packed).reduce((sum, i) => sum + i.kg, 0)
+}
+
+export function GearList({ title, items, maxKg }: GearListProps) {
+  const [list, setList] = useState(items)
+  const [onlyUnpacked, setOnlyUnpacked] = useState(false)
+  const weight = packedWeight(list)
+  const shown = onlyUnpacked ? list.filter(i => !i.packed) : list
+
+  useEffect(() => {
+    document.title = title + ': ' + weight + ' kg'
+  }, [title, weight])
+
+  function toggle(id: number) {
+    setList(list.map(i => (i.id === id ? { ...i, packed: !i.packed } : i)))
+  }
+
+  return (
+    <section>
+      <h2>{title}</h2>
+      <p className={weight > maxKg ? 'over' : 'ok'}>
+        {weight} of {maxKg} kg packed
+      </p>
+      <button onClick={() => setOnlyUnpacked(!onlyUnpacked)}>
+        {onlyUnpacked ? 'Show all' : 'Still to pack'}
+      </button>
+      <ul>
+        {shown.map(item => (
+          <li key={item.id}>
+            <label>
+              <input type="checkbox" checked={item.packed} onChange={() => toggle(item.id)} />
+              {item.name} ({item.kg} kg)
+            </label>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+// ── GearList.test.tsx ──
+const sample: Item[] = [
+  { id: 1, name: 'Rope', kg: 4, packed: true },
+  { id: 2, name: 'Tent', kg: 2, packed: false },
+  { id: 3, name: 'Stove', kg: 1, packed: true },
+]
+
+test('packedWeight adds up only the packed items', () => {
+  expect(packedWeight(sample)).toBe(5)
+})
+
+test('an empty list weighs nothing', () => {
+  expect(packedWeight([])).toBe(0)
+})` },
+    questions: [
+      { concept: 'component', kind: 'mc', q: 'In one sentence, what does `GearList` show?', options: ['A titled pack list with a checkbox per item, the packed weight against a limit, and a button that hides packed items', 'A form where the user types in new gear and saves it to a server', 'A table of gear that is sorted when the user taps a column heading', 'A countdown that shows how many days are left until the trip'], answer: 0, why: 'The `return` on lines 35 to 55 draws a heading, the weight line, one button and the list of checkboxes. Nothing here saves to a server, sorts or counts days.' },
+      { concept: 'props', kind: 'mc', q: '`GearList` gets the three `sample` items and `maxKg` of 4. What does the weight line show, and which class does it get?', options: ['`4 of 4 kg packed` with class `ok`', '`7 of 4 kg packed` with class `over`', '`5 of 4 kg packed` with class `over`', '`5 of 4 kg packed` with class `ok`'], answer: 2, why: '`packedWeight` adds Rope (4) and Stove (1), which are packed, to get 5. Line 38 tests `5 > 4`, which is true, so the class is `over`.' },
+      { concept: 'react-events', kind: 'mc', q: '`GearList` shows the three `sample` items with the title "Pack". The user taps the checkbox next to Tent. What is true afterwards?', options: ['The Tent object is changed in place, so React sees nothing new and redraws nothing', 'The weight line stays at 5 until the page is reloaded', 'The weight line shows 7, and the tab title still says "Pack: 5 kg" because effects run only once', 'The state is replaced by a new array in which Tent is packed, the weight line shows 7, and the tab title becomes "Pack: 7 kg"'], answer: 3, why: 'Line 32 builds a new list with `map` and a copied Tent object. React sees new state and redraws. The weight is now 7, and because `weight` is in the effect\'s list on line 29, the effect sets the new title.' },
+      { concept: 'use-effect', kind: 'mc', q: 'The user taps the "Still to pack" button. Does the effect on lines 27 to 29 run again?', options: ['Yes: every tap makes the component draw again, and an effect runs after every draw', 'Yes: the button changes the list, so `weight` changes', 'No: neither `title` nor `weight` changed, so the effect is skipped', 'No: effects run only when the component first appears'], answer: 2, why: 'The button only flips `onlyUnpacked`. The effect\'s list on line 29 holds `title` and `weight`, and the effect re-runs only when one of those changes.' },
+      { concept: 'jsx', kind: 'mc', q: 'The weight line should turn red when the pack weighs exactly the limit, not only when it goes over. Which line do you change?', options: ['Line 28', 'Line 38', 'Line 24', 'Line 39'], answer: 1, why: 'Line 38 picks the class with `weight > maxKg`. Changing it to `>=` makes a pack at exactly the limit count as over. Line 39 only prints the numbers.' },
+      { concept: 'lists-keys', kind: 'mc', q: 'Why does the `<li>` on line 46 have `key={item.id}`?', options: ['It lets React match each row to its item when the list changes, for example when packed items are hidden', 'It is the value the browser sends when the checkbox is submitted', 'It makes the row clickable', 'It stops two items from having the same name'], answer: 0, why: 'A key is a stable ID for a row. When the filter hides some rows, React uses the keys to keep the right rows and their checkbox state.' },
+      { concept: 'state', kind: 'mc', q: 'After the first draw, the parent passes a different `items` array to `GearList`. What does the component show?', options: ['The new items, because props always replace state', 'The new items, because `map` on line 45 reads `items` directly', 'An error, because `useState` cannot be called twice', 'The first list: `useState(items)` on line 22 uses the value only the first time'], answer: 3, why: 'A state variable starts from its first value and then belongs to the component. Later changes to the prop do not reach it. A reviewer would ask whether the list should follow the prop.' },
+      { concept: 'assertion', kind: 'mc', q: 'A teammate changes `i.packed` to `!i.packed` on line 18, inside `packedWeight`. Which tests fail?', options: ['Both tests fail', 'Neither test fails', 'Only "packedWeight adds up only the packed items": it now gets 2 instead of 5', 'Only "an empty list weighs nothing": an empty list now fails'], answer: 2, why: 'With the check flipped, only Tent counts, so the sample gives 2 and the first test fails. An empty list has nothing to count, so the second test still gets 0 and passes.' },
     ],
   },
 

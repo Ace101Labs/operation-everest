@@ -619,3 +619,19 @@ body.calm .bossfight.hit .boss-face, body.calm .bossfight.hurt { animation: none
 .streak-save { border-color: var(--or); margin: 0 0 10px; text-align: left; } .streak-save p { margin: 0 0 6px; }
 .side-btn.yeti-here { border-color: var(--or); animation: beckon 1.6s ease-in-out infinite; }
 .gear-note { margin: 8px 0 0; font-size: 14px; cursor: pointer; }
+
+/* Predict-first stops in the worked example */
+.predict { display: grid; gap: 8px; margin-top: 2px; } .predict .options { margin: 0; }
+.predict .walk-note > div { flex: 1; } .predict .walk-note .md { display: inline; } .predict .walk-note .md p { display: inline; }
+.predict-said { display: flex; flex-wrap: wrap; gap: 4px; align-items: baseline; border-radius: 12px; padding: 8px 12px; font-weight: 600; animation: pop .3s; }
+.predict-said .md p { margin: 0; } .predict-said.right { background: #0f2a22; border: 1px solid var(--ok); } .predict-said.wrong { background: #2a2312; border: 1px solid var(--or); }
+pre.walk div { position: relative; } pre.walk .pr-mark { position: absolute; right: 6px; top: 2px; font-size: 12px; }
+pre.walk div.covered { filter: blur(5px); user-select: none; }
+
+/* Code reading: a file with line numbers */
+.readfile { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; background: #0b1622; }
+.readfile-name { font-size: 12px; padding: 6px 10px; border-bottom: 1px solid var(--line); opacity: .85; }
+.readfile pre { margin: 0; max-height: 42vh; overflow: auto; padding: 6px 0; border: 0; border-radius: 0; }
+.readfile.tall pre { max-height: none; }
+.readfile pre div { white-space: pre; padding-right: 12px; } .readfile .ln { display: inline-block; width: 2.4em; padding-right: .7em; text-align: right; opacity: .45; user-select: none; }
+.howread { padding-left: 1.2em; display: grid; gap: 6px; } .howread .md, .howread .md p { display: inline; margin: 0; }

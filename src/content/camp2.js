@@ -230,6 +230,34 @@ export const camp2 = [
     ],
   },
 
+  // ───────────────────────────── Code reading ─────────────────────────────
+  {
+    id: '2-read', type: 'read', mode: 'phone', xp: 30, mins: 10,
+    title: 'Read the route: someone else\'s first program',
+    uses: ['program', 'run-order', 'console-log', 'string', 'syntax-error', 'cat'],
+    intro: 'A club member wrote `trip.js` to print a plan for day one. You didn\'t write it and you don\'t need to run it. Read it and work out what it does. Developers read far more code than they write, so this is the skill you\'ll use most.',
+    file: { name: 'trip.js', lang: 'js', code: `// trip.js: prints the plan for day one
+console.log("Day 1")
+console.log("Fly to Lukla")
+// console.log("Rest day")
+console.log("Walk to Phakding")
+console.log("Day 1 done")
+
+// Packing reminder
+console.log("Pack: boots, rope, water")
+console.log("Leave at 6:00")` },
+    questions: [
+      { concept: 'program', kind: 'mc', q: 'In one sentence, what does `trip.js` do?', options: ['Prints a short plan for day one, then a packing reminder', 'Asks the climber what they want to pack', 'Saves the plan into a new file', 'Checks the trip plan for mistakes'], answer: 0, why: 'Every line that runs is a `console.log`, so all it does is print. Reading the comments and the printed text tells you what it prints.' },
+      { concept: 'run-order', kind: 'mc', q: 'You run `node trip.js`. What is the first line of output?', options: ['Day 1', '// trip.js: prints the plan for day one', 'Fly to Lukla', 'console.log("Day 1")'], answer: 0, why: 'Line 1 is a comment, so the computer skips it. Line 2 is the first line that runs.' },
+      { concept: 'console-log', kind: 'mc', q: 'Does `Rest day` appear in the output?', options: ['No: line 4 starts with `//`, so it is a comment', 'Yes, as the third line of output', 'Yes, at the very end', 'Only the second time you run it'], answer: 0, why: 'Putting `//` in front of a line turns it into a comment. Developers often do this to switch a line off without deleting it.' },
+      { concept: 'run-order', kind: 'mc', q: 'How many lines does the program print?', options: ['6', '7', '10', '8'], answer: 0, why: 'Lines 2, 3, 5, 6, 9 and 10 print. Lines 1, 4 and 8 are comments and line 7 is empty.' },
+      { concept: 'string', kind: 'mc', q: 'What does line 9 print, exactly?', options: ['Pack: boots, rope, water', '"Pack: boots, rope, water"', 'console.log("Pack: boots, rope, water")', 'Pack'], answer: 0, why: 'console.log prints the text inside the quotes, without the quotes.' },
+      { concept: 'syntax-error', kind: 'mc', q: 'A teammate changes line 3 to `console.log("Fly to Lukla)`. What happens when they run it?', options: ['Node stops with a SyntaxError and prints nothing', 'It prints `Day 1`, then stops at line 3', 'It prints `Fly to Lukla)`', 'It skips line 3 and carries on'], answer: 0, why: 'Node reads the whole file before it runs any of it. A string with no closing quote breaks the rules, so nothing runs at all.' },
+      { concept: 'program', kind: 'mc', q: 'The plan should say `Walk to Namche` instead of `Walk to Phakding`. Which line do you change?', options: ['Line 5', 'Line 4', 'Line 3', 'Line 6'], answer: 0, why: 'Finding the line that does a job is half of reading code. Search for the text you can see in the output.' },
+      { concept: 'cat', kind: 'mc', q: 'You want to see the code in `trip.js` without running it. Which command?', options: ['cat trip.js', 'node trip.js', 'ls trip.js', 'pwd trip.js'], answer: 0, why: '`cat` prints a file\'s contents. `node` would run it instead.' },
+    ],
+  },
+
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {
     id: '2-5', type: 'code', mode: 'phone', xp: 40, mins: 10,
