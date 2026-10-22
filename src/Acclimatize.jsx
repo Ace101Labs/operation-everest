@@ -9,8 +9,8 @@ import { spendArrival } from './encounters.js'
 // until they stick. Climbers go back down to adjust before climbing higher.
 // A gear pick-up (a random arrival on the map) gives one try at every dropped item:
 // right picks it up, wrong leaves it until tomorrow.
-export function Acclimatize({ p, back, recordAnswer, limit = 10 }) {
-  const due = useMemo(() => dueReviews(p).filter(id => QUESTIONS[id]).slice(0, limit), [])
+export function Acclimatize({ p, back, recordAnswer }) {
+  const due = useMemo(() => dueReviews(p).filter(id => QUESTIONS[id]), [])
   const [done, setDone] = useState(null) // how many picked up
   const stage = { id: 'acclimatize', type: 'review', title: 'Acclimatization' }
   return (
