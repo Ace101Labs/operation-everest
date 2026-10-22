@@ -337,38 +337,41 @@ export const camp3 = [
   // ───── Code reading ─────
   {
     id: '3-read', type: 'read', mode: 'phone', xp: 30, mins: 12,
-    title: 'Read the route: the oxygen planner',
-    uses: ['variable', 'let-const', 'arithmetic', 'template-literal', 'string-concat', 'comparison', 'if-else', 'logical-operators', 'while-loop', 'increment'],
-    intro: 'A teammate wrote `oxygen.js` to plan how many days one bottle will last. The numbers are made up, but the code is the kind you will meet every day: a few variables, a loop and an `if`. Read it before you run it in your head.',
-    file: { name: 'oxygen.js', lang: 'js', code: `// oxygen.js: plans how long one bottle lasts on the push
-const startPressure = 300
-const dailyUse = 70
-const reserve = 50
+    title: 'Read the route: what the club app says hello with',
+    uses: ['let-const', 'if-else', 'else-if', 'logical-operators', 'boolean', 'for-loop', 'template-literal'],
+    intro: 'A teammate wrote `welcome.js`, the part of a club app that decides what to say when someone opens it. You are joining the project and need to understand it before you touch it. Read it for what it **does** and **why each part is there**, not to work out numbers.',
+    file: { name: 'welcome.js', lang: 'js', code: `// welcome.js: decides what the club app says when someone opens it
+const name = "Ana"
+const isMember = true
+const unread = 2
+const hour = 21
 
-let pressure = startPressure
-let day = 1
-
-while (pressure >= dailyUse) {
-  pressure = pressure - dailyUse
-  console.log(\`Day \${day}: \${pressure} bar left\`)
-  day++
+let greeting = "Good evening"
+if (hour < 12) {
+  greeting = "Good morning"
+} else if (hour < 18) {
+  greeting = "Good afternoon"
 }
 
-if (day > 4 && pressure < reserve) {
-  console.log("Order a refill")
+if (!isMember) {
+  console.log("Welcome! Join the club to see messages.")
+} else if (unread > 0) {
+  console.log(\`\${greeting}, \${name}. You have new messages:\`)
+  for (let i = 1; i <= unread; i++) {
+    console.log(\`  - Message \${i}\`)
+  }
 } else {
-  console.log("One bottle is enough")
-}
-console.log("Days planned: " + day)` },
+  console.log(\`\${greeting}, \${name}. Nothing new today.\`)
+}` },
     questions: [
-      { concept: 'while-loop', kind: 'mc', q: 'In one sentence, what does `oxygen.js` do?', options: ['Takes 70 off the pressure again and again, printing each day, until too little is left for another day, then says whether to order a refill', 'Adds 70 to the pressure each day until it reaches 300, then prints a refill message', 'Prints the pressure once, then asks the climber whether to order a refill', 'Orders a refill every time it runs, whatever the numbers are'], answer: 0, why: 'The loop on lines 9 to 13 subtracts `dailyUse` from `pressure` and prints a line each time. Lines 15 to 19 then print one of two messages.' },
-      { concept: 'while-loop', kind: 'mc', q: 'How many lines ending in `bar left` does the program print?', options: ['3', '4', '5', '6'], answer: 1, why: 'Pressure goes 300, 230, 160, 90, 20. The loop runs while pressure is at least 70, so it runs four times and the fifth check (20 >= 70) is false.' },
-      { concept: 'increment', kind: 'mc', q: 'What does `day` hold when line 15 runs?', options: ['4', '5', '1', '70'], answer: 1, why: '`day` starts at 1 and `day++` on line 12 runs once per pass. Four passes make it 5.' },
-      { concept: 'while-loop', kind: 'mc', q: 'Which line is the first one in the file to print anything?', options: ['Line 1', 'Line 11', 'Line 16', 'Line 20'], answer: 1, why: 'Line 1 is a comment, so it never runs. Lines 2 to 7 only set up variables. The first print is inside the loop, on line 11.' },
-      { concept: 'let-const', kind: 'mc', q: 'The team wants to keep 80 bar in reserve instead of 50. Which line do you change?', options: ['Line 15', 'Line 6', 'Line 4', 'Line 3'], answer: 2, why: 'The reserve value lives on line 4. Line 15 only uses the name `reserve`, so changing line 4 updates it everywhere.' },
-      { concept: 'while-loop', kind: 'mc', q: 'A teammate changes line 2 to `const startPressure = 60`. What does the program print?', options: ['One bottle is enough, then Days planned: 1', 'Day 1: -10 bar left, then One bottle is enough', 'Nothing at all', 'Order a refill, then Days planned: 1'], answer: 0, why: '60 is already below 70, so the `while` check on line 9 is false straight away and the loop body never runs. `day` stays 1, and `day > 4` is false.' },
-      { concept: 'increment', kind: 'mc', q: 'The output ends with `Days planned: 5`, but the bottle only covers 4 days. Why?', options: ['`day` starts at 1 and goes up after every pass, so it ends one higher than the number of days that were covered', 'The loop runs five times instead of four', 'Line 10 subtracts the daily use twice on the last pass', 'Line 20 adds 1 when it joins the text and the number'], answer: 0, why: 'After the fourth pass, `day++` still runs and makes `day` 5. That is also why `day > 4` on line 15 is true after only four days. The count is one too high.' },
-      { concept: 'logical-operators', kind: 'mc', q: 'Why does line 16 print `Order a refill` in this program?', options: ['Both sides of `&&` on line 15 are true: day is 5 and pressure is 20', 'Only the left side is true, and `&&` needs just one side', 'Pressure is higher than the reserve', 'The else branch runs whenever the loop ends'], answer: 0, why: '`&&` needs both sides true. `5 > 4` is true and `20 < 50` is true, so the `if` branch runs.' },
+      { concept: 'if-else', kind: 'mc', q: 'In one sentence, what is `welcome.js` for?', options: ['It picks the greeting and the message notice the app shows when someone opens it', 'It signs a member in and checks their password', 'It sends new messages to club members', 'It counts how many people opened the app today'], answer: 0, why: 'Read the comment on line 1 and the names: `greeting`, `isMember`, `unread`. Everything that runs builds one welcome message.' },
+      { concept: 'else-if', kind: 'mc', q: 'Explain lines 7 to 12 in plain English.', options: ['They choose "Good morning", "Good afternoon" or "Good evening" depending on the time of day', 'They check whether the person is a member', 'They print the greeting three times', 'They change the time of day to the evening'], answer: 0, why: 'Line 7 starts with evening as the default. The `if` and `else if` swap it for morning before 12 and afternoon before 18.' },
+      { concept: 'logical-operators', kind: 'mc', q: 'Explain lines 14 to 23 in plain English.', options: ['Non-members are invited to join; members get their greeting plus either a list of new messages or "Nothing new today"', 'Everyone gets the same greeting, then a list of all club messages', 'Members are asked to join again if they have unread messages', 'It deletes messages once they have been shown'], answer: 0, why: 'Read the conditions in order: not a member, then a member with unread messages, then everyone left (members with nothing unread).' },
+      { concept: 'let-const', kind: 'mc', q: 'Why is `greeting` made with `let` on line 7, while `name` on line 2 uses `const`?', options: ['Lines 9 and 11 may replace the greeting, but nothing ever changes the name', '`let` is for text and `const` is for numbers', '`let` makes the greeting print first', 'There is no reason; they could be swapped'], answer: 0, why: 'The keyword tells a reader something: `let` warns that the value may change later in the file, `const` promises it never will.' },
+      { concept: 'for-loop', kind: 'mc', q: 'What is the loop on lines 18 to 20 there for, from the user\'s point of view?', options: ['To show one line for each unread message', 'To keep asking until the user signs in', 'To wait until the evening', 'To repeat the greeting so it is easier to see'], answer: 0, why: 'It runs once per unread message (`i` goes from 1 up to `unread`) and prints a line each time.' },
+      { concept: 'logical-operators', kind: 'mc', q: 'A teammate deletes the `!` on line 14. What goes wrong for users?', options: ['Members are told to join the club, and non-members get the greeting instead', 'Nobody sees any message at all', 'The greeting is always "Good morning"', 'Nothing changes, because `!` is only decoration'], answer: 0, why: '`!isMember` means "is NOT a member". Without the `!` the first branch catches members instead of non-members.' },
+      { concept: 'else-if', kind: 'mc', q: 'The club wants "Good night" after 22:00. Where does that change belong?', options: ['In the greeting choice on lines 7 to 12, as one more condition', 'In the loop on lines 18 to 20', 'On line 5, by changing the hour', 'In the message on line 15'], answer: 0, why: 'Find the part of the file whose job matches the change. Choosing the greeting happens on lines 7 to 12, so a new greeting goes there.' },
+      { concept: 'boolean', kind: 'mc', q: 'Line 3 says `isMember = true`. What does the name `isMember` tell you before you read anything else?', options: ['It holds true or false: whether this person is in the club', 'It holds the member\'s name', 'It holds how many members the club has', 'It is a function that signs people up'], answer: 0, why: 'Names that start with `is` or `has` usually hold a boolean. Good names let you guess a value\'s job without tracing it.' },
     ],
   },
 

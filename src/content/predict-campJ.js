@@ -1,27 +1,27 @@
-// Predict-first stops for camp J's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp J's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMPJ = {
   'J-1': [
-    { line: 8, q: 'The code is run with the types stripped. What does this line print?', options: ['`The Balcony: 8400 m`', '`The Balcony: 79504 m`', '`The Balcony: NaN m`'], answer: 0 },
-    { line: 10, q: 'What does `tsc --strict` say about this call?', options: ['An error: a string is not assignable to a number', 'Nothing, because JavaScript allows it', 'It converts "7950" to a number and passes'], answer: 0 },
+    { line: 2, q: 'What do the three `: number` labels on line 2 promise?', options: ['The inputs and the result are numbers', 'The function runs three times', 'The function prints a number'], answer: 0 },
+    { line: 10, q: 'Why does the type checker complain about this call?', options: ['A string was passed where a number is needed', 'addAltitude was never defined', 'The result is not used'], answer: 0, hide: [12, 13, 14] },
   ],
   'J-2': [
-    { line: 14, q: 'What does this line print?', options: ['`Ana: climb from 7950 m`', '`Ana: stay in the tent`', '`Ana: climb from undefined m`'], answer: 0 },
-    { line: 19, q: 'What does `tsc` say about this call?', options: ['An error: "sunny" is not one of the Weather values', 'Nothing, because "sunny" is a string', 'An error: `altitude` is missing'], answer: 0 },
+    { line: 4, q: 'What does the `?` after `oxygen` mean?', options: ['The property may be left out', 'The property must be true', 'The property is a question'], answer: 0 },
+    { line: 19, q: 'Why does `tsc` reject this call?', options: ['"sunny" is not one of the three Weather values', 'The climber has no name', 'The altitude is too high'], answer: 0, hide: [20, 21] },
   ],
   'J-3': [
-    { line: 11, q: 'With `altitude` set to 8400, what text does this paragraph show?', options: ['Death zone: oxygen on', 'Rest here', 'true'], answer: 0 },
-    { line: 21, q: 'How many "Camp status" cards does the page show?', options: ['Two', 'One', 'Zero, because React skips repeated tags'], answer: 0 },
+    { line: 11, q: 'What is the `? :` in the braces on line 11 for?', options: ['Choosing one of two texts depending on a condition', 'Asking the user a question', 'Checking that altitude exists'], answer: 0 },
+    { line: 18, q: 'Why are the three components wrapped in `<>` and `</>`?', options: ['A component must return one root, and this groups them without extra markup', 'It makes them display side by side', 'It hides them until they are needed'], answer: 0 },
   ],
   'J-4': [
-    { line: 14, q: 'The page has just loaded. What does this paragraph show?', options: ['`Packed: 0`', '`Packed: `', '`Packed: undefined`'], answer: 0 },
-    { line: 16, q: 'You tap "Pack one" twice, then "Unpack all" once. What does `#count` show?', options: ['`Packed: 0`', '`Packed: 2`', '`Packed: 1`'], answer: 0 },
+    { line: 6, q: 'What is `setPacked` on line 6 for?', options: ['Changing the stored value and making React redraw', 'Reading the current value', 'Passing a prop to GearItem'], answer: 0 },
+    { line: 14, q: 'Where does the value in `Packed: {packed}` come from?', options: ['The state created on line 6', 'The props passed on line 11', 'The Unpack all button'], answer: 0 },
   ],
   'J-5': [
-    { line: 9, q: 'What does `high` hold?', options: ['1', '3', '2'], answer: 0 },
-    { line: 12, q: "The effect runs after the first render. What is the browser tab's title?", options: ['`3 camps`', '`camps`', '`undefined camps`'], answer: 0 },
+    { line: 9, q: 'Why is `high` worked out on line 9 instead of kept in its own state?', options: ['It comes from `camps`, so it can never get out of step with it', 'State cannot hold numbers', 'filter only works outside state'], answer: 0 },
+    { line: 13, q: 'In plain English, what do lines 11 to 13 do?', options: ['Update the browser tab title whenever `camps` changes', 'Draw the list on the page', 'Add a new camp to the list'], answer: 0 },
   ],
   'J-6': [
-    { line: 8, q: 'The items weigh 4 kg and 1 kg. Does this assertion pass?', options: ['Yes, `total` is 5', 'No, `total` is 4', 'No, `total` is `NaN`'], answer: 0 },
-    { line: 11, q: 'What does `packWeight([])` return?', options: ['`0`', '`undefined`', 'It throws an error'], answer: 0 },
+    { line: 8, q: 'What is `expect(total).toBe(5)` for?', options: ['Failing the test if total is not the expected value', 'Setting total to the expected value', 'Printing total on the screen'], answer: 0 },
+    { line: 11, q: 'Why is there a second test for an empty pack?', options: ['Edge cases like nothing at all are where bugs often hide', 'The earlier test might not run', 'Tests must always come in pairs'], answer: 0 },
   ],
 }

@@ -382,55 +382,60 @@ export const camp7 = [
   // ───── Code reading ─────
   {
     id: '7-read', type: 'read', mode: 'phone', xp: 30, mins: 16,
-    title: 'Read the route: the wind check',
+    title: 'Read the route: the trail board',
     uses: ['modules', 'request-response', 'status-codes-basics', 'json-api', 'fetch', 'promise', 'async-await', 'try-catch'],
-    intro: 'A teammate wrote `summit-window.js` to ask a forecast service for tomorrow\'s wind and print a GO or HOLD call. It loads a rule from a second file, `rules.js`. That file is not shown, so the comment at the top copies what is inside it. The URL is made up; read the code as if the service were real.',
-    file: { name: 'summit-window.js', lang: 'js', code: `// summit-window.js: checks tomorrow's wind and prints a GO / HOLD call.
+    intro: 'A teammate wrote `trails.js` to ask a trail-report service which trails are open and print a short status board. It loads a helper from a second file, `report.js`. That file is not shown, so the comment at the top copies what is inside it. The URL is made up; read the code as if the service were real.',
+    file: { name: 'trails.js', lang: 'js', code: `// trails.js: prints a status board of the trails that are open today
 //
-// rules.js sits next to this file. It contains:
-//   const MAX_WIND = 50
-//   function verdict(windKph) {
-//     return windKph > MAX_WIND ? "HOLD" : "GO"
+// report.js sits next to this file. It contains:
+//   function label(report) {
+//     return report.name + ": " + report.status
 //   }
-//   module.exports = { MAX_WIND, verdict }
-const { MAX_WIND, verdict } = require("./rules")
+//   module.exports = { label }
+const { label } = require("./report")
 
-const FORECAST_URL = "https://api.example.com/forecast?site=ridge&day=tomorrow"
+const REPORTS_URL = "https://api.example.com/trail-reports"
 
-// The service answers with JSON like: { "site": "ridge", "windKph": 42 }
-async function getWind() {
-  const response = await fetch(FORECAST_URL)
+// The service answers with JSON like:
+//   [{ "name": "North Ridge", "status": "open" }, { "name": "Ice Fall", "status": "closed" }]
+async function getOpenReports() {
+  const response = await fetch(REPORTS_URL)
   if (!response.ok) {
-    throw new Error("Forecast service said " + response.status)
+    throw new Error("Report service said " + response.status)
   }
-  const data = await response.json()
-  return data.windKph
+  const reports = await response.json()
+  return reports.filter(report => report.status === "open")
 }
 
 async function main() {
-  console.log("Checking the forecast...")
+  console.log("Loading trail reports...")
   try {
-    const wind = await getWind()
-    console.log(\`Wind: \${wind} km/h (limit \${MAX_WIND})\`)
-    console.log("Call: " + verdict(wind))
+    const open = await getOpenReports()
+    if (open.length === 0) {
+      console.log("No trails are open today")
+    } else {
+      console.log("Open trails:")
+      for (const report of open) {
+        console.log("  " + label(report))
+      }
+    }
   } catch (error) {
-    console.error("Could not check the wind: " + error.message)
+    console.error("Could not load reports: " + error.message)
     process.exitCode = 1
   }
   console.log("Done")
 }
 
-main()
-console.log("Request sent")` },
+main()` },
     questions: [
-      { concept: 'fetch', kind: 'mc', q: 'In one sentence, what does `summit-window.js` do?', options: ['Asks a forecast service for the wind and prints a GO or HOLD call, or an error message if that fails', 'Starts a small web server that other programs can ask for the wind', 'Saves the wind speed into rules.js', 'Prints GO every time, then checks the wind'], answer: 0, why: '`fetch` asks the service, `verdict` turns the wind into GO or HOLD, and the `catch` block reports a failure.' },
-      { concept: 'modules', kind: 'mc', q: 'The service answers `{ "site": "ridge", "windKph": 65 }`. What does the `Call:` line print?', options: ['Call: HOLD', 'Call: GO', 'Call: 65', 'Wind: HOLD'], answer: 0, why: '`verdict(65)` runs the code from `rules.js`. 65 is greater than `MAX_WIND` (50), so it returns "HOLD".' },
-      { concept: 'async-await', kind: 'mc', q: 'The service answers normally. Which output line comes second?', options: ['Request sent', 'Wind: 42 km/h (limit 50)', 'Checking the forecast...', 'Done'], answer: 0, why: 'The first line prints, then `await` pauses `main` while it waits for the answer. The code after `main()` on line 37 runs in the meantime, so `Request sent` comes second.' },
-      { concept: 'async-await', kind: 'mc', q: '`main` is defined on line 23. Which line makes it run?', options: ['Line 36', 'Line 26', 'Line 14', 'Line 9'], answer: 0, why: 'A definition does nothing until it is called. `main()` on line 36 is the call that starts everything.' },
-      { concept: 'modules', kind: 'mc', q: 'The team wants the wind limit to be 40 km/h instead of 50. Where do you change it?', options: ['`MAX_WIND` in rules.js: this file only imports it', 'Line 9 of this file', 'Line 11 of this file', 'Line 27 of this file'], answer: 0, why: 'The number lives in `rules.js`. Line 9 only pulls the name in, and line 27 only prints it.' },
-      { concept: 'try-catch', kind: 'mc', q: 'The service answers with HTTP status 503. What does the script report?', options: ['Could not check the wind: Forecast service said 503', 'Wind: 503 km/h (limit 50)', 'Call: HOLD', 'Nothing: it crashes with an unhandled error'], answer: 0, why: '`response.ok` is false for 503, so line 17 throws. The `catch` block on line 29 handles it and prints the message with the status.' },
-      { concept: 'json-api', kind: 'mc', q: 'The service answers 200 OK, but the JSON is `{ "site": "ridge" }` with no `windKph`. What does the script call?', options: ['Call: GO, even though it has no wind figure', 'Call: HOLD', 'Could not check the wind', 'It crashes with a stack trace'], answer: 0, why: '`data.windKph` is undefined, and `undefined > 50` is false, so `verdict` returns "GO". Nothing throws, so the `catch` block never runs. A reviewer would flag a safe-looking GO built on missing data.' },
-      { concept: 'status-codes-basics', kind: 'mc', q: 'What does `response.ok` on line 16 tell the script?', options: ['Whether the server answered with a success status', 'Whether the JSON is valid', 'Whether the wind is below the limit', 'Whether the computer is online'], answer: 0, why: '`ok` is true for success statuses (200 to 299). A 404 or 503 makes it false, even though the request itself reached the server.' },
+      { concept: 'fetch', kind: 'mc', q: 'In one sentence, what is `trails.js` for?', options: ['Saving trail reports to a file so they can be read offline', 'Asking a trail-report service for its reports and printing a board of the trails that are open', 'Letting hikers send in new trail reports', 'Opening and closing trails on the service'], answer: 1, why: 'The name of the URL, `getOpenReports` and the printed text all say it: fetch the reports, keep the open ones, print them.' },
+      { concept: 'json-api', kind: 'mc', q: 'Explain lines 14 to 21 in plain English.', options: ['It sends the open trails to the service and waits for a reply', 'It prints every trail report, one per line', 'It checks the internet connection and tries again if it is down', 'It asks the service for the trail reports, stops with an error if the service did not answer properly, and gives back only the open ones'], answer: 3, why: 'Line 15 makes the request, lines 16 to 18 reject a bad answer, line 19 reads the JSON, and line 20 keeps the reports whose status is `"open"`.' },
+      { concept: 'async-await', kind: 'mc', q: 'Why does line 15 put `await` in front of `fetch`?', options: ['`fetch` takes time, so `await` pauses the function until the answer arrives and `response` is the real answer, not a promise', 'To make the request run faster', 'To send the request twice, in case the first one fails', 'To stop the rest of the program from ever running'], answer: 0, why: '`fetch` returns a promise straight away. `await` waits for it to finish and hands you the result. Without it, `response` would be the unfinished promise.' },
+      { concept: 'try-catch', kind: 'mc', q: 'What are lines 35 to 38 there for, from the user\'s point of view?', options: ['They hide the problem so the user never knows anything went wrong', 'They try the request again until it works', 'If anything goes wrong while loading, the user gets a clear message instead of a crash, and the program signals that it failed', 'They print the board even when the reports could not be loaded'], answer: 2, why: 'The `catch` block runs when something inside `try` throws, including the error on line 17 and a failed fetch. It prints the reason and sets a failing exit code.' },
+      { concept: 'modules', kind: 'mc', q: 'Line 8 pulls something in from another file. What, and what is it used for?', options: ['`fetch` from `report.js`, used on line 15 to ask the service', '`report` from the service, used on line 20 to filter reports', 'The whole of `trails.js`, so it can run itself again', '`label` from `report.js`, used on line 32 to turn each report into the text shown on the board'], answer: 3, why: '`require` loads another file and `{ label }` picks out the one thing it exports. The comment block shows what that function does.' },
+      { concept: 'json-api', kind: 'mc', q: 'The board should show the closed trails instead of the open ones. Which line decides which reports are kept?', options: ['Line 32', 'Line 20', 'Line 27', 'Line 10'], answer: 1, why: 'Line 20 keeps the reports whose status is `"open"`. Change that test and a different set reaches the board.' },
+      { concept: 'fetch', kind: 'mc', q: 'Where does the list of trails shown on the board come from?', options: ['From the service\'s answer to the `fetch` on line 15, read as JSON on line 19', 'From the comment on lines 12 and 13, which the program reads', 'From `report.js`, which holds the trail data', 'From the address on line 10, which is the list itself'], answer: 0, why: 'The URL on line 10 only says where to ask. The data is the service\'s reply, turned into a list by `response.json()`.' },
+      { concept: 'status-codes-basics', kind: 'mc', q: 'A teammate deletes lines 16 to 18, the `response.ok` check. The service replies with status 404 and a short JSON body saying `{ "error": "not found" }`. What do users see?', options: ['The message No trails are open today', 'The board of open trails, as normal', 'A confusing message about `reports.filter` instead of `Report service said 404`', 'Nothing: the program ends without a message'], answer: 2, why: '`fetch` does not treat 404 as a failure. Without the check, the error body is handed to `filter`, which only works on lists, and the `catch` prints that confusing message.' },
     ],
   },
 

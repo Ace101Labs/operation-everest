@@ -137,8 +137,12 @@ tryit|stage: { kind|type: 'react', prompt, starter, lang?: 'jsx'|'tsx', hints,
 - **read:** `{ type: 'read', mode: 'phone', xp: 30, mins, title: 'Read the route: …', uses, intro, file: { name, lang, code }, questions }`.
   Someone else's realistic file using only what this camp and earlier ones taught, growing camp by camp (about 10 lines at
   Base Camp to about 80 at the Summit). The game shows the intro and a fixed "how to read code" card, then the file with
-  line numbers, then 8 questions with the file pinned above each. Mix: a one-sentence summary, 2–3 trace-a-value, where it
-  starts / what calls what, "which line would you change to…", unusual input, and one planted bug or risk to spot.
+  line numbers, then 8 questions with the file pinned above each. The file is about BEHAVIOUR (what an app shows, decides,
+  stores), never a calculator. Mix (standard: `3-read`): at least 4 "explain in plain English" (the file in one sentence,
+  explain lines A to B, what is this function/check for, why is this line here, what does this name tell you), 2 "find your
+  way" (which part to change, where a value comes from, what calls what), 1 "what breaks if…" in terms of what the user
+  sees (may be the planted bug or risk), at most 1 trace whose answer is text or behaviour. **No answer may be a number,
+  count, sum or calculation.**
   Questions may say "line N" (`npm run check` fails if N is past the end) and may carry `code` (output, an error, a diff).
 - **Real output:** from Camp 6 on, quizzes should include questions whose `code` is genuine tool output to read (errors,
   stack traces, diffs, logs, compiler and test output), exactly as the tool prints it. Produce it for real where you can.
@@ -155,7 +159,7 @@ export const PREDICT_CAMP3 = { '3-1': [{ line: 7, q: 'What does line 7 print?', 
 - On that step the player picks a guess BEFORE the Sherpa's note shows, then sees the right answer and the note. Practice only: never graded, no XP.
 - `line` must be a step of that lesson's example. 1–2 stops per lesson (3 max). 2–4 options, no repeats, no option that points at another ("both", "the first one").
 - If the answer is printed in the example itself (a command's output in a terminal transcript, a `// prints …` comment), add `hide: [line, …]` to blur those lines until the guess is in.
-- Choose lines whose result follows from the code above it plus what was already taught: what prints, what a value is now, which branch runs, what comes back. Never a line only its own note can answer.
+- **Read for meaning, not maths (Ace, 2026-10-22: "those just look like math questions, not code reading").** At least 2 of every 3 stops ask what a line is FOR: why it's here, what breaks if it's deleted, where a value came from, which branch runs and why, what a name tells you. The rest may trace a printed text or behaviour. **Never** a stop whose answer is a number, count, sum or calculation. Never a line only its own note can answer.
 - The right answer must agree with the step's note and with real behaviour (run JS examples in Node to check). `npm run check` validates the shape.
 
 ## Alternate versions (so a retry can't be passed from memory)

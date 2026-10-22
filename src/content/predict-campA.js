@@ -1,25 +1,27 @@
-// Predict-first stops for camp A's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp A's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMPA = {
   'A-1': [
-    { line: 12, q: 'What does this line print?', options: ['`As a climber, I want to log a climb with its peak, height and date, so that I never forget a trip.`', '`As a who, I want to want, so that why.`', '`climber log a climb with its peak, height and date`'], answer: 0 },
+    { line: 4, q: 'What does the OUT list protect you from?', options: ['Building and building without ever finishing', 'Bugs in the code', 'Other people copying the idea'], answer: 0 },
+    { line: 10, q: 'Why is `done` a request and a status, not just "it works"?', options: ['It can be checked, and turned into a test', 'It is shorter to type', 'Users read this line on the screen'], answer: 0 },
   ],
   'A-2': [
-    { line: 8, q: 'What does `console.log(mvp.map(f => f.name))` print?', options: ["`[ 'Log a climb', 'List my climbs' ]`", "`[ 'Log a climb', 'Summit stats', 'List my climbs' ]`", '`[ 6, 4 ]`'], answer: 0 },
+    { line: 7, q: 'What does the filter on line 7 do?', options: ['Keeps only the must-have features for the initial release', 'Removes the features that take the longest', 'Sorts the features by name'], answer: 0 },
+    { line: 11, q: 'What is the walking skeleton for?', options: ['Proving the pieces can talk to each other', 'Giving the app its final look', 'Listing every feature'], answer: 0 },
   ],
   'A-3': [
-    { line: 5, q: 'A request for `/api/climbs?summited=false` arrives. What does the reply hold?', options: ['`{ climbs: [...] }` with only the climbs not summited', 'A bare array of all climbs', 'An error, because "false" is text'], answer: 0 },
-    { line: 10, q: 'A request for `/api/climbs/abc` arrives. What status does it get?', options: ['400', '404', '200'], answer: 0 },
+    { line: 3, q: 'Why is `req.query.summited` compared with the text `"true"`?', options: ['Query values arrive as text, never as booleans', 'true is not allowed in a query', 'The comparison is faster with text'], answer: 0 },
+    { line: 10, q: 'What is line 10 for?', options: ['Rejecting ids that are not numbers before any lookup', 'Looking up the climb with that id', 'Converting the id to text'], answer: 0 },
   ],
   'A-4': [
-    { line: 10, q: 'On the very first render, before the API has answered, what shows?', options: ['`Loading...`', 'An empty list', 'A blank screen'], answer: 0 },
-    { line: 13, q: 'The API answers `{ climbs: [] }`. What does the screen show?', options: ['An empty list, not the loading text', '`Loading...` forever', 'An error'], answer: 0 },
+    { line: 6, q: 'Why does the state start as `null` and not `[]`?', options: ['null means not loaded yet; [] means loaded with none', 'An empty list would crash React', 'null is faster to store'], answer: 0 },
+    { line: 8, q: 'Why does line 8 store `data.climbs` and not `data`?', options: ['The contract puts the list inside the climbs field', 'data is always empty', 'setClimbs only accepts text'], answer: 0 },
   ],
   'A-5': [
-    { line: 2, q: 'What does `summitRate` return for an empty list?', options: ['`0`', '`NaN`', 'It throws an error'], answer: 0 },
-    { line: 9, q: 'One of two climbs summited. What does `summitRate` return?', options: ['`50`', '`0.5`', '`1`'], answer: 0 },
+    { line: 2, q: 'What is line 2 for?', options: ['Guarding the empty list so the screen does not show NaN', 'Counting the summited climbs', 'Sorting the list'], answer: 0 },
+    { line: 12, q: 'Why does the empty list get its own test?', options: ['It checks the guard on line 2, which the other test never reaches', 'Tests must always come in pairs', 'The other test might not run'], answer: 0 },
   ],
   'A-6': [
-    { line: 6, q: 'After this line, what does `.gitignore` contain?', options: ['Two lines: `node_modules` and `.env`', 'One line: `.env`', 'One line: `node_modules`'], answer: 0 },
-    { line: 10, q: 'Later `git add .` runs. Which files does it leave out?', options: ['`node_modules` and `.env`', 'Nothing, it adds everything', 'Only `index.js`'], answer: 0 },
+    { line: 6, q: 'What does `>>` on this line do differently from `>` on the line before?', options: ['Adds a line instead of replacing the file', 'Deletes the line before', 'Runs the command twice'], answer: 0 },
+    { line: 10, q: 'What will `git add .` leave out here, and why?', options: ['node_modules and .env, because .gitignore lists them', 'Nothing, git add takes everything', 'index.js, because it is new'], answer: 0 },
   ],
 }

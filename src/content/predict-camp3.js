@@ -1,26 +1,27 @@
-// Predict-first stops for camp 3's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp 3's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMP3 = {
   '3-1': [
-    { line: 4, q: 'There are no quotes around `peak` here. What does line 4 print?', options: ['peak', '"Everest"', 'Everest'], answer: 2 },
-    { line: 7, q: 'Line 6 put a new value into `camp`. What does line 7 print?', options: ['Khumbu Icefall', 'Base Camp', 'camp'], answer: 0 },
+    { line: 4, q: 'Why are there no quotes around `peak` on line 4?', options: ['It names a box to open, not text to print', 'It is a typo that happens to work', 'Quotes are only allowed on let boxes'], answer: 0 },
+    { line: 7, q: 'Where does the value of `camp` on line 7 come from?', options: ['Line 6, which put a new value in the box', 'Line 3, where camp was created', 'Line 2, where peak was set'], answer: 0 },
   ],
   '3-2': [
-    { line: 7, q: 'What does `2 + 3 * 4` print?', options: ['20', '14', '24'], answer: 1 },
-    { line: 10, q: 'The text `"Camp "` is followed by `+ 1 + 1`. What prints?', options: ['Camp 2', 'Camp 1', 'Camp 11'], answer: 2 },
+    { line: 3, q: 'What does the name `climb` tell you the box holds?', options: ['How far up the climber went, from two heights', 'The height the climb started at', 'A message to show the climber'], answer: 0 },
+    { line: 9, q: 'Why does line 9 use backticks instead of ordinary quotes?', options: ['So the `${ }` gap can be worked out and filled in', 'So the text prints in a different style', 'Because text with a number in it needs backticks'], answer: 0 },
   ],
   '3-3': [
-    { line: 6, q: '`oxygen` holds the number 35. What does comparing it with the text `"35"` using `===` print?', options: ['true', 'false'], answer: 1 },
-    { line: 8, q: '`oxygen` is 35. What does `oxygen !== 50` print?', options: ['true', 'false'], answer: 0 },
+    { line: 2, q: 'What does the name `isClear` tell you about the value it holds?', options: ['It is a yes / no answer, true or false', 'It is a piece of text describing the sky', 'It is a number that counts clear days'], answer: 0 },
+    { line: 6, q: 'Why does line 6 give a different result from line 5?', options: ['=== also compares types, and "35" is text, not a number', '=== only works with numbers', 'oxygen changed between the two lines'], answer: 0 },
   ],
   '3-4': [
-    { line: 5, q: '`oxygen` is 35. Which message does this if / else if / else chain print?', options: ['Keep climbing', 'Turn back', 'Climb slowly'], answer: 2 },
+    { line: 5, q: 'Which branch runs here, and why?', options: ['The else if branch: the if check failed and this one passed', 'The if branch, because 35 is bigger than 20', 'The else branch, because nothing matched'], answer: 0 },
+    { line: 9, q: 'Why does line 9 print `Check done` whichever branch ran?', options: ['It sits outside the if / else chain', 'It is the last branch of the chain', 'It only runs when oxygen is 35'], answer: 0 },
   ],
   '3-5': [
-    { line: 10, q: '`oxygen` is 40 and `weather` is `"clear"`. What does the if / else on lines 7 to 11 print?', options: ['Turn back', 'Conditions OK', 'Nothing'], answer: 1 },
-    { line: 16, q: '`name` is an empty string, so `display` got a default. What does line 16 print?', options: ['Hello, ', 'Hello, climber', 'Hello, display'], answer: 1 },
+    { line: 4, q: 'What has to be true for line 5 to run?', options: ['Oxygen is over 30 and the weather is clear, at the same time', 'Oxygen is over 30 or the weather is clear', 'Only that the weather is clear'], answer: 0 },
+    { line: 15, q: 'What is line 15, `name || "climber"`, for?', options: ['Giving display a default when name is empty', 'Always replacing name with climber', 'Checking whether name equals climber'], answer: 0 },
   ],
   '3-6': [
-    { line: 2, q: 'The loop runs while `i <= 3`, starting at 1. How many times does the body run?', options: ['2', '4', '3'], answer: 2 },
-    { line: 6, q: 'Oxygen starts at 30 and drops by 10 each pass. What is the last `Oxygen:` line printed?', options: ['Oxygen: 0', 'Oxygen: 10', 'Oxygen: 20'], answer: 1 },
+    { line: 1, q: 'Which part of line 1 decides when the loop stops?', options: ['The condition, `i <= 3`', 'The start, `let i = 1`', 'The step, `i++`'], answer: 0 },
+    { line: 7, q: 'What would happen if line 7, `oxygen -= 10`, were deleted?', options: ['The while loop would never end', 'The while loop would run once and stop', 'Nothing would print'], answer: 0 },
   ],
 }

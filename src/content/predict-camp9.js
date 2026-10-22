@@ -1,31 +1,31 @@
-// Predict-first stops for camp 9's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp 9's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMP9 = {
   '9-1': [
-    { line: 9, q: 'A browser asks for `/weather`. What text does it get back?', options: ['`{"camp":"Yellow Band","windKph":35}`', '`Base camp server is up`', '`camp: Yellow Band, windKph: 35`'], answer: 0 },
-    { line: 13, q: 'When does this `console.log` line run?', options: ['Once, when the server is ready to listen', 'Every time a browser sends a request', 'Never, because a server has no output'], answer: 0 },
+    { line: 4, q: 'Which requests does the route on line 4 answer?', options: ['GET requests for the path `/`', 'Every request sent to the server', 'POST requests for `/weather`'], answer: 0 },
+    { line: 12, q: 'What is `app.listen(3000, ...)` for?', options: ['Making the server wait for requests on a port', 'Sending a reply to a request', 'Loading the Express package'], answer: 0 },
   ],
   '9-2': [
-    { line: 9, q: 'Two POST requests arrive, one after the other. What ids do the two new reports get?', options: ['1 and 2', '1 and 1', '0 and 1'], answer: 0 },
-    { line: 16, q: 'A DELETE arrives, then a GET asks for `/reports`. What does the GET send back?', options: ['`[]`', 'A 404 error', 'The old list of reports'], answer: 0 },
+    { line: 9, q: 'What is `nextId++` on line 9 for?', options: ['Giving each new report its own id', 'Counting the GET requests that came in', 'Resetting the ids to the start'], answer: 0 },
+    { line: 16, q: 'What does `sendStatus(204)` tell the client?', options: ['It worked and there is nothing to send back', 'The report was not found', 'The server is too busy'], answer: 0 },
   ],
   '9-3': [
-    { line: 4, q: 'A request for `/camps/2` arrives. What does `id` hold?', options: ['The number `2`', "The string `'2'`", '`undefined`'], answer: 0 },
-    { line: 11, q: 'A request for `/camps` arrives with no query string. What is `min`?', options: ['`0`', '`undefined`', '`NaN`'], answer: 0 },
+    { line: 4, q: 'Why does line 4 wrap `req.params.id` in `Number(...)`?', options: ['Params arrive as strings, and line 5 compares with a number', 'Number checks that the camp exists', 'Params are not allowed to be text'], answer: 0 },
+    { line: 11, q: 'What is the `|| 0` on line 11 for?', options: ['A default for when no query string was sent', 'Making the number negative', 'Stopping the route from running'], answer: 0 },
   ],
   '9-4': [
-    { line: 10, q: 'A POST to `/routes` arrives with no `x-permit` header. What happens?', options: ['The client gets 401 and the route code never runs', 'The route runs and creates the route anyway', 'The request hangs with no reply'], answer: 0 },
-    { line: 17, q: 'A client with no permit sends a GET to `/routes`. What happens?', options: ['It gets the list of routes', 'It gets a 401 error', 'It gets a 404 error'], answer: 0 },
+    { line: 5, q: 'What would happen to every request if `next()` on line 5 were deleted?', options: ['They would hang and never reach a route', 'They would skip the log and carry on', 'They would all get a 401'], answer: 0 },
+    { line: 17, q: 'Why can anyone read `/routes` without a permit but not create one?', options: ['requirePermit is only attached to the POST route', 'GET requests skip all middleware', 'Line 1 lets everyone in'], answer: 0 },
   ],
   '9-5': [
-    { line: 5, q: 'The program starts and `ADMIN_KEY` is not set. What happens?', options: ['It stops at once with the error `ADMIN_KEY is not set`', 'It starts and uses `undefined` as the key', 'It starts and prints a warning on each request'], answer: 0 },
-    { line: 13, q: 'Only `ADMIN_KEY` is set. What does GET `/info` return?', options: ['`{"trail":"Unnamed trail","maxGroup":6}`', '`{"trail":"Unnamed trail","maxGroup":"6"}`', '`{}`'], answer: 0 },
+    { line: 3, q: 'What is `Number(...)` on line 3 for?', options: ['Environment values are text, so it converts once at the top', 'Checking that MAX_GROUP is set', 'Hiding the value from the logs'], answer: 0 },
+    { line: 5, q: 'What is line 5 for?', options: ['Stopping at once, with a clear message, if the secret is missing', 'Giving ADMIN_KEY a default value', 'Printing the secret to the log'], answer: 0 },
   ],
   '9-6': [
-    { line: 6, hide: [6], q: 'No `PORT` is set on the laptop. What port does this line print?', options: ['3000', '80', 'Nothing, it fails'], answer: 0 },
-    { line: 9, hide: [10], q: 'What does `dig +short summitgear.example` print?', options: ['Just the IP address the name points to', 'The full HTML of the home page', 'The version of the app'], answer: 0 },
+    { line: 8, q: 'This host is connected to the repository. What does `git push origin main` do for the live app?', options: ['Starts a build that replaces the live version', 'Only saves the work on the laptop', 'Restarts the DNS'], answer: 0 },
+    { line: 9, q: 'What is `dig +short summitgear.example` for?', options: ['Asking which IP address the name points to', 'Checking the site\'s certificate', 'Downloading the home page'], answer: 0, hide: [10] },
   ],
   '9-13': [
-    { line: 10, q: 'You run `systemctl stop summitgear` on purpose. What does `Restart=on-failure` do?', options: ['Nothing: it stays stopped', 'Starts it again right away', 'Starts it again after 2 seconds'], answer: 0 },
-    { line: 14, q: 'After `systemctl enable`, the machine reboots. What happens to this service?', options: ['It starts by itself during boot', 'It stays stopped until you run `start`', 'It restarts every 2 seconds'], answer: 0 },
+    { line: 8, q: 'What is `EnvironmentFile` for?', options: ['Giving the program its settings and secrets without putting them in the unit file', 'Choosing which program file to run', 'Setting the folder the program starts in'], answer: 0 },
+    { line: 14, q: 'What is `WantedBy=multi-user.target` for?', options: ['Letting `systemctl enable` start the service during a normal boot', 'Letting several users log in at once', 'Stopping the service when the network drops'], answer: 0 },
   ],
 }

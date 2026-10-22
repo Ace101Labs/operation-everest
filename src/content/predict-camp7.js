@@ -1,26 +1,27 @@
-// Predict-first stops for camp 7's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp 7's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMP7 = {
   '7-1': [
-    { line: 3, hide: [4], q: 'Which file does `npm init -y` create?', options: ['node_modules', 'index.js', 'package.json'], answer: 2 },
-    { line: 12, hide: [12], q: 'You installed `dayjs`. What does `npm list` show under the project name?', options: ['Nothing, the list is empty', '`dayjs` with a version number', '`node_modules`'], answer: 1 },
+    { line: 3, q: 'What is `npm init -y` for?', options: ['Creating package.json using default answers', 'Installing every package at once', 'Starting the program'], answer: 0, hide: [4] },
+    { line: 12, q: 'What is `npm list` for?', options: ['Showing which packages the project depends on', 'Deleting packages that are not used', 'Listing the files in the folder'], answer: 0 },
   ],
   '7-2': [
-    { line: 7, q: 'What command does `npm run report` actually run?', options: ['node index.js', 'npm report', 'node report.js'], answer: 2 },
-    { line: 10, q: 'Which version does `^1.11.13` allow?', options: ['2.0.0', '1.20.0', '1.10.0'], answer: 1 },
+    { line: 5, q: 'What is the `scripts` section for?', options: ['Named shortcuts for commands you run with npm run', 'Listing the packages the project needs', 'Holding the version of the project'], answer: 0 },
+    { line: 10, q: 'What does the `^` in `^1.11.13` allow?', options: ['Newer fixes and features, but not a new major version', 'Only exactly this version', 'Any version at all, including a new major one'], answer: 0 },
   ],
   '7-3': [
-    { line: 8, q: 'What does `require("./gear")` give back?', options: ['The object from `module.exports`', 'The text of gear.js', 'Nothing, it only runs the file'], answer: 0 },
-    { line: 9, q: 'What does `gear.pack("rope")` print?', options: ['pack', 'Packed: item', 'Packed: rope'], answer: 2 },
+    { line: 5, q: 'What is `module.exports = { pack }` for?', options: ['Offering pack to other files that require this one', 'Running pack straight away', 'Creating a new file called pack'], answer: 0 },
+    { line: 9, q: 'Where does the `pack` in `gear.pack` come from?', options: ['The object exported by gear.js on line 5', 'A function built into Node', 'The console'], answer: 0 },
   ],
   '7-4': [
-    { line: 5, hide: [5], q: 'The request was a GET for a camp that exists. Which status line does the server send back?', options: ['HTTP/1.1 404 Not Found', 'HTTP/1.1 200 OK', 'HTTP/1.1 500 Server Error'], answer: 1 },
-    { line: 8, q: 'Before your code runs `JSON.parse` on the body, what is the body?', options: ['A real object', 'A string of text', 'An array'], answer: 1 },
+    { line: 1, q: 'What does the path `/v1/camps/base` tell the server?', options: ['Which thing the client wants', 'Which server to talk to', 'Which language to answer in'], answer: 0 },
+    { line: 3, q: 'What is this header asking the server to do?', options: ['Send the answer as JSON', 'Send a picture', 'Keep the connection open'], answer: 0 },
   ],
   '7-5': [
-    { line: 6, q: 'The `fetch` is still waiting for the network. Which line of output appears first?', options: ['Base Camp: -4 C', 'Failed: ...', 'Request sent...'], answer: 2 },
+    { line: 2, q: 'What is the `.then` on line 2 for?', options: ['Running code once the response arrives', 'Sending the request', 'Stopping the program if it fails'], answer: 0 },
+    { line: 6, q: 'The `fetch` is still waiting for the network. Which message appears on the screen first?', options: ['Request sent...', 'Base Camp: -4 C', 'Failed: ...'], answer: 0 },
   ],
   '7-6': [
-    { line: 11, q: 'The camp3 request comes back with status 503, so `getCamp` throws. What happens next?', options: ['The catch block runs', 'It prints `undefined`', 'The program crashes'], answer: 0 },
-    { line: 13, q: 'The error message was built as `"HTTP " + res.status`. What does the catch line print?', options: ['camp3: no data (503)', 'camp3: no data (undefined)', 'camp3: no data (HTTP 503)'], answer: 2 },
+    { line: 5, q: 'Why does line 5 throw an error by hand?', options: ['fetch does not treat a 503 as an error, so the code has to', 'To stop the program from ever running', 'To make fetch run faster'], answer: 0 },
+    { line: 13, q: 'Where does the `err.message` on line 14 come from?', options: ['The message given to `new Error` on line 5', 'The status code sent back by the server', 'Node\'s own default text'], answer: 0 },
   ],
 }

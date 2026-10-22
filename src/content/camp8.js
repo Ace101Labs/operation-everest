@@ -517,63 +517,64 @@ export const camp8 = [
   // ───── Code reading ─────
   {
     id: '8-read', type: 'read', mode: 'phone', xp: 30, mins: 18,
-    title: 'Read the route: the wind check page',
-    uses: ['html-element', 'html-attribute', 'css-selector', 'flexbox', 'dom', 'query-selector', 'events', 'forms', 'accessibility'],
-    intro: 'A teammate wrote one web page, `wind.html`, where a visitor types the wind speed and presses a button to get a GO or HOLD call. The styling and the script sit in the same file as the page, so read all three parts: the HTML, the `<style>` and the `<script>`.',
-    file: { name: 'wind.html', lang: 'html', code: `<!DOCTYPE html>
+    title: 'Read the route: the gear search page',
+    uses: ['html-element', 'html-attribute', 'css-selector', 'dom', 'query-selector', 'events', 'accessibility'],
+    intro: 'A teammate wrote one web page, `gear.html`, with a list of gear and a search box that narrows the list as you type. The styling and the script sit in the same file as the page, so read all three parts: the HTML, the `<style>` and the `<script>`. Read for what each part **does** and **why it is there**.',
+    file: { name: 'gear.html', lang: 'html', code: `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Wind check</title>
+  <title>Gear list</title>
   <style>
     body { font-family: sans-serif; max-width: 20rem; margin: 2rem auto; }
-    .field { display: flex; gap: 0.5rem; }
-    .field input { flex: 1; }
-    #result { margin-top: 1rem; padding: 0.75rem; }
-    #result.go { background: #d6f5d6; }
-    #result.hold { background: #f9d6d6; }
+    li { padding: 0.25rem 0; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>Wind check</h1>
-  <form id="wind-form">
-    <label for="wind">Wind speed (km/h)</label>
-    <div class="field">
-      <input id="wind" type="number" min="0">
-      <button type="submit">Check</button>
-    </div>
-  </form>
-  <p id="result" class="hidden"></p>
+  <h1>Gear list</h1>
+  <label for="search">Search gear</label>
+  <input id="search" type="search" placeholder="Type to filter">
+  <ul id="gear">
+    <li>Ice axe</li>
+    <li>Crampons</li>
+    <li>Rope</li>
+    <li>Tent</li>
+    <li>Headlamp</li>
+  </ul>
+  <p id="empty" class="hidden">No matches</p>
 
   <script>
-    const LIMIT = 50
-    const form = document.querySelector("#wind-form")
-    const input = document.querySelector("#wind")
-    const result = document.querySelector("#result")
+    const search = document.querySelector("#search")
+    const items = document.querySelectorAll("#gear li")
+    const empty = document.querySelector("#empty")
 
-    form.addEventListener("submit", event => {
-      event.preventDefault()
-      const wind = Number(input.value)
-      const ok = wind <= LIMIT
-      const word = ok ? "GO" : "HOLD"
+    search.addEventListener("input", () => {
+      const text = search.value.trim().toLowerCase()
+      let anyShown = false
 
-      result.textContent = word + ": wind is " + wind + " km/h"
-      result.classList.remove("hidden", "go", "hold")
-      result.classList.add(ok ? "go" : "hold")
+      for (const item of items) {
+        const matches = item.textContent.toLowerCase().includes(text)
+        item.classList.toggle("hidden", !matches)
+        if (matches) {
+          anyShown = true
+        }
+      }
+
+      empty.classList.toggle("hidden", anyShown)
     })
   </script>
 </body>
 </html>` },
     questions: [
-      { concept: 'forms', kind: 'mc', q: 'In one sentence, what does this page do?', options: ['Shows a box for the wind speed, and when the form is submitted shows a coloured GO or HOLD message under it', 'Shows the current wind speed from a weather service', 'Sends the wind speed to a server and waits for a reply', 'Shows a GO or HOLD message as soon as the page loads'], answer: 0, why: 'The form has one input and a button. The script on lines 33 to 42 runs on submit and fills in the hidden paragraph.' },
-      { concept: 'events', kind: 'mc', q: 'A visitor types 65 and presses Check. What does the result paragraph say?', options: ['HOLD: wind is 65 km/h', 'GO: wind is 65 km/h', 'HOLD: wind is 50 km/h', 'GO'], answer: 0, why: '`65 <= 50` is false, so `ok` is false and `word` is "HOLD". Line 39 then joins the pieces together.' },
-      { concept: 'dom', kind: 'mc', q: 'A visitor submits 20. Which classes does the result paragraph have afterwards?', options: ['go', 'hidden and go', 'hold', 'hidden'], answer: 0, why: 'Line 40 removes `hidden`, `go` and `hold`, then line 41 adds back just one of them. `go` is added because 20 is within the limit, and the paragraph becomes visible.' },
-      { concept: 'events', kind: 'mc', q: 'A visitor opens the page and has not touched anything yet. Which of these has already run?', options: ['The four `const` lines in the script, and the `addEventListener` call', 'The code inside the arrow function on lines 34 to 41', 'Line 39, which fills in the message', 'Nothing: the script waits until a click'], answer: 0, why: 'The script runs top to bottom when the page loads: it finds the three elements and registers the listener. The function inside only runs later, when the form is submitted.' },
-      { concept: 'css-selector', kind: 'mc', q: 'The GO message should have a blue background instead of green. Which line do you change?', options: ['Line 12', 'Line 10', 'Line 11', 'Line 41'], answer: 2, why: 'The rule `#result.go` on line 11 sets the background for a result that has the class `go`.' },
-      { concept: 'forms', kind: 'mc', q: 'A teammate deletes line 34, `event.preventDefault()`. What happens when a visitor submits the form?', options: ['The browser reloads the page, so the message disappears straight away', 'Nothing changes, because preventDefault is optional', 'The message shows twice', 'The page shows an error message'], answer: 0, why: 'Without `preventDefault`, the browser does its normal form submit, which reloads the page. The new message is wiped before anyone can read it.' },
-      { concept: 'forms', kind: 'mc', q: 'A visitor leaves the box empty and presses Check. What does the page show?', options: ['GO: wind is 0 km/h', 'HOLD: wind is NaN km/h', 'Nothing: the message stays hidden', 'An error message from the browser'], answer: 0, why: '`input.value` is an empty string, and `Number("")` is 0. Since 0 is within the limit, the page says GO. A reviewer would ask for an empty box to be rejected, for example with the `required` attribute on line 21.' },
-      { concept: 'accessibility', kind: 'mc', q: 'What does `for="wind"` on the label on line 19 do?', options: ['It links the label to the input whose id is "wind", so tapping the label focuses the box and screen readers can name it', 'It makes the label show the word "wind" in bold', 'It tells the script which element to read', 'It stops the label from being hidden'], answer: 0, why: 'A label\'s `for` matches an input\'s `id`. That link helps everyone: a bigger tap target, and a name for screen readers.' },
+      { concept: 'dom', kind: 'mc', q: 'In one sentence, what does this page do?', options: ['Shows a list of gear and sorts it alphabetically as the visitor types', 'Shows a list of gear and a search box; as the visitor types, items that do not contain the text are hidden, and No matches appears if none are left', 'Sends the search text to a server and shows the results that come back', 'Lets the visitor add new gear to the list by typing it'], answer: 1, why: 'The label, the input, the list and the hidden message in the HTML, plus the script, all serve one job: filtering the list as the visitor types.' },
+      { concept: 'events', kind: 'mc', q: 'Explain lines 30 to 43 in plain English.', options: ['When the page loads, it hides every item and shows No matches', 'When the visitor presses Enter, it adds the typed text to the list', 'Each time the visitor types, it sorts the list so matches come first', 'Each time the visitor types, it hides the gear items that do not contain the text and shows No matches only if every item ended up hidden'], answer: 3, why: 'The listener runs on every keystroke. The loop shows or hides each item, and the last line shows or hides the message.' },
+      { concept: 'html-attribute', kind: 'mc', q: 'The paragraph on line 23 is on the page from the start, yet nobody sees it at first. Why?', options: ['Its `hidden` class has `display: none` (line 9), and the script only removes that class when nothing matches', 'It is empty until the script fills it in', 'Paragraphs stay invisible until a script runs', 'It comes after the list, so it is off the screen'], answer: 0, why: 'The text is already written in the HTML. The `class="hidden"` attribute is what hides it, and the script adds or removes that class.' },
+      { concept: 'events', kind: 'mc', q: 'Why does line 30 listen for `"input"` rather than waiting for a button press?', options: ['Because `"input"` is the only event an input box can have', 'So the page reloads after each letter', 'So the list updates on every keystroke as the visitor types; there is no button or form to submit', 'So the search runs only once, when the page opens'], answer: 2, why: 'The `input` event fires every time the box\'s value changes. This page has no button, so nothing else would trigger the filter.' },
+      { concept: 'dom', kind: 'mc', q: 'What is the loop on lines 34 to 40 there for, from the visitor\'s point of view?', options: ['It adds a new item to the list for each letter typed', 'It shows the items one after another, like an animation', 'It sorts the items so the matches come first', 'It checks every gear item against what was typed and hides the ones that do not match'], answer: 3, why: 'For each item, `matches` says whether its text contains what was typed, and `classList.toggle` hides or shows the item.' },
+      { concept: 'html-element', kind: 'mc', q: 'The No matches message should say Nothing found instead. Which line do you change?', options: ['Line 42', 'Line 23', 'Line 9', 'Line 28'], answer: 1, why: 'The words are written in the paragraph on line 23. Line 28 only finds that paragraph, and line 42 shows or hides it.' },
+      { concept: 'query-selector', kind: 'mc', q: 'The page needs a new searchable item, Stove. Where does that change belong?', options: ['Add an `<li>Stove</li>` inside the `<ul>`; the script collects every `li` in it, so the script needs no change', 'Add the word Stove to the `includes` call on line 35', 'Add a new `querySelector` for Stove in the script', 'Add a new `.hidden` rule in the style block for Stove'], answer: 0, why: 'Line 27 picks up every `li` inside `#gear` whenever the page loads, so a new item in the HTML is searched automatically.' },
+      { concept: 'css-selector', kind: 'mc', q: 'A teammate deletes the `.hidden` rule on line 9. What goes wrong for visitors?', options: ['The page shows an error and stays blank', 'The search box stops accepting letters', 'Nothing ever disappears: items that do not match stay in view and No matches is visible from the start', 'Matching items are hidden instead of the others'], answer: 2, why: 'The script only adds and removes the class name `hidden`. The hiding itself is that CSS rule, so without it the class does nothing.' },
     ],
   },
 

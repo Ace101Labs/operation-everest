@@ -1,26 +1,27 @@
-// Predict-first stops for camp 8's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp 8's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMP8 = {
   '8-1': [
-    { line: 5, q: 'How will the text inside `<strong>` look on the page?', options: ['Hidden', 'Bold', 'A tappable link'], answer: 1 },
-    { line: 6, q: 'What text does the visitor see for this link?', options: ['https://example.com/weather', 'Nothing, links are invisible', 'Weather report'], answer: 2 },
+    { line: 6, q: 'What is the `href` attribute for?', options: ['Telling the link where to go', 'Setting the text people tap', 'Choosing the link colour'], answer: 0 },
+    { line: 7, q: 'What is the `alt` attribute on the image for?', options: ['Words used in place of the picture when it cannot be seen', 'Making the picture smaller', 'Naming the picture file'], answer: 0 },
   ],
   '8-2': [
-    { line: 6, q: 'Where does the `<title>` text show up?', options: ['As the big heading on the page', 'In the browser tab', 'In the footer'], answer: 1 },
+    { line: 5, q: 'What would go wrong on a phone if line 5 were deleted?', options: ['The page would show as a shrunken desktop layout', 'The page would not load at all', 'The text would turn red'], answer: 0 },
+    { line: 11, q: 'Why is the menu in a `<nav>` and not a plain `<div>`?', options: ['It tells browsers and screen readers this is the main menu', 'It makes the links bold', 'Links do not work outside a nav'], answer: 0 },
   ],
   '8-3': [
-    { line: 5, q: 'With `border-box`, how wide is the whole card on screen, padding and border included?', options: ['336px', '332px', '300px'], answer: 2 },
-    { line: 11, q: 'Which element does the selector `.card .note` style?', options: ['The `<div class="card">`', 'The `<p class="note">` inside the card', 'The `<h1>`'], answer: 1 },
+    { line: 5, q: 'What does `box-sizing: border-box` change about the card?', options: ['The width includes the padding and border', 'It removes the border', 'It rounds the corners'], answer: 0 },
+    { line: 11, q: 'Which element does the selector `.card .note` style?', options: ['The `<p class="note">` inside the card', 'The card itself', 'Every paragraph on the page'], answer: 0 },
   ],
   '8-4': [
-    { line: 8, q: 'A phone screen is 400px wide. Do the rules inside this media query apply?', options: ['Yes, always', 'No, the screen is under 700px'], answer: 1 },
-    { line: 11, q: 'On a wide screen with `space-between`, where do the three items end up?', options: ['Bunched together at the left', 'Spread out: one at each edge, one in the middle', 'Bunched together in the middle'], answer: 1 },
+    { line: 4, q: 'Why does `display: flex` go on `.camps` and not on the `li` items?', options: ['Flex goes on the parent; its children become the flex items', 'The li items cannot be styled', 'It must go on the last rule only'], answer: 0 },
+    { line: 8, q: 'What is the `@media (min-width: 700px)` block for?', options: ['Changing the layout only on wide screens', 'Loading a wider picture', 'Hiding the list on phones'], answer: 0 },
   ],
   '8-5': [
-    { line: 8, q: 'After `textContent` is set, what does the paragraph read?', options: ['Waiting at Camp II', 'status', 'Camp III reached'], answer: 2 },
-    { line: 14, q: 'The new `<li>` now has text, but it was never attached. Is "Tent 3" on the page yet?', options: ['No, it is only in memory', 'Yes, at the bottom of the list'], answer: 0 },
+    { line: 6, q: 'Why does the `<script>` sit after the elements it uses?', options: ['The page builds from the top, so the elements must exist when the script runs', 'Scripts run faster at the bottom', 'Scripts are not allowed before HTML'], answer: 0 },
+    { line: 11, q: 'What is line 11 for?', options: ['Giving every tent the class `pitched` so CSS can style it', 'Removing the tents from the page', 'Counting the tents'], answer: 0 },
   ],
   '8-6': [
-    { line: 13, q: 'The visitor types Ana and submits. What does the welcome paragraph show?', options: ['Welcome, climber!', 'Welcome, ${climber}!', 'Welcome, Ana!'], answer: 2 },
-    { line: 15, q: 'Someone taps the Wave button. Where does the message appear?', options: ['In the welcome paragraph', 'On the page, under the button', 'In the browser console'], answer: 2 },
+    { line: 11, q: 'What would happen without `event.preventDefault()` on line 11?', options: ['The page would reload when the form is sent', 'The form could never be sent', 'The name would be lost before it is read'], answer: 0 },
+    { line: 13, q: 'Where does the `climber` on line 13 come from?', options: ['Line 12, read from the input when the form is sent', 'Line 3, where the input is made', 'Line 9, where the form is found'], answer: 0 },
   ],
 }

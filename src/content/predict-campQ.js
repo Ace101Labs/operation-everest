@@ -1,39 +1,39 @@
-// Predict-first stops for camp Q's worked examples: '<stage id>': [{ line, q, options, answer }]
+// Predict-first stops for camp Q's worked examples: '<stage id>': [{ line, q, options, answer, hide? }]
 export const PREDICT_CAMPQ = {
   'Q-1': [
-    { line: 11, q: 'What does `predict("climber")` return?', options: ['`"checks"`', '`"."`', '`"the"`'], answer: 0 },
-    { line: 23, q: 'What does this line print?', options: ['`the climber checks the climber`', '`the climber checks the rope`', '`the climber . the climber`'], answer: 0 },
+    { line: 2, q: 'What do the counts inside `model` stand for?', options: ['How often each word followed that word in the training text', 'How many letters each word has', 'The order the words should appear in'], answer: 0 },
+    { line: 11, q: 'What is the loop starting on line 11 looking for?', options: ['The next word with the highest count', 'The longest next word', 'Any next word, picked at random'], answer: 0 },
   ],
   'Q-2': [
-    { line: 8, q: 'How many tokens does the toy tokenizer make from the question?', options: ['7', '6', '30'], answer: 0 },
-    { line: 12, q: 'What number follows `room for the answer:`?', options: ['196', '4096', '3900'], answer: 0 },
+    { line: 2, q: 'What is the `|| []` on line 2 for?', options: ['Giving back an empty list when match finds nothing', 'Adding an empty piece to every result', 'Removing the symbols from the text'], answer: 0 },
+    { line: 10, q: 'What does the name `WINDOW` stand for?', options: ['The most tokens the model can hold at once, prompt and answer together', 'The number of words in the question', 'How long the model takes to answer'], answer: 0 },
   ],
   'Q-3': [
-    { line: 9, q: 'After this loop, what do all the values in `probs` add up to?', options: ['1', '2', '0'], answer: 0 },
-    { line: 13, q: 'Which output is the right one at temperature 1?', options: ['`0.71 0.26 0.04`', '`0.33 0.33 0.33`', '`2.00 1.00 -1.00`'], answer: 0 },
+    { line: 6, q: 'Why does line 6 use `Math.exp`?', options: ['To make every weight positive and widen the gap between big and small scores', 'To round the scores to whole numbers', 'To sort the words'], answer: 0 },
+    { line: 9, q: 'What does dividing each weight by `total` produce?', options: ['Shares of the whole, which are probabilities', 'The highest-scoring word', 'A sorted list of words'], answer: 0 },
   ],
   'Q-4': [
-    { line: 13, q: 'The question and the snow note point almost the same way. Which score does this line print?', options: ['`0.98`', '`0.50`', '`-0.80`'], answer: 0 },
-    { line: 14, q: "How does the food note's score compare with the snow note's?", options: ['Much lower', 'Slightly higher', 'The same'], answer: 0 },
+    { line: 7, q: 'What does `cosine` measure?', options: ['How closely two vectors point the same way', 'How long the two vectors are', 'Whether the two vectors are the same length'], answer: 0 },
+    { line: 14, q: 'Which note would RAG paste into the prompt for this question?', options: ['The snow note: its vector points the same way as the question', 'The food note: it is the shorter note', 'Neither: no note is related enough'], answer: 0 },
   ],
   'Q-5': [
-    { line: 11, q: 'The model name is wrong and the server answers 404. What happens on this line?', options: ['It throws `HTTP 404`', 'It carries on and parses the reply', 'It returns `undefined` quietly'], answer: 0 },
-    { line: 13, q: 'What does this line print?', options: ['Only the generated text', 'The whole JSON reply, counts included', 'The prompt that was sent'], answer: 0 },
+    { line: 2, q: 'Why does the address start with `localhost`?', options: ['The model runs on your own computer, so the prompt stays there', 'It tells the model to answer slowly', 'It is an address on the public internet'], answer: 0 },
+    { line: 11, q: 'Why does line 11 check `res.ok` by hand?', options: ['fetch does not throw an error for a bad status', 'res.ok makes the reply arrive faster', 'The model refuses to answer without it'], answer: 0 },
   ],
   'Q-6': [
-    { line: 7, q: 'A 7B model at 4 bits per weight. What does this line print?', options: ['`7B at 4-bit: 4.2 GB`', '`7B at 4-bit: 3.5 GB`', '`7B at 4-bit: 28 GB`'], answer: 0 },
-    { line: 8, q: 'How big is the 70B model at 4 bits?', options: ['`42 GB`', '`35 GB`', '`280 GB`'], answer: 0 },
+    { line: 3, q: 'Why does line 3 multiply by 1.2?', options: ['Rough extra room for the context and the runner on top of the weights', 'Converting gigabytes into megabytes', 'Rounding up to the next whole number'], answer: 0 },
+    { line: 7, q: 'Why does line 7 print a much smaller size than line 6 for the same model?', options: ['Fewer bits per weight means less memory', 'It leaves out half of the parameters', 'It loads the model from disk lazily'], answer: 0 },
   ],
   'Q-13': [
-    { line: 14, q: 'On the very first trip around the loop, what kind of reply does the model give?', options: ['A tool call for `addNumbers`', 'The final answer', 'An empty reply'], answer: 0 },
-    { line: 21, q: 'After this push, the loop runs again. What does `fakeModel` return?', options: ['The final answer', 'The same tool call again', 'An error'], answer: 0 },
+    { line: 7, q: 'What is line 7 checking for?', options: ['Whether a tool result is already in the conversation', 'Whether the user asked a question', 'Whether the tool exists'], answer: 0 },
+    { line: 19, q: 'Who actually runs the tool the model asked for?', options: ['The code in this loop', 'The model itself', 'The user'], answer: 0 },
   ],
   'Q-14': [
-    { line: 8, q: 'What does the check print for the path in `project-secrets`?', options: ['`false`', '`true`', 'It throws an error'], answer: 0 },
-    { line: 9, q: 'What does the naive `startsWith(root)` print for that same path?', options: ['`true`', '`false`', 'It throws an error'], answer: 0 },
+    { line: 4, q: 'What is the `+ "/"` on line 4 for?', options: ['Stopping project-secrets from counting as inside project', 'Adding a folder to the path', 'Making the path lowercase'], answer: 0 },
+    { line: 9, q: 'Why is a plain `startsWith(root)` a weak fence?', options: ['A different folder can start with the same letters', 'startsWith ignores the end of the path', 'It only works on files, not folders'], answer: 0 },
   ],
   'Q-15': [
-    { line: 8, q: 'A request arrives with the method `tools/list`. What does `handle` send back?', options: ['An error response with code `-32601`', 'A result with an empty list', 'Nothing, the function throws'], answer: 0 },
-    { line: 11, q: 'In the reply, what is the value of `text`?', options: ['The string `"5"`', 'The number `5`', 'The string `"2 + 3"`'], answer: 0 },
+    { line: 1, q: 'What is the `id` in the request for?', options: ['Matching the reply to this request', 'Choosing which tool to run', 'Counting how many calls were made'], answer: 0 },
+    { line: 8, q: 'Which requests reach the `return` on line 8?', options: ['Any method other than `tools/call`, which gets an error reply', 'Every request that works', 'Only requests with no id'], answer: 0 },
   ],
 }
