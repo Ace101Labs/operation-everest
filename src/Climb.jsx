@@ -30,7 +30,7 @@ const ease = x => (x < 0.5 ? 2 * x * x : 1 - (-2 * x + 2) ** 2 / 2)
 // Missed questions are gear you dropped on the trail behind you: tap one to go and pick it up.
 const GEAR = ['🎒', '🧤', '🧢', '🪢', '🔦']
 
-export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPick = true, onCamp, onClimber, onArrive, onGear }) {
+export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPick = false, onCamp, onClimber, onArrive, onGear }) {
   const [shown, setShown] = useState(() => {
     const seen = parseFloat(localStorage.getItem(SEEN))
     return still || Number.isNaN(seen) ? t : seen
@@ -124,8 +124,8 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPi
         })()}
         {flight === null && Array.from({ length: Math.min(gear, GEAR.length) }, (_, j) => {
           const [gx, gy] = pointAt(Math.max(0, t - 0.32 * (j + 1)))
-          return <g key={j} className="dropped" transform={`translate(${gx.toFixed(1)} ${(gy - 4).toFixed(1)})`} onClick={onGear} role="button" aria-label={canPick ? 'Dropped gear: click to pick it up' : 'Dropped gear: check back later'}>
-            <title>{canPick ? 'Click me to pick up your dropped gear: answer the question you missed to get it back.' : 'Dropped gear: a question you missed. You can pick up one item a few times a day. Check back later.'}</title>
+          return <g key={j} className="dropped" transform={`translate(${gx.toFixed(1)} ${(gy - 4).toFixed(1)})`} onClick={onGear} role="button" aria-label={canPick ? 'Dropped gear: tap to pick it up' : 'Dropped gear: a pick-up comes at a random time'}>
+            <title>{canPick ? 'A pick-up is here: tap to try every dropped item.' : 'Dropped gear: a question you missed. A pick-up turns up at random times during the day.'}</title>
             <circle r="13" fill="transparent" /><text fontSize="15" textAnchor="middle" dominantBaseline="central" style={{ animationDelay: `${j * 0.3}s` }}>{GEAR[j]}</text>
           </g>
         })}

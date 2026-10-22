@@ -3,9 +3,11 @@ import { useEffect, useState } from 'react'
 // Random arrivals for the Yeti chase and dropped-gear pick-ups. Each kind shows up a random
 // 5–10 times a day, at random times that differ every day and on every device. Only one can be
 // waiting at a time: an arrival you miss is replaced by the next one, so they can't be saved up
-// and done back to back. Kept on this device only (practice, nothing to win or lose).
+// and done back to back. A gear pick-up also leaves after an hour, so it is never just always there
+// (one pick-up gives one try at every dropped item). Kept on this device only.
 const KEY = 'everest.arrivals'
 const MIN = 5, MAX = 10
+const STAYS = { gear: 60 } // minutes an arrival waits before it leaves (none = until the next one)
 const today = () => new Date().toLocaleDateString('en-CA')
 
 function salt() {
@@ -34,6 +36,7 @@ export function waiting(kind) {
   const times = schedule(kind), m = nowMin()
   let last = -1
   times.forEach((t, i) => { if (t <= m) last = i })
+  if (last >= 0 && STAYS[kind] && m - times[last] > STAYS[kind]) return -1
   return last >= 0 && !(read().used[kind] || []).includes(last) ? last : -1
 }
 export function spendArrival(kind) {

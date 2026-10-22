@@ -26,7 +26,7 @@ export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, open
   const canChase = RECALL.filter(r => isPassed(p, r.after)).length >= 5 // same rule as Chase.jsx recallPool
   const yeti = useArrival('yeti'), pickup = useArrival('gear')
   const [gearNote, setGearNote] = useState(false)
-  const tapGear = () => (pickup ? openReview() : setGearNote(true))
+  const tapGear = () => (pickup ? openReview() : setGearNote(n => !n))
   const est = estimate(p)
   const alt = altitude(p)
   const camps = CAMPS.map((c, i) => ({ c, i, status: campStatus(p, i), frac: campFraction(p, c) }))
@@ -69,11 +69,9 @@ export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, open
             {dailyDone ? <>☀️ Done {p.daily.best}/5 ✓<small>Next run in {untilMidnight()}</small></> : <>☀️ Daily run<small>Ready now</small></>}
           </button>
           {canChase && yeti && <button className="side-btn yeti-here" onClick={openChase}>🦍 Yeti spotted! Run</button>}
-          {due > 0 && (pickup
-            ? <button className="side-btn" onClick={openReview} title="Click to pick up your dropped gear: answer the question you missed to get it back">🧤 Pick up 1 of {due}</button>
-            : <button className="side-btn locked" onClick={() => setGearNote(true)}>🧤 {due} dropped</button>)}
+          {due > 0 && pickup && <button className="side-btn gear-here" onClick={openReview} title="A pick-up is here: one try at each dropped item, answer it right to pick it up">🧤 Pick-up here!<small>{due} on the trail</small></button>}
         </div>
-        {gearNote && !pickup && <p className="note gear-note" onClick={() => setGearNote(false)}>🧤 Dropped gear is a question you missed. You can pick up one item at a time, a few times a day: check back later.</p>}
+        {gearNote && !pickup && due > 0 && <p className="note gear-note" onClick={() => setGearNote(false)}>🧤 Dropped gear is a question you missed. A pick-up turns up at random times during the day: when you see it, you get one try at every item.</p>}
         {!net.online && <div className="offline-badge">✈️ Offline: everything works, progress saves on this device.</div>}
       </div>
 

@@ -144,7 +144,7 @@ export default function App() {
   if (!p.settings.platform) screen = <Welcome setSetting={setSetting} />
   else if (view.name === 'pack') screen = <Pack p={p} setSetting={setSetting} start={view.tab} back={() => setView({ name: 'map' })} />
   else if (view.name === 'guide') screen = <FieldGuide p={p} back={() => setView({ name: 'map' })} />
-  else if (view.name === 'review') screen = <Acclimatize p={p} limit={1} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
+  else if (view.name === 'review') screen = <Acclimatize p={p} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
   else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} openLocker={() => setView({ name: 'pack', tab: 'locker' })} />
   else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
     close={(done, next) => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? (next ? 'next' : 'map') : (view.from || 'camp'), camp: view.camp, next }) }} />
