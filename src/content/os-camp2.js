@@ -97,7 +97,7 @@ export const OS_CAMP2 = {
       { q: 'You selected a command in your Chromebook\'s Linux terminal and want to copy it. Which keys copy it?', options: ['Ctrl+Shift+C', 'Ctrl+C', 'Alt+C', 'Search+C'], answer: 0, why: 'In the terminal, Ctrl+C means "stop the running command", so copy is Ctrl+Shift+C (and paste Ctrl+Shift+V).' },
     ],
     phone: [
-      { q: 'You only have a phone so far. Where do you practise terminal commands?', options: ['In the practice terminal inside this game', 'In your phone\'s Settings app', 'In your phone\'s notes app', 'Nowhere until you buy a computer'], answer: 0, why: 'Phones don\'t include a real terminal, so the game has a practice one that works like a Linux terminal.' },
+      { q: 'You only have a phone so far. Where do you practise terminal commands?', options: ['In the practice terminal inside this game', 'In your phone\'s Settings app', 'In your phone\'s notes app', 'In your phone\'s web browser search bar'], answer: 0, why: 'You don\'t have to wait for a computer: the game has a practice terminal that works like a Linux one, so you can start on your phone today.' },
       { q: 'Later you have a computer or server. What lets your phone open a terminal on it?', options: ['An SSH app, like Termius', 'A text-messaging app', 'Your phone\'s web browser', 'A screen-recording app'], answer: 0, why: 'An SSH app connects your phone to another computer\'s shell, so you can type commands on it from anywhere.' },
     ],
   },
