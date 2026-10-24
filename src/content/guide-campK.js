@@ -364,4 +364,22 @@ export const GUIDE_CAMPK = {
     tips: ['A package with no repository link, no history and a few downloads is not necessarily bad. It just has not earned trust yet.', 'Pin the version of a package you have checked, and commit the lock file so everybody installs the same code.'],
     related: ['ai-coding-assistant', 'reviewing-ai-code', 'dependency-audit', 'package-json'],
   },
+  'halting-problem': {
+    term: 'The halting problem (why no tool finds every bug)',
+    short: 'No program can look at every other program and always tell whether it will finish. So no tool can promise code is bug-free.',
+    what: 'In 1936 Alan Turing proved something surprising: it is **impossible** to write a program that looks at any other program and its input and always correctly says whether it will eventually stop or run forever. This is the **halting problem**, and it was one of the first proofs of what computers can never do.\n\nIt has a direct consequence for auditors. If no tool can even decide "will this finish?" for every program, no tool can decide "does this have a bug?" or "is this safe?" for every program either. Scanners, linters and AI reviewers are useful, but every one of them either misses some real problems or flags some fine code.',
+    how: 'The proof idea, in plain words:\n1. Suppose a perfect checker `halts(program)` existed.\n2. Write a trick program that asks `halts` about itself, then does the opposite: if `halts` says it stops, it loops forever; if `halts` says it loops, it stops.\n3. Whatever `halts` answers about the trick program is wrong. So the perfect checker can\'t exist.\n\nWhat auditors do instead:\n• treat every tool\'s result as evidence, never proof\n• combine methods: tests, reading the code, scanners, running it\n• focus checking where the damage would be worst',
+    usage: [
+      { code: 'function trick() {\n  if (halts(trick)) {\n    while (true) {}   // "you said I stop? then I loop"\n  }\n  // "you said I loop? then I stop"\n}', note: 'A sketch of the proof. `halts` can\'t be written, which is the whole point: any answer it gives about `trick` is wrong.' },
+      { code: '$ npm audit\nfound 0 vulnerabilities', note: '"0 found" means none of the KNOWN problems in its list. It can\'t mean the code is safe.' },
+    ],
+    uses: ['Reading a tool\'s "no issues found" correctly: no known issues, not no issues.', 'Explaining why audits combine several methods instead of trusting one scanner.', 'Spotting overclaims like "our AI finds every bug".'],
+    when: ['A product or tool claims to guarantee code is secure or bug-free.', 'You\'re deciding how much to trust an automated check.'],
+    whenNot: ['Don\'t use it as an excuse to skip tools. Imperfect checks still catch most common problems cheaply.'],
+    mistakes: [
+      { prose: 'Reading "0 vulnerabilities found" as "this code is safe".', why: 'A scanner checks for the problems it knows about. Unknown problems, and plain logic bugs, are outside what it can see.' },
+    ],
+    tips: ['When someone says a tool "guarantees" correctness for any code, ask what it gives up: it either misses problems or raises false alarms.'],
+    related: ['audit-method', 'claims-evidence', 'testing', 'reviewing-ai-code', 'infinite-loop'],
+  },
 }

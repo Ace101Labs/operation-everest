@@ -7,7 +7,7 @@ export const campT = [
   {
     id: 'T-1', type: 'route', mode: 'phone', xp: 15, mins: 4,
     title: 'Lukla airstrip: your first instructions',
-    prompt: 'Welcome to Lukla! Before the climb, a secret: **code is just a list of instructions, and the computer follows them exactly, top to bottom.**\n\nEach `up()` moves your climber one step up the trail. The code below already has two. Press **Run the route** and watch. The flag is **3 steps** up, so the climber stops short. Add one more `up()` line and run it again.',
+    prompt: 'Welcome to Lukla! Before the climb, a secret: **code is just a list of instructions, and the computer follows them exactly, top to bottom.** An exact list of steps like that has a name: an **algorithm**. Every app on your phone is algorithms all the way down.\n\nEach `up()` moves your climber one step up the trail. The code below already has two. Press **Run the route** and watch. The flag is **3 steps** up, so the climber stops short. Add one more `up()` line and run it again.',
     map: ['F', '.', '.', 'S'],
     starter: '// The climber follows these, top to bottom\nup()\nup()\n',
     hints: [
@@ -18,12 +18,12 @@ export const campT = [
   {
     id: 'T-2', type: 'route', mode: 'phone', xp: 15, mins: 5,
     title: 'Phakding: around the rocks',
-    prompt: 'The trail bends around boulders 🪨. Walking into one stops your climber, so **the order of your steps matters**.\n\nYou have four moves: `up()`, `down()`, `left()` and `right()`. Each is one square. Follow the snow from the start to the flag, one line per step.',
-    map: ['##.F', '##..', '##.#', '...#', 'S###'],
+    prompt: 'The trail bends around boulders 🪨. Walking into one stops your climber, so **the order of your steps matters**.\n\nYou have four moves: `up()`, `down()`, `left()` and `right()`. Each is one square. Halfway up, the trail **forks**, and one branch is a dead end. Plan the whole route on the map first, then write it, one line per step.',
+    map: ['F.#...', '#.#.#.', '#...#.', '###.#.', 'S...#.'],
     starter: '// Lead the climber around the rocks to the flag.\n// One line per step, for example: up()\n\n',
     hints: [
-      'From the start, the only snow is straight up. After that, the snow runs right for two squares.',
-      'The whole route: up, right, right, up, up, right, up.\n```\nup()\nright()\nright()\nup()\nup()\nright()\nup()\n```',
+      'Trace it with your finger before you type. The branch that heads up the middle and over to the right-hand edge goes nowhere. Developers do the same: plan first, then code.',
+      'Right 3, up 2, left 2, up 2, left 1:\n```\nright()\nright()\nright()\nup()\nup()\nleft()\nleft()\nup()\nup()\nleft()\n```',
     ],
   },
   {
@@ -51,9 +51,9 @@ export const campT = [
       'Check it now does what you expected',
     ],
     blanks: {
-      text: 'Code is a list of ___ that the computer follows exactly, from ___ to bottom. If two lines are in the wrong ___, the program does the wrong thing. A mistake in code is called a ___. To fix it, read the error ___, change one thing, then run it again.',
-      answers: ['instructions', 'top', 'order', 'bug', 'message'],
-      extra: ['suggestions', 'middle', 'font', 'feature', 'title'],
+      text: 'An exact list of steps is an ___. Code is a list of ___ that the computer follows exactly, one line at a time, from the ___ of the file to the bottom. If two lines are in the wrong ___, the program does the wrong thing. A mistake in code is called a ___. To fix it, read the error ___, change one thing, then run it again.',
+      answers: ['algorithm', 'instructions', 'top', 'order', 'bug', 'message'],
+      extra: ['password', 'options', 'middle', 'font', 'warning', 'colour'],
     },
   },
 ]

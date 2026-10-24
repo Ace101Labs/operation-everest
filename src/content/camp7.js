@@ -35,12 +35,13 @@ const PROJECT_SEED = {
 export const camp7 = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: '7-1', type: 'learn', mode: 'phone', xp: 30, mins: 40,
+    id: '7-1', type: 'learn', mode: 'phone', xp: 30, mins: 43,
     title: 'Packages and npm',
     teaches: ['npm', 'package-json', 'dependency'],
     idea: [
       { h: 'Why developers install packages', b: 'Climbers don\'t make their own ropes and crampons. They buy gear that thousands of others have tested. Developers do the same with code: when a problem is already well solved (dates, web servers, colours in the terminal), they install a **package** someone else wrote and shared.\n\n**npm** is the tool that fetches those packages, and the online library they come from. It arrived on your computer together with Node.' },
       { h: 'Packages are free, but not risk-free', b: 'Installing a package means running a stranger\'s code inside your project. Most packages are honest and excellent. Some are abandoned, and a few are traps with names one letter off a famous one. In this trail you\'ll learn to install, and the Field Guide cards show you how to choose **safely**. Read every **⛔ Don\'t use it when** section.' },
+      { h: "Under the hood: you depend on strangers", b: "Packages depend on other packages, which depend on others. Together they form a **dependency graph**, and the 65 packages that arrive when you ask for 1 are its branches. Every one of them runs with the same power as your own code.\n\nThat's why a single poisoned package deep in the graph can reach millions of apps. It has happened for real: in 2018 a popular package called event-stream was handed to a new maintainer who slipped in a hidden dependency built to steal bitcoin from users of one wallet app. Fewer, well-known dependencies are a security decision, not just a tidy one." },
     ],
     example: {
       intro: 'Starting a project and adding a package. Tap through each line.',
@@ -95,6 +96,7 @@ export const camp7 = [
       { concept: 'dependency', kind: 'mc', q: 'A forum post says `npm install cross-evn`. The popular package is `cross-env`. What do you do?', options: ['Run it: the name is close enough, and npm would install the right one anyway', 'Stop: a near-miss name may be an attacker\'s look-alike. Check the exact name on npmjs.com', 'Run it: npm will warn you first if the package name is wrong or misspelled', 'Run it, then check npm audit afterwards to see whether anything went wrong'], answer: 1, why: 'Typosquatting: attackers register misspellings of popular packages.' },
       { concept: 'npm', kind: 'mc', q: '`sudo apt install nodejs npm` works on this computer, but its version is often behind. What\'s the recommended way to get current Node and npm?', options: ['nvm, then `nvm install --lts`', '`npm install node`', '`sudo apt upgrade npm`', '`node -v`'], answer: 0, why: 'nvm (Node Version Manager) installs the current Node and npm into your home folder, with no sudo. `nvm install --lts` picks the stable long-term-support version.' },
       { concept: 'npm', kind: 'mc', q: "You run `npm install sumit-dates` and get this. What went wrong?", code: "npm error code E404\nnpm error 404 Not Found - GET https://registry.npmjs.org/sumit-dates - Not found\nnpm error 404\nnpm error 404  'sumit-dates@*' is not in this registry.\nnpm error 404\nnpm error 404 Note that you can also install from a\nnpm error 404 tarball, folder, http url, or git url.", options: ["Your internet is down, so npm can't reach the registry", "package.json has a typo that npm can't read", "The registry has no package with that name: check the spelling", "node_modules is full, so npm can't add a package"], answer: 2, why: "`404 Not Found` from the registry means it answered, but no package has that name. A network failure would look different (ENOTFOUND or ETIMEDOUT). Check the name, for example `summit-dates`." },
+      { concept: "dependency", kind: "mc", q: "You install one small package. A dependency of a dependency of it is taken over by an attacker. Is your app affected?", options: ["No: you only installed the top package", "Yes: every package in the dependency graph runs with your app's full power", "Only if you import that package by name", "Only on servers"], answer: 1, why: "Code you never chose directly still runs inside your app. That's a supply-chain attack, and why each dependency is a trust decision." },
     ],
   },
 
@@ -212,12 +214,13 @@ export const camp7 = [
 
   // ───────────────────────────── Trail 4 ─────────────────────────────
   {
-    id: '7-4', type: 'learn', mode: 'phone', xp: 35, mins: 45,
+    id: '7-4', type: 'learn', mode: 'phone', xp: 35, mins: 48,
     title: 'How programs talk: requests and responses',
-    teaches: ['request-response', 'http-methods-basics', 'status-codes-basics', 'api', 'json-api'],
+    teaches: ['request-response', 'http-methods-basics', 'status-codes-basics', 'api', 'json-api', 'latency'],
     idea: [
       { h: 'Requests and responses', b: 'On the mountain, camps talk by radio: one asks "Camp II, what\'s the wind?", the other answers. Programs talk the same way over the internet. A **client** sends a **request**; a **server** sends back one **response**. The rules of that conversation are called **HTTP**.\n\nAn **API** is the list of questions a server is willing to answer. Most APIs answer in **JSON**, which you already know how to read.' },
       { h: 'What a request and response contain', b: 'This trail covers the parts of a request and response: the **method** (what you want done), the **status code** (how it went), and the **JSON body** (the data). In the next trail you\'ll make real calls with `fetch`.' },
+      { h: "Under the hood: the speed of light is too slow", b: "A request is a message that has to physically travel: as light through fibre-optic cables, as radio to your phone. The delay before the answer comes back is **latency**. A round trip inside one city takes a few milliseconds; across an ocean, roughly 70 to 150. Reading a variable from RAM takes about a ten-thousandth of a millisecond, so a network call can be around **a million times slower** than using a value you already have.\n\nThat single fact shapes how apps are built: ask for everything in one request instead of ten, keep (cache) answers you already have, and always show the user that something is loading." },
     ],
     example: {
       intro: 'A real HTTP conversation, written out as text. Tap through it.',
@@ -255,6 +258,7 @@ export const camp7 = [
       'Status codes: **2xx** worked, **4xx** your request is wrong, **5xx** the server failed.',
       'An **API** is a server\'s menu of requests; a **JSON API** answers in JSON text you must parse.',
       'API keys are secrets: never in committed code.',
+      "**Latency** is the round-trip delay of a request: tens to hundreds of milliseconds, around a million times slower than reading a variable.",
     ],
     questions: [
       { concept: 'request-response', kind: 'mc', q: 'Which part of a response says whether it worked?', options: ['The body', 'The status code', 'The headers', 'The method'], answer: 1, why: 'The status code: 200 OK, 404 Not Found, 503 Service Unavailable…' },
@@ -266,16 +270,18 @@ export const camp7 = [
       { concept: 'api', kind: 'mc', q: 'Where should an API key live?', options: ['In your code, pushed to GitHub so teammates can find it easily', 'In an environment variable or a .env file listed in .gitignore', 'In the page\'s HTML, where the browser can send it with each request', 'In package.json, next to the project\'s name and its dependencies'], answer: 1, why: 'Keys are passwords. Keep them out of anything you share or commit.' },
       { concept: 'json-api', kind: 'mc', q: 'What prints?', code: 'const body = \'{"camp":"Camp II","tempC":-12}\'\nconsole.log(body.tempC)', options: ['-12', 'undefined', 'Camp II', 'SyntaxError'], answer: 1, why: 'body is still text. JSON.parse(body).tempC would give -12.' },
       { concept: 'status-codes-basics', kind: 'mc', q: "You send a request with `curl -i` and see this. What does the first line tell you?", code: "HTTP/1.1 404 Not Found\nContent-Type: application/json; charset=utf-8\nContent-Length: 31\n\n{\"error\":\"Gear item not found\"}", options: ["The server is working, but nothing exists at the address you asked for", "The server crashed while it was handling your request", "Your request body was missing a required field", "The server is down, so nothing could answer"], answer: 0, why: "Any reply at all means the server is up. 404 means the thing you asked for isn't there: check the URL or id. A crash would be a 500." },
+      { concept: "latency", kind: "mc", q: "A page makes 20 requests one after another to a server overseas, each with a 100 ms round trip. Roughly how long does the user wait just for travel time?", options: ["0.1 seconds", "2 seconds", "20 seconds", "No wait: the internet is instant"], answer: 1, why: "20 round trips × 100 ms = 2,000 ms. That's why apps batch requests or send them at the same time." },
     ],
   },
 
   // ───────────────────────────── Trail 5 ─────────────────────────────
   {
-    id: '7-5', type: 'learn', mode: 'phone', xp: 35, mins: 45,
+    id: '7-5', type: 'learn', mode: 'phone', xp: 35, mins: 48,
     title: 'fetch and promises',
-    teaches: ['fetch', 'promise'],
+    teaches: ['fetch', 'promise', 'event-loop'],
     idea: [
       { h: 'Waiting for a server: promises', b: 'Asking a server for data takes time: a fraction of a second, or several seconds on a bad connection. JavaScript doesn\'t freeze while it waits. `fetch(url)` sends the request and instantly hands you a **promise**: an IOU that says "the response will turn up here later".\n\nThat changes run order. Code written *after* a fetch runs *before* its answer arrives. Keep that in mind and async code is much easier to follow.' },
+      { h: "Under the hood: one thread and a queue", b: "JavaScript runs your code on **one thread**: one thing at a time. When you call `fetch` or `setTimeout`, the slow waiting is handed off, and your code carries on. When the answer arrives, its callback joins a **queue**. The **event loop** takes the next callback from the queue only when the current code has completely finished and the call stack is empty.\n\nThat's why \"What prints first?\" has a definite answer, why `setTimeout(fn, 0)` still waits for the code below it, and why a long, heavy loop freezes a web page: nothing else, not even a click, can run until it ends." },
     ],
     example: {
       intro: 'Fetching Base Camp\'s weather. Watch the output order. Tap through it.',
@@ -308,6 +314,7 @@ export const camp7 = [
       '`.then` runs on success, `.catch` on failure. Return values flow down the chain.',
       'Ordinary code runs first; promise callbacks run later.',
       'fetch doesn\'t reject on 404 or 500. Check `res.ok` and `res.status`.',
+      "The **event loop**: JavaScript runs one thing at a time; finished async work waits in a queue until the current code is done.",
     ],
     questions: [
       { concept: 'fetch', kind: 'mc', q: 'What does `fetch(url)` give back immediately?', options: ['The JSON data', 'A promise of the response', 'The status code', 'Nothing until it finishes'], answer: 1, why: 'An IOU. The response arrives later.' },
@@ -318,17 +325,20 @@ export const camp7 = [
       { concept: 'promise', kind: 'mc', q: 'When does `.catch` run?', options: ['Always, at the end', 'When any earlier step in the chain rejects', 'Only on a 404', 'Only when fetch itself fails, not later steps'], answer: 1, why: 'One catch at the end handles a failure anywhere above it.' },
       { concept: 'fetch', kind: 'mc', q: 'Which tells you the response was a success (status 200–299)?', options: ['res.body', 'res.ok', 'res.success', 'res.json'], answer: 1, why: 'res.ok is true for any 2xx status.' },
       { concept: 'fetch', kind: 'mc', q: "Your script calls `fetch('http://localhost:3000/gear')` and prints this. What does it tell you?", code: "TypeError: fetch failed\n    at node:internal/deps/undici/undici:14976:13 {\n  [cause]: Error: connect ECONNREFUSED 127.0.0.1:3000\n      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {\n    errno: -111,\n    code: 'ECONNREFUSED',\n    syscall: 'connect',\n    address: '127.0.0.1',\n    port: 3000\n  }\n}", options: ["The server answered with a 404 for /gear", "The JSON from the server is broken", "Nothing is listening on port 3000: start the server", "fetch isn't available in this version of Node"], answer: 2, why: "`fetch failed` is the short message. The real reason is in `[cause]`: ECONNREFUSED means the request never found a program on that port." },
+      { concept: "event-loop", kind: "mc", q: "What prints, in order?", code: "console.log(\"A\")\nsetTimeout(() => console.log(\"B\"), 0)\nconsole.log(\"C\")", options: ["A, B, C", "A, C, B", "B, A, C", "C, A, B"], answer: 1, why: "The timer callback waits in the queue until the current code (A, then C) has finished, even with a 0 ms delay." },
+      { concept: "event-loop", kind: "mc", q: "A button's click handler runs a loop that takes 5 seconds. What happens to the page meanwhile?", options: ["Nothing: clicks run on their own thread", "It freezes: no other code, clicks included, can run until the loop ends", "The loop is paused for each click", "The browser runs the loop on another core automatically"], answer: 1, why: "JavaScript has one main thread. While the loop runs, every other callback waits in the queue." },
     ],
   },
 
   // ───────────────────────────── Trail 6 ─────────────────────────────
   {
-    id: '7-6', type: 'learn', mode: 'phone', xp: 35, mins: 50,
+    id: '7-6', type: 'learn', mode: 'phone', xp: 35, mins: 53,
     title: 'async/await, try/catch and planning your midterm',
-    teaches: ['async-await', 'try-catch', 'midterm-planning'],
+    teaches: ['async-await', 'try-catch', 'midterm-planning', 'concurrency', 'race-condition'],
     idea: [
       { h: 'async/await and try/catch', b: '`.then` chains work, but long ones get hard to read. `async` and `await` let you write waiting code top to bottom: `await` means "pause this function here until the promise is ready". When something fails, `try/catch` catches the error so one offline weather station doesn\'t bring down your whole report.' },
       { h: 'Plan before you build', b: 'Your midterm is a real tool. Before building it, you\'ll learn to **plan**: goal, inputs, exact output, steps, and failure cases. The Field Guide card shows how.' },
+      { h: "Under the hood: waiting together, and racing", b: "`await` one request, then the next, and the total time is the **sum** of the waits. Start them together with `Promise.all([a(), b(), c()])` and the total is about the **slowest one**. That's **concurrency**: several tasks in progress at once, taking turns on one thread. **Parallelism** is different: tasks truly running at the same moment on different CPU cores, which in Node needs worker threads or separate processes.\n\nOverlapping tasks bring a new kind of bug, the **race condition**: the result depends on which finishes first. Two requests both read a counter of 5, both add 1, both save 6, and one update is lost. Or an old, slow search result arrives after a newer one and overwrites it." },
     ],
     example: {
       intro: 'A safe fetch, the pattern you\'ll use from now on. Tap through it.',
@@ -365,6 +375,8 @@ export const camp7 = [
       'Put code in `async function main()` and call `main()` at the bottom.',
       '`try { } catch (err) { }` recovers from errors; `throw new Error("…")` raises your own.',
       'Plan first: goal, inputs, exact output, steps, failure cases. Build the smallest piece, run, repeat.',
+      "**Concurrency:** `Promise.all` waits for tasks together, so the total is about the slowest one, not the sum.",
+      "**Race condition:** a bug where the result depends on which overlapping task finishes first.",
     ],
     questions: [
       { concept: 'async-await', kind: 'mc', q: 'What does `await` do?', options: ['Makes the whole computer wait until the request finishes before doing anything else', 'Pauses this async function until the promise settles, then gives its value', 'Retries a failed request automatically until the server finally answers', 'Converts the JSON text the server sends back into a normal JavaScript object'], answer: 1, why: 'Only that function pauses; other code can keep running.' },
@@ -376,6 +388,8 @@ export const camp7 = [
       { concept: 'midterm-planning', kind: 'mc', q: 'Best first step before coding a new tool?', options: ['Write all the code, then run it once', 'Write down the goal, inputs, exact output, steps and failure cases', 'Write the first function, then plan as you go', 'Find a finished tool and copy it'], answer: 1, why: 'A one-screen plan. The sample output becomes your test.' },
       { concept: 'midterm-planning', kind: 'mc', q: 'Your plan covers what happens when every request works. What\'s missing?', options: ['Nothing: a plan only needs the happy path, since errors can be handled later', 'The failure cases: what the tool does when a request fails or data is missing', 'A faster way to run the happy path, because speed matters more than errors', 'A list of every package you could install, so nothing is missing later'], answer: 1, why: 'Real APIs fail. Plan for it, or the code won\'t handle it.' },
       { concept: 'try-catch', kind: 'mc', q: "Nothing catches the error thrown inside this async function, and Node prints this. Which fix stops the crash?", code: "/home/climber/trip/app.js:2\n  throw new Error('No gear for day 4')\n        ^\n\nError: No gear for day 4\n    at load (/home/climber/trip/app.js:2:9)\n    at Object.<anonymous> (/home/climber/trip/app.js:4:1)\n\nNode.js v20.20.2", options: ["Handle it where load() is called: try/catch around the await, or .catch() on the call", "Call load() twice so one of the calls works", "Move the throw to after the console.log", "Change the throw into a return"], answer: 0, why: "The trace shows an error nothing handled, so Node stopped. Catching it where the function is called lets you print a short message and carry on." },
+      { concept: "concurrency", kind: "mc", q: "Three requests take 1 s, 2 s and 3 s. About how long does `await Promise.all([a(), b(), c()])` take?", options: ["1 second", "3 seconds", "6 seconds", "2 seconds"], answer: 1, why: "They run at the same time, so you wait for the slowest one. One after another would take 1 + 2 + 3 = 6 seconds." },
+      { concept: "race-condition", kind: "mc", q: "Two people press \"like\" at the same moment. Each request reads likes = 5, adds 1 and saves. The count ends at 6. What is this bug?", options: ["An off-by-one error", "A race condition: both read the old value before either saved", "A syntax error", "A network timeout"], answer: 1, why: "The result depends on the timing of overlapping tasks. The fix is to do the add-one in a single step on the server or database." },
     ],
   },
 
@@ -577,6 +591,8 @@ main()` },
       { concept: 'async-await', kind: 'mc', q: 'What\'s missing?', code: 'async function main() {\n  const res = await fetch(url)\n  const data = res.json()\n  console.log(data.camp)\n}\nmain()', options: ['Nothing', 'await before res.json()', 'await before console.log', 'async before fetch'], answer: 1 },
       { concept: 'try-catch', kind: 'mc', q: 'What prints?', code: 'async function main() {\n  try {\n    throw new Error("HTTP 503")\n  } catch (err) {\n    console.log("no data (" + err.message + ")")\n  }\n  console.log("done")\n}\nmain()', options: ['HTTP 503 then done', 'no data (HTTP 503) then done', 'no data (HTTP 503) only', 'no data (Error: HTTP 503) then done'], answer: 1 },
       { concept: 'midterm-planning', kind: 'mc', q: 'You\'re about to build a new tool. What do you write first?', options: ['The whole program in one go, then run it and fix whatever breaks', 'A short plan: goal, inputs, exact output, steps, failure cases', 'The README, so the explanation exists before any code does', 'A list of packages to install, so everything you need is ready'], answer: 1 },
+      { concept: "event-loop", kind: "mc", q: "What prints, in order?", code: "console.log(\"start\")\nsetTimeout(() => console.log(\"timer\"), 0)\nconsole.log(\"end\")", options: ["start, end, timer", "start, timer, end", "timer, start, end", "start, end"], answer: 0, why: "The timer callback waits in the queue until the current code has finished." },
+      { concept: "concurrency", kind: "mc", q: "You fetch the weather for 4 camps, one after another, each taking 0.5 s. What's the simplest way to cut the wait to about 0.5 s?", options: ["Use a faster computer", "Start all 4 at once and await Promise.all", "Wrap each in try/catch", "Use var instead of const"], answer: 1, why: "They don't depend on each other, so they can wait together." },
     ],
   },
 ]

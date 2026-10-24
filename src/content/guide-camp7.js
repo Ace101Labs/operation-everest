@@ -375,4 +375,82 @@ export const GUIDE_CAMP7 = {
     tips: ['Write the exact output you expect before writing code. Then you always know whether you\'re done.', 'Build one step at a time, and run the code after every step.'],
     related: ['try-catch', 'async-await', 'fetch', 'modules'],
   },
+
+  latency: {
+    term: 'Latency', short: 'The delay before data arrives: how long a request takes to go out and come back.',
+    what: '**Latency** is the waiting time between asking for something and getting it. For a network request it is the **round trip**: your request travels to the server, the server answers, and the answer travels back. It is measured in milliseconds (ms), thousandths of a second.',
+    how: "Latency is not the same as **bandwidth**. Bandwidth is how much data fits through per second. Latency is how long the first byte takes to show up. A big pipe can still be slow to start.\n\nSignals cannot beat the speed of light, so distance sets a floor. Rough numbers:\n• reading a variable in RAM: about 100 nanoseconds\n• a round trip inside one city: a few ms\n• a round trip across an ocean: roughly 70 to 150 ms\n\nThat makes a network call about **a million times slower** than reading a variable. Your code can't fix the distance, so apps work around it:\n• **batch** requests: ask for ten things in one trip, not ten trips\n• **cache** answers: keep a copy you already fetched\n• **show loading states**: let the page react right away while data is on its way",
+    usage: [
+      { code: 'const start = Date.now()\nawait new Promise(r => setTimeout(r, 120))\nconsole.log(Date.now() - start)', out: '120', note: 'A fake 120 ms request. Subtracting two Date.now() values measures the wait. Real runs land within a few ms of 120.' },
+      { code: '// ten trips of 100 ms each\n// one batched trip of 100 ms', out: '1000 ms vs 100 ms', note: 'Same data, ten times less waiting. This is why batching helps.' },
+    ],
+    uses: ['Explaining why a page feels slow even on fast internet.', 'Deciding when to batch requests or cache an answer.', 'Choosing where to put servers: closer to users means lower latency.'],
+    when: ['A feature calls the network many times.', 'You are designing a loading state.', 'Someone says "the connection is fast but the app is slow".'],
+    whenNot: ["Don't confuse it with bandwidth. A faster plan won't shorten a round trip across an ocean.", "Don't optimise latency you have not measured. Time it first, then fix the slowest part."],
+    mistakes: [
+      { prose: 'Calling the server inside a loop, once per item.', why: 'Each call pays a full round trip. A hundred items at 100 ms each is ten seconds. Ask for them all in one request.' },
+      { prose: 'Treating a network call like reading a variable.', why: 'It is about a million times slower, and it can fail. Always plan for waiting and for errors.' },
+      { prose: 'Showing a blank screen while data loads.', why: 'Users think the app is broken. Show a loading state straight away.' },
+    ],
+    tips: ['Measure with `Date.now()` before and after, or the Network tab in your browser tools.', 'Fewer round trips beats faster round trips.'],
+    related: ['request-response', 'fetch', 'promise', 'api'],
+  },
+
+  'event-loop': {
+    term: 'The event loop', short: 'How JavaScript does one thing at a time and still handles waiting.',
+    what: 'JavaScript runs your code on **one thread**: one thing at a time. Slow work, like timers, network requests and files, is handed off to the system. When that work finishes, its callback waits in a queue. The **event loop** is the part that picks the next callback from the queue and runs it.',
+    how: "The rule: the event loop runs the next queued callback only when the **current code has finished** and the call stack is empty.\n\nThat has real consequences:\n• `setTimeout(fn, 0)` does not run `fn` now. It runs after the rest of the current code.\n• Promise callbacks (`.then`) queued by the current code run **before** timer callbacks queued by it, as soon as that code finishes.\n• A long loop blocks everything. Nothing else can run until it ends, including clicks on a web page, so the page freezes.\n\nSo `await` is not a freeze. While one function is paused, the loop is free to run other callbacks.",
+    usage: [
+      { code: 'console.log("A")\nsetTimeout(() => console.log("B timer"), 0)\nPromise.resolve().then(() => console.log("C promise"))\nconsole.log("D")', out: 'A\nD\nC promise\nB timer', note: 'Ordinary code first (A, D). Then the promise callback. Then the timer, even with a delay of 0.' },
+    ],
+    uses: ['Predicting the order in which logs appear.', 'Understanding why a slow loop freezes a page.', 'Knowing why `await` does not block the whole program.'],
+    when: ['Output appears in a surprising order.', 'A page or script freezes during heavy work.'],
+    whenNot: ["Don't run huge loops or heavy calculations on the main thread of a page. Break the work into pieces or move it elsewhere.", "Don't rely on `setTimeout(fn, 0)` for exact timing. It only means \"after the current code\"."],
+    mistakes: [
+      { prose: 'Expecting `setTimeout(fn, 0)` to run immediately.', why: 'It waits until the current code finishes and the stack is empty.' },
+      { prose: 'Running a very long loop and wondering why nothing else responds.', why: 'One thread. While the loop runs, the event loop cannot run any other callback.' },
+      { prose: 'Assuming timers and promises run in the order written.', why: 'Promise callbacks queued by the current code jump ahead of timers queued by it: they run as soon as that code finishes.' },
+    ],
+    tips: ['Sort each line into "now" (ordinary code) or "later" (callbacks), then trace.', 'If a script feels frozen, look for a loop that never lets the stack empty.'],
+    related: ['call-stack', 'promise', 'async-await', 'concurrency'],
+  },
+
+  concurrency: {
+    term: 'Concurrency and parallelism', short: 'Tasks taking turns versus tasks running at the same moment.',
+    what: '**Concurrency** means several tasks are in progress at once, taking turns. Picture one cook watching three pots. **Parallelism** means tasks literally run at the same moment on different CPU cores. Picture three cooks, one pot each.',
+    how: "JavaScript gets concurrency from the **event loop**. While one task waits (a fetch, a timer), another can run.\n\nThe difference shows up in how you write waits:\n• `await` one request after another: each one waits for the one before. Total time is the **sum**.\n• `Promise.all([...])`: start them together and wait for all. Total time is about the **slowest one**.\n\nReal parallelism in Node needs **worker threads** or separate **processes**. Your own JavaScript code still runs one thing at a time.",
+    usage: [
+      { code: 'const wait = () => new Promise(r => setTimeout(r, 100))\nconst start = Date.now()\nawait wait()\nawait wait()\nconsole.log(Date.now() - start)', out: '200', note: 'One after the other: 100 + 100. Real runs land within a few ms of this.' },
+      { code: 'const wait = () => new Promise(r => setTimeout(r, 100))\nconst start = Date.now()\nawait Promise.all([wait(), wait()])\nconsole.log(Date.now() - start)', out: '100', note: 'Started together, so the total is about the slowest one.' },
+    ],
+    uses: ['Fetching several things that do not depend on each other.', 'Cutting a page load from the sum of the waits to the longest wait.'],
+    when: ['Two or more slow jobs do not need each other\'s results.'],
+    whenNot: ["Don't use Promise.all when step two needs the answer from step one. Those must go in order.", "Don't start hundreds of requests at once. Servers rate-limit you. Do them in small groups."],
+    mistakes: [
+      { prose: 'Awaiting independent requests one by one in a loop.', why: 'It works, but it is slow: the waits add up. Start them all, then `await Promise.all(...)`.' },
+      { prose: 'Thinking Promise.all makes your JavaScript run on several cores.', why: 'It overlaps the waiting, not the computing. Heavy calculations still run one at a time.' },
+    ],
+    tips: ['Ask: does this step need the result of that one? If not, start them together.', 'Waiting overlaps well. Calculating does not, unless you use workers.'],
+    related: ['promise', 'async-await', 'event-loop', 'process'],
+  },
+
+  'race-condition': {
+    term: 'Race conditions', short: 'A bug where the result depends on which overlapping task finishes first.',
+    what: 'A **race condition** is a bug where two tasks overlap and the outcome depends on which one finishes first, or on how their steps interleave. It often works in testing and fails now and then in real use, which makes it hard to catch.',
+    how: "Two classic cases:\n\n**Lost update.** Two requests both read a saved counter (5). Both add 1. Both save 6. You expected 7. One update was lost, because the second read happened before the first save.\n\n**Stale response.** In a search box, you type \"ice\", then \"ice axe\". The slow answer for \"ice\" arrives after the answer for \"ice axe\" and overwrites it. The screen shows the wrong results.\n\nFixes:\n• do the update in **one step** on the server or database (\"add 1\" instead of \"read, then write\")\n• keep only the **latest request's** answer and ignore older ones\n• make tasks **wait their turn**, so they cannot overlap",
+    usage: [
+      { code: 'let count = 5\nasync function add() {\n  const n = count\n  await new Promise(r => setTimeout(r, 10))\n  count = n + 1\n}\nawait Promise.all([add(), add()])\nconsole.log(count)', out: '6', note: 'Both read 5 before either saved. Two additions, one result: an update was lost.' },
+      { code: 'count = 5\nawait add()\nawait add()\nconsole.log(count)', out: '7', note: 'Making them wait their turn gives the right answer.' },
+    ],
+    uses: ['Spotting bugs that appear only sometimes.', 'Designing saves so that two users editing at once do not erase each other.'],
+    when: ['Two things can read and change the same data at overlapping times.', 'Responses may arrive in a different order than the requests were sent.'],
+    whenNot: ["Don't assume it can't happen because it worked when you tried it. Timing changes between runs and machines.", "Don't fix it by adding a delay. That only hides it on your machine."],
+    mistakes: [
+      { prose: 'Reading a value, waiting, then writing back a value based on the old read.', why: 'Something else may have changed it while you waited. Your write erases that change.' },
+      { prose: 'Showing whatever response arrives last in a search box.', why: 'The last to arrive is not always the last one you asked for. Track which request is newest.' },
+      { prose: 'Using a bigger delay to "fix" a sometimes-wrong result.', why: 'The bug is still there. It just fails less often, which is worse.' },
+    ],
+    tips: ['Whenever you read, wait, then write, ask what could change in between.', 'Let the database do \"add 1\" itself. One step cannot be interrupted halfway.'],
+    related: ['promise', 'async-await', 'concurrency', 'event-loop'],
+  },
 }

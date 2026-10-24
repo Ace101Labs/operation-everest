@@ -6,12 +6,13 @@
 export const campJ = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: 'J-1', type: 'learn', mode: 'phone', xp: 30, mins: 55,
+    id: 'J-1', type: 'learn', mode: 'phone', xp: 30, mins: 58,
     title: 'TypeScript: adding types to your code',
-    teaches: ['typescript', 'type-annotation', 'type-errors'],
+    teaches: ['typescript', 'type-annotation', 'type-errors', 'static-typing'],
     idea: [
       { h: 'Three tools for catching mistakes early', b: 'You\'ve reached The Balcony, the ledge at 8,400 m where climbers stop, swap oxygen bottles and check everything before the final push. This camp is the same for your code: three tools professionals use to catch mistakes **before** they reach a user.\n\n• **TypeScript** catches the wrong kind of value\n• **React** keeps the screen in sync with your data\n• **Tests** prove your code gives the right answers\n\nFirst up: TypeScript. Remember `"5" + 1` giving `"51"` back in Base Camp? JavaScript lets any value go anywhere, so mistakes like that only show up when the code runs, sometimes in front of a user. TypeScript adds **labels** (types) that a checker reads **before** anything runs.' },
       { h: 'Types are not checked in this game', b: 'In this game your TypeScript runs with the types **stripped off first**, the same way many real build tools do it. **Nothing checks the types here.** A wrong type simply runs like plain JavaScript.\n\nOn a real computer, your **editor** (red squiggles as you type) and the **`tsc`** command do the checking. So every type error in this camp is **real `tsc` output**, shown to you in the cards, examples and quizzes. Learn to read them here, and you\'ll recognise them the first time your editor shows one.' },
+      { h: "Under the hood: when are types checked?", b: "Every language checks types at some point. **Dynamically typed** languages like JavaScript and Python check while the program runs, so a mistake like multiplying text by nothing turns up as a crash or NaN in front of a user. **Statically typed** languages like TypeScript, Java, Go and Rust check before the program runs, so many of those mistakes become red lines in your editor instead.\n\nThe checker can often work types out by itself (`let height = 8400` is clearly a number): that's **type inference**. One catch: TypeScript's types are erased when it becomes JavaScript, so data arriving while the app runs (from a form or an API) is never checked by them. You still validate that yourself." },
     ],
     example: {
       intro: 'A TypeScript file, and what the real checker says about it. Tap through it.',
@@ -73,6 +74,7 @@ console.log(addAltitude(typed, 450))
       'Types are **stripped** before running. They catch mistakes in your code, not bad data arriving at run time.',
       'Read **type errors** as file(line,col), code, sentence. "Is not assignable to" = "doesn\'t fit into."',
       'In this game nothing checks types. On a real computer: `npm install --save-dev typescript`, then `npx tsc --noEmit`.',
+      "**Static typing** checks types before the code runs; **dynamic typing** checks while it runs. TypeScript's types vanish at runtime, so validate outside data.",
     ],
     questions: [
       { concept: 'typescript', kind: 'mc', q: 'What does TypeScript add to JavaScript?', options: ['A compiler setting that makes your code run much faster', 'Type labels that a checker reads before the code runs', 'A runtime guard that checks each value\'s type while code runs', 'Extra built-in functions that validate user input for you'], answer: 1, why: 'Types plus a checker (tsc). The code itself runs as normal JavaScript.' },
@@ -84,6 +86,7 @@ console.log(addAltitude(typed, 450))
       { concept: 'typescript', kind: 'mc', q: '`tsc --noEmit` reports zero errors. Which problem could STILL be there?', options: ['A string passed to a number parameter', 'A logic bug, or bad data arriving from an API while it runs', 'A missing required property in an object you wrote', 'A misspelled property name'], answer: 1, why: 'Types check your code\'s shapes, not its logic, and they\'re gone by the time live data arrives.' },
       { concept: 'typescript', kind: 'type', q: 'Type the npm command that installs TypeScript as a dev dependency.', accept: ['npm install --save-dev typescript', 'npm install -D typescript', 'npm i -D typescript', 'npm i --save-dev typescript', 'npm install typescript --save-dev', 'npm install typescript -D', 'npm i typescript -D', 'npm i typescript --save-dev'], why: '`npm install --save-dev typescript` (or `-D` for short). Then `npx tsc` uses that version.' },
       { concept: "type-errors", kind: "mc", q: "Which file, line and column do you open first, and what is the problem?", code: "$ tsc\nsrc/gear.ts(4,7): error TS2322: Type 'string' is not assignable to type 'number'.", options: ["Line 7, column 4 of src/gear.ts: a number was given where text is expected", "Line 4, column 7 of src/gear.ts: text was given where a number is expected", "Line 4 of tsc: it could not find the file src/gear.ts", "Line 4, column 7 of src/gear.ts: the type string does not exist"], answer: 1, why: "The path and `(line,column)` come first, then the code and the message. \"Type 'string' is not assignable to type 'number'\" reads: a string was given where a number is expected." },
+      { concept: "static-typing", kind: "mc", q: "An API sends `{\"kg\": \"4\"}` (text) to a function typed `(kg: number)`. TypeScript compiled with zero errors. What happens at runtime?", options: ["TypeScript converts \"4\" to 4", "Nothing stops it: types are erased at runtime, so the function gets the text \"4\"", "The app refuses to start", "The API call fails"], answer: 1, why: "TypeScript only checks code it can see before running. Data from outside must be validated while the app runs." },
     ],
   },
 
@@ -294,11 +297,12 @@ function App() {
 
   // ───────────────────────────── Trail 4 ─────────────────────────────
   {
-    id: 'J-4', type: 'learn', mode: 'phone', xp: 35, mins: 65,
+    id: 'J-4', type: 'learn', mode: 'phone', xp: 35, mins: 68,
     title: 'Props, state and events',
-    teaches: ['props', 'state', 'react-events'],
+    teaches: ['props', 'state', 'react-events', 'immutability'],
     idea: [
       { h: 'Props, state and events', b: 'Three ideas make components interactive:\n• **Props** are a component\'s inputs, passed in like HTML attributes: `<GearItem name="Rope" kg={4} />`. Same component, different data.\n• **State** is a component\'s memory: a count, a list, whether a menu is open. Created with `useState`.\n• **Events** connect taps to code: `onClick={…}`.\n\nThe loop every React app follows: **an event calls a state setter → React re-renders → the screen shows the new state.** You never touch the DOM yourself.' },
+      { h: "Under the hood: why you never change state in place", b: "React decides whether to redraw by comparing the old state to the new one, and for arrays and objects it compares **references** (Camp I). If you `push` onto the existing array, it's still the same array at the same address, so React may decide nothing changed and the screen stays stale. Instead you make a new copy with the change: `setGear([...gear, item])`, or `{ ...climber, camp: 3 }` for an object.\n\nNot changing data in place is called **immutability**. It also makes code easier to reason about, because a value you're holding can't be changed behind your back, and it makes features like undo easy: just keep the old copies." },
     ],
     example: {
       intro: 'Props flowing down, state changing on a click. Tap through it.',
@@ -375,6 +379,7 @@ function App() {
       'Replace state, never change it: `[...items, x]`, `items.filter(…)`, `{ ...obj, key: value }`.',
       '**Events**: `onClick={() => setValue(…)}`. Pass a function; don\'t call it.',
       'Event → setter → re-render → new screen. You never touch the DOM.',
+      "**Immutability:** make a new copy with the change instead of editing in place. React compares references, so a mutated array may not redraw.",
     ],
     questions: [
       { concept: 'props', kind: 'mc', q: 'How does `GearItem` read the `kg` prop?', code: '<GearItem name="Rope" kg={4} />', options: ['function GearItem(name, kg)', 'function GearItem({ name, kg })', 'function GearItem() { return this.kg }', 'const kg = useState(kg)'], answer: 1, why: 'React passes one props object; destructure the ones you need.' },
@@ -387,6 +392,7 @@ function App() {
       { concept: 'state', kind: 'mc', q: '`packed` is 0. One click runs this handler. What is `packed` on the next render?', code: 'setPacked(packed + 1)\nsetPacked(packed + 1)', options: ['2', '1', '0', 'undefined'], answer: 1, why: '`packed` is a snapshot (0) in both lines. Use `setPacked(p => p + 1)` to stack updates.' },
       { concept: 'props', kind: 'mc', q: '`<Bottle litres="4" />`. Inside Bottle, what is `litres + 1`?', options: ['5', '"41"', 'NaN', 'An error'], answer: 1, why: 'Quotes pass a string. Use `litres={4}`.' },
       { concept: "props", kind: "mc", q: "Line 6 of CampList.jsx is `{camps.map(c => <li key={c.id}>{c.name}</li>)}`. What does this error mean?", code: "Uncaught TypeError: Cannot read properties of undefined (reading 'map')\n    at CampList (CampList.jsx:6:24)\n    at renderWithHooks (react-dom.development.js:16305:18)", options: ["camps is undefined: CampList was used without a camps prop", "The camps list is empty, so there is nothing to map", "map is not allowed inside a component", "Each li is missing its key"], answer: 0, why: "\"Cannot read properties of undefined (reading 'map')\" means the thing before `.map` is undefined. The first line in your own file (CampList.jsx:6) is the one to open. Check that the parent passes `camps={...}`. An empty list would not crash." },
+      { concept: "immutability", kind: "mc", q: "A handler runs `items.push(\"Stove\"); setItems(items)` and the list on screen doesn't update. Why?", options: ["push is broken in React", "It's the same array (same reference), so React sees no change", "setItems only accepts strings", "React needs a page reload"], answer: 1, why: "React compares the old and new references. Pass a new array instead: setItems([...items, \"Stove\"])." },
     ],
   },
 
@@ -495,12 +501,13 @@ function App() {
 
   // ───────────────────────────── Trail 6 ─────────────────────────────
   {
-    id: 'J-6', type: 'learn', mode: 'phone', xp: 35, mins: 60,
+    id: 'J-6', type: 'learn', mode: 'phone', xp: 35, mins: 63,
     title: 'Automated tests',
-    teaches: ['testing', 'unit-test', 'assertion', 'test-first'],
+    teaches: ['testing', 'unit-test', 'assertion', 'test-first', 'test-pyramid'],
     idea: [
       { h: 'What automated tests are', b: '**Automated tests** are small programs that call your functions with known inputs and check the answers. One command runs hundreds of checks in seconds, so you can change code and find out right away if something broke.\n\nTypeScript catches the **wrong kind** of value. Tests catch the **wrong answer**: `return a - b` in an add function passes every type check and fails the first test.' },
       { h: 'The built-in test runner, and real ones', b: 'This game has a tiny built-in runner: `test(name, fn)` plus `expect(value).toBe(…)` and friends. Tests run after the rest of your code, and each prints `✓ name` or `✗ name: reason`.\n\nOn a real computer you\'ll use **node:test** (built into Node, run with `node --test`) or **Vitest** (popular in Vite projects, run with `npx vitest`). Same ideas, more detailed output.' },
+      { h: "Under the hood: the test pyramid", b: "Professional teams use three layers of tests, shaped like a pyramid. At the bottom, **lots of unit tests**: one function at a time, milliseconds each. In the middle, **fewer integration tests**: several parts working together, like a route plus a test database. At the top, **a few end-to-end tests**: a real browser clicking through the app, slow and easily upset by small changes.\n\nThey all run automatically on every push, which is called **continuous integration** (CI), so a broken change is caught before it reaches users. A red CI run should block a deploy, the same way a non-zero exit code did at Base Camp." },
     ],
     example: {
       intro: 'Two unit tests in the game\'s runner. Tap through it.',
@@ -567,6 +574,7 @@ test("enough oxygen means go", () => {
       '**Assertions**: `toBe` for numbers/strings/booleans, `toEqual` for arrays/objects, `toThrow` with a function.',
       '**Test-first**: red (failing test) → green (simplest code) → refactor. Always see it fail first.',
       'Real tools: `node --test` (built in), Vitest (`npx vitest`). Coverage shows what ran, not what was checked.',
+      "**Test pyramid:** many fast unit tests, fewer integration tests, a few slow end-to-end tests, all run on every push (CI).",
     ],
     questions: [
       { concept: 'testing', kind: 'mc', q: 'What is an automated test?', options: ['A person clicking through the app by hand and noting what breaks', 'Code that runs your code with known inputs and checks the results', 'A checklist a reviewer follows by hand before each release goes out', 'A script that deploys your code to a test server and watches it run'], answer: 1, why: 'Repeatable checks, run by a command.' },
@@ -580,6 +588,7 @@ test("enough oxygen means go", () => {
       { concept: 'assertion', kind: 'mc', q: 'Why does this fail: `✗ adds fractions: expected 0.3 but got 0.30000000000000004`?', options: ['The test runner rounds numbers badly; update it to a newer version', 'Decimal maths in binary isn\'t exact; use toBeCloseTo or whole numbers', 'toBe rounds both values to one decimal place before it compares them', 'The code added 0.1 and 0.2 in the wrong order; swap the two operands'], answer: 1, why: '0.1 + 0.2 really is 0.30000000000000004 in JavaScript.' },
       { concept: "assertion", kind: "mc", q: "What does this test output tell you?", code: "✓ adds up every item\n✗ total adds weights: expected 7.5 but got 7.4\n✓ an empty pack weighs nothing\n\nTests: 1 failed, 2 passed, 3 total", options: ["All three tests need to be rewritten", "The runner is broken, since two tests passed", "The test expects 7.4 but the code returned 7.5", "The code returned 7.4 where the test expects 7.5: open that test and the function"], answer: 3, why: "Read `expected` as what the test wants and `got` as what the code returned. One test fails, so start from its name. Either the function has a bug or the number in the test is wrong, and the test name tells you which behaviour to check." },
       { concept: "test-first", kind: "mc", q: "You wrote these tests before the function. What does this first run tell you?", code: "✗ 100 m needs 2 ropes: ropeNeeded is not defined\n✗ 120 m needs 3 ropes: ropeNeeded is not defined\n✗ 0 m needs no rope: ropeNeeded is not defined", options: ["The tests are written wrongly and must be deleted", "Expected: the function does not exist yet, so write it and run again", "The runner needs to be updated before it can run tests", "The tests passed, since nothing else failed"], answer: 1, why: "In test-first work the first run should fail. \"Not defined\" means the tests reached a function that has not been written yet. Create it, then watch the failures turn to passes." },
+      { concept: "test-pyramid", kind: "mc", q: "Why do teams write many unit tests but only a few end-to-end tests?", options: ["End-to-end tests are illegal in some countries", "Unit tests are fast and pinpoint the broken function; end-to-end tests are slow and break for small reasons", "Unit tests check more of the app", "End-to-end tests can't find bugs"], answer: 1, why: "Cheap, fast tests at the bottom; a few expensive whole-app checks at the top." },
     ],
   },
 
@@ -926,6 +935,7 @@ function App() {
       { concept: 'react-events', kind: 'mc', q: 'In React, `onChange` on a text input fires…', options: ['only when you leave the box', 'on every keystroke', 'only when Enter is pressed', 'only after the user pauses typing'], answer: 1 },
       { concept: 'assertion', kind: 'mc', q: 'The runner prints `✗ packs a list: expected [ \'rope\', \'axe\' ] but got [ \'rope\' ]`. What happened?', options: ['The test expected rope and axe, but the code returned only rope', 'The test expected only rope, but the code returned both rope and axe', 'The arrays hold the same items, but in a different order, so toEqual failed', 'The test passed: the message just lists what each array contained'], answer: 0 },
       { concept: 'test-first', kind: 'mc', q: 'Bug report: `ropeNeeded(1)` returns 0. The test-first fix starts with…', options: ['changing Math.floor to Math.ceil immediately', 'a test expecting `ropeNeeded(1)` to be 1, run to watch it fail', 'deleting the old tests so the bug stops showing up', 'raising the coverage target to cover that line'], answer: 1 },
+      { concept: "immutability", kind: "mc", q: "Which keeps React state immutable when removing item 2 from `list`?", options: ["list.splice(2, 1); setList(list)", "setList(list.filter((_, i) => i !== 2))", "delete list[2]", "list.length = 2"], answer: 1, why: "filter returns a new array without changing the old one." },
     ],
   },
 ]

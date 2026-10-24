@@ -15,12 +15,13 @@ const PAGE_HEAD = (title, extra = '') => `<!doctype html>
 export const camp8 = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: '8-1', type: 'learn', mode: 'phone', xp: 30, mins: 45,
+    id: '8-1', type: 'learn', mode: 'phone', xp: 30, mins: 48,
     title: 'What a web page is made of',
-    teaches: ['html', 'html-element', 'html-attribute', 'devtools'],
+    teaches: ['html', 'html-element', 'html-attribute', 'devtools', 'dns'],
     idea: [
       { h: 'Three languages, one page', b: 'So far your programs have printed their results in the terminal. Now you will build for the **browser**, where most people use software.\n\nEvery web page is three languages working as one team:\n• **HTML** is the skeleton: what is on the page\n• **CSS** is the clothing: how it looks\n• **JavaScript** is the muscles: what happens when you tap\n\nThis trail starts with HTML. You\'ll learn the tags, the attributes that configure them, and the browser\'s **devtools**, which let you inspect any page.' },
       { h: 'HTML never shows errors', b: 'In JavaScript, one missing quote stops everything with a SyntaxError. HTML is different: the browser **never** refuses a page. It guesses what you meant and carries on.\n\nThat means mistakes hide. The page can *look* nearly right while the structure underneath is wrong. So you\'ll learn to inspect the real structure instead of judging by eye.' },
+      { h: "Under the hood: what happens when you type an address", b: "Computers find each other by number, an **IP address** like `104.20.23.154`. People use names. So step one is **DNS**, the internet's address book: your device asks a resolver, which asks the root servers, then the servers for `.com`, then the site's own, and gets back the number. Answers are remembered (cached) for a while, which is why a DNS change can take minutes or hours to reach everyone.\n\nThen the browser connects to that address, sets up an encrypted **HTTPS** connection, sends an HTTP request for the page, and gets HTML back. Every page you have ever opened went through those steps in a fraction of a second." },
     ],
     example: {
       intro: 'A tiny but real web page. Tap through it line by line.',
@@ -71,6 +72,7 @@ export const camp8 = [
       'Elements nest like boxes and close in reverse order.',
       '**Attributes** like `href`, `src`, `alt`, `id` and `class` go in the opening tag as `name="value"`.',
       'The **devtools** (right-click → Inspect) show the real, live structure of any page. Edits there are temporary.',
+      "**DNS** turns a name like example.com into an IP address. Then: connect, set up HTTPS, request the page, get HTML back.",
     ],
     questions: [
       { concept: 'html', kind: 'mc', q: 'What is HTML\'s job on a web page?', options: ['Making the page interactive, so buttons and menus respond to clicks', 'Describing what is on it: headings, paragraphs, links, images', 'Choosing the colours, fonts and spacing that make the page look good', 'Adding animations and hover effects when the visitor moves the mouse'], answer: 1, why: 'HTML is the structure. CSS does looks, JavaScript does behaviour.' },
@@ -83,6 +85,8 @@ export const camp8 = [
       { concept: 'devtools', kind: 'type', q: 'On a computer, you right-click any part of a web page. Which menu item opens the devtools on that element? (one word)', accept: ['Inspect', 'inspect', 'Inspect Element', 'inspect element'], why: '**Inspect** jumps straight to that element in the Elements panel.' },
       { concept: 'devtools', kind: 'mc', q: 'You change a heading\'s text in the devtools, then reload the page. What do you see?', options: ['Your change, saved', 'The original text: devtools edits are temporary', 'Your change, kept until you close the tab', 'The file\'s text with your change merged in'], answer: 1, why: 'The devtools edit the live page in memory, not your file.' },
       { concept: 'devtools', kind: 'mc', q: "The page loads with no styling. In DevTools, the Network tab lists these requests. What does it tell you?", code: "Name         Status   Type\nindex.html   200      document\nstyle.css    404      stylesheet\napp.js       200      script", options: ["The browser blocked style.css because it has a CSS typo", "app.js changed the page and removed the styles", "The browser asked for style.css, but the server has no file at that path", "index.html loaded, so the stylesheet loaded too"], answer: 2, why: "Status 404 means not found. Check the `href` in the `<link>` tag and that the file is really where it says." },
+      { concept: "dns", kind: "mc", q: "You type `example.com` and press Enter. What has to happen before the browser can even ask for the page?", options: ["The page is downloaded from your history", "DNS turns the name into an IP address so the browser knows which computer to connect to", "The CSS loads", "The server sends a 200 status"], answer: 1, why: "Names are for people. Computers connect by IP address, so the name is looked up first." },
+      { concept: "dns", kind: "mc", q: "You point your domain at a new server. Some people still reach the old one for an hour. Why?", options: ["The new server is broken", "DNS answers are cached for a while, so some resolvers still hold the old address", "Their browsers are out of date", "HTTPS takes an hour to start"], answer: 1, why: "Each DNS answer comes with a time to live (TTL). Until it runs out, cached copies keep giving the old address." },
     ],
   },
 
@@ -178,12 +182,13 @@ export const camp8 = [
 
   // ───────────────────────────── Trail 3 ─────────────────────────────
   {
-    id: '8-3', type: 'learn', mode: 'phone', xp: 30, mins: 50,
+    id: '8-3', type: 'learn', mode: 'phone', xp: 30, mins: 53,
     title: 'CSS: rules, selectors and the box model',
-    teaches: ['css', 'css-selector', 'box-model'],
+    teaches: ['css', 'css-selector', 'box-model', 'rendering'],
     idea: [
       { h: 'What CSS does', b: 'HTML says what\'s on the page. **CSS** says how it looks: colours, fonts, sizes, spacing. Because they\'re separate, you can redesign a whole site without touching a word of its content.\n\nThis trail covers the three things you need for almost every style: **rules** (how CSS is written), **selectors** (which elements a rule hits) and the **box model** (how every element takes up space).' },
       { h: 'CSS fails silently', b: 'Like HTML, CSS has no error messages. If you misspell a property or forget a semicolon, the browser skips that line. The only sign is that nothing changed.\n\nWhen a style "doesn\'t work," inspect the element in the devtools. Skipped and losing declarations show up crossed out.' },
+      { h: "Under the hood: how the browser draws the page", b: "Turning text into pixels takes several steps, many times a second. The browser **parses** the HTML into the DOM tree and the CSS into rules, works out which rules apply to each element, does **layout** (where everything goes and how big it is), then **paints** the pixels.\n\nThe order matters for speed. Change something's size or position and the browser has to redo layout for everything it might push around. Change only colour, or move things with `transform`, and it can skip that work. That's why smooth animations use `transform`, and why a `<script>` in the `<head>` without `defer` makes the page appear later: the browser stops reading the HTML until that script has downloaded and run." },
     ],
     example: {
       intro: 'CSS in a `<style>` element, styling some HTML. Tap through it.',
@@ -246,6 +251,7 @@ export const camp8 = [
       'When rules clash, the more **specific** selector wins (id > class > type); if they tie, the **later** one wins.',
       'The **box model**: content, padding (inside), border (needs a style), margin (outside).',
       'Use `box-sizing: border-box` so `width` includes padding and border.',
+      "The browser **renders** in steps: parse HTML and CSS, style, layout, paint. Size and position changes redo layout; `transform` and colour are cheaper.",
     ],
     questions: [
       { concept: 'css', kind: 'mc', q: 'In `h1 { color: red; }`, what is `color`?', options: ['The selector', 'The property', 'The value', 'A class'], answer: 1, why: '`h1` is the selector, `color` the property, `red` the value.' },
@@ -258,6 +264,7 @@ export const camp8 = [
       { concept: 'box-model', kind: 'mc', q: 'With default sizing, how wide is this box on screen?', code: '.box { width: 200px; padding: 20px; border: 2px solid black; }', options: ['200px', '220px', '242px', '244px'], answer: 3, why: '200 + 20 + 20 + 2 + 2 = 244. `box-sizing: border-box` would make it exactly 200.' },
       { concept: 'box-model', kind: 'mc', q: '`.card { border-width: 4px; }` shows no border. What\'s missing?', options: ['A colour value, like `red`', 'A border style, like `solid`', 'A border-radius, like `8px`', 'Padding, like `padding: 4px`'], answer: 1, why: 'The style defaults to none, which means no border. Colour is optional (it defaults to the text colour).' },
       { concept: 'css', kind: 'mc', q: "In DevTools the Styles panel shows this. The card has no colour. What does the warning tell you?", code: ".card {                    style.css:14\n  display: flex;\n  colour: red;   <- crossed out, with a warning: Unknown property name\n}", options: ["The property is spelled wrong: CSS says color", "The value red isn't a valid colour in CSS", "display: flex has to come after the colour line", "The rule needs a semicolon after the last line"], answer: 0, why: "A crossed-out line means the browser ignored it. 'Unknown property name' means the property isn't one it knows." },
+      { concept: "rendering", kind: "mc", q: "An animation moves a box with `left: 10px`, `11px`, `12px`… and stutters on phones. What's the usual fix?", options: ["Use bigger steps", "Move it with `transform: translateX(…)`, which skips the layout step", "Add more CSS rules", "Use a table instead of a div"], answer: 1, why: "Changing left forces layout every frame. transform is applied after layout, so the browser does far less work." },
     ],
   },
 
@@ -348,12 +355,13 @@ export const camp8 = [
 
   // ───────────────────────────── Trail 5 ─────────────────────────────
   {
-    id: '8-5', type: 'learn', mode: 'phone', xp: 30, mins: 45,
+    id: '8-5', type: 'learn', mode: 'phone', xp: 30, mins: 48,
     title: 'The DOM: changing the page with JavaScript',
     teaches: ['dom', 'query-selector'],
     idea: [
       { h: 'What the DOM is', b: 'When the browser reads your HTML, it builds a tree of objects in memory, one per element. That tree is the **DOM**, and the screen is drawn from it. Change the tree with JavaScript and the page updates instantly, with no reload.\n\nIt\'s the same JavaScript you\'ve been writing in Node, plus one new global object: `document`, the whole page.' },
       { h: 'Select, then change', b: 'Almost every browser script follows two steps:\n1. **Select** the element you want with `document.querySelector`, using the same selectors you learned in CSS\n2. **Change** it: its text, its classes, its attributes, or add new elements next to it' },
+      { h: "Under the hood: the page is a tree", b: "The DOM is a **tree**, the same shape as the folders under `/` at Base Camp: `html` at the root, `head` and `body` as its children, and every element inside its parent. `querySelector` searches that tree from the top, visiting element after element until it finds a match.\n\nTrees are one of the most important structures in computer science. Once you can picture this one, you can picture the others: folders, Git history, JSON data, even the way a program's code is read by the computer." },
     ],
     example: {
       intro: 'A script that grabs elements and changes them. Tap through it.',
@@ -426,17 +434,19 @@ export const camp8 = [
       { concept: 'query-selector', kind: 'mc', q: 'How do you count how many items have both classes `item` and `packed`?', options: ['document.querySelector(".item.packed").length', 'document.querySelectorAll(".item.packed").length', 'document.querySelectorAll(".item .packed").count', 'document.count(".packed")'], answer: 1, why: 'querySelectorAll returns a NodeList, which has `.length`. No space between the two classes.' },
       { concept: 'query-selector', kind: 'mc', q: "The console shows this when the page loads. The line it points at is `btn.addEventListener('click', go)`. What is null?", code: "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at app.js:3:5\n\n// app.js\n// 1  const btn = document.querySelector('#start')\n// 2\n// 3  btn.addEventListener('click', go)", options: ["go: the function was never defined", "addEventListener: the browser removed it", "btn: querySelector found nothing that matches #start", "click: the event name is misspelled"], answer: 2, why: "'Cannot read properties of null' means the thing before the dot is null. querySelector returns null when nothing matches: check the id, and that the script runs after the element exists." },
       { concept: 'reference-error', kind: 'mc', q: "The console shows this. What does it mean?", code: "Uncaught ReferenceError: score is not defined\n    at app.js:7:13", options: ["Line 7 uses a name, score, that no code has created in that scope", "Line 7 divides by zero", "The variable score is null", "The page has not finished loading"], answer: 0, why: "ReferenceError means the name doesn't exist where it was used: a typo, a missing let/const, or a variable declared in another scope." },
+      { concept: "dom", kind: "mc", q: "In `<body><ul><li>Rope</li></ul></body>`, what is the `<ul>` to the `<li>`?", options: ["Its child", "Its parent", "Its sibling", "Unrelated"], answer: 1, why: "The DOM is a tree. The li sits inside the ul, so the ul is its parent and the li is its child." },
     ],
   },
 
   // ───────────────────────────── Trail 6 ─────────────────────────────
   {
-    id: '8-6', type: 'learn', mode: 'phone', xp: 35, mins: 50,
+    id: '8-6', type: 'learn', mode: 'phone', xp: 35, mins: 53,
     title: 'Events and forms',
-    teaches: ['events', 'forms'],
+    teaches: ['events', 'forms', 'event-bubbling'],
     idea: [
       { h: 'Events', b: 'So far your scripts run once, as the page loads. Real pages wait for people: a tap, a key press, a form being sent. An **event** is the browser reporting that something just happened. `addEventListener` tells the browser which function to run when an event happens on an element.' },
       { h: 'Forms', b: 'A **form** is how a page collects input: a name, an email, a new item for a list. With the right HTML (a `<label>` for every input, the right `type`), a form already works for everyone, on every keyboard, before you write any JavaScript.' },
+      { h: "Under the hood: clicks travel up the tree", b: "When you click an element, the click doesn't stay there. It fires on that element, then on its parent, then its parent's parent, all the way up to the document. That's **event bubbling**.\n\nIt lets one listener handle a whole list: put a single click listener on the `<ul>` and check `e.target` to see which item was clicked. It keeps working for items you add later, too. `e.stopPropagation()` stops the event climbing any further." },
     ],
     example: {
       intro: 'The real-world pattern: a labelled form, a submit listener, and a click listener. Tap through it.',
@@ -500,6 +510,7 @@ export const camp8 = [
       'The handler receives an event object: `e.target` is the element, `e.preventDefault()` cancels the default action.',
       'Forms: `<form>`, a `<label for>` for every `<input id>`, the right `type`, a submit button. Placeholders are not labels.',
       'Read `input.value` inside the handler. It\'s always a string. Browser validation is a convenience; servers must check again.',
+      "**Event bubbling:** a click fires on the element, then on each parent up the tree, so one listener on a list can handle every item.",
     ],
     questions: [
       { concept: 'events', kind: 'mc', q: 'Which line makes `pack` run every time the button is clicked?', options: ['btn.addEventListener("click", pack())', 'btn.addEventListener("click", pack)', 'btn.addEventListener(click, pack)', 'btn.click = pack()'], answer: 1, why: 'Pass the function itself. `pack()` would run it once, immediately.' },
@@ -511,6 +522,7 @@ export const camp8 = [
       { concept: 'forms', kind: 'mc', q: 'An input with `type="number"` holds 5. What does `input.value + 1` give?', options: ['6', '"51"', 'NaN', 'An error'], answer: 1, why: '`.value` is always a string, so + glues text. Use `Number(input.value) + 1`.' },
       { concept: 'forms', kind: 'mc', q: 'Why isn\'t a `placeholder` enough on its own?', options: ['It can\'t be styled with CSS, so you can\'t match it to the design', 'It disappears once you type, is often faint, and isn\'t a reliable label for screen readers', 'It only works on `type="text"` inputs, so other field types ignore it', 'It stops the field being reached with Tab, so keyboard users skip past it'], answer: 1, why: 'Use a real `<label>`; keep placeholders for small hints.' },
       { concept: 'events', kind: 'mc', q: "You click the button and the console shows this. The HTML is `<button onclick=\"go()\">`. What do you check?", code: "Uncaught ReferenceError: go is not defined\n    at HTMLButtonElement.onclick (index.html:14:1)", options: ["That the button has an id attribute", "That click is spelled in lowercase", "That a function named go exists, and its script file loaded", "That the button is inside a form"], answer: 2, why: "The click worked and the browser tried to run go(), but found no such name. Look for a typo, or a script tag with a wrong path." },
+      { concept: "event-bubbling", kind: "mc", q: "A list has 500 items, and new ones are added all the time. What's the simplest way to react to clicks on any item?", options: ["Add a listener to each item, and again for each new one", "Add one listener to the list and use `e.target` to see which item was clicked", "Use setInterval to check for clicks", "It can't be done"], answer: 1, why: "Clicks bubble up to the list, so one listener catches them all, including for items added later." },
     ],
   },
 
@@ -844,6 +856,8 @@ export const camp8 = [
       { concept: 'dom', kind: 'mc', q: 'What does this print in the console when the script is in the `<head>`?', code: '<head><script>\n  document.querySelector("#status").textContent = "Hi"\n</script></head>', options: ['Nothing; it works', 'TypeError: Cannot set properties of null (setting \'textContent\')', 'TypeError: Cannot read properties of null (reading \'textContent\')', 'ReferenceError: status is not defined'], answer: 1 },
       { concept: 'events', kind: 'mc', q: 'Why does this button do nothing when clicked?', code: 'btn.addEventListener("click", save())', options: ['The event name should be "onclick" inside addEventListener, not "click"', 'save() runs once immediately; its result (undefined) is what was attached', 'Buttons can\'t have listeners added to them from JavaScript this way', 'It needs event.preventDefault() first or the click is swallowed'], answer: 1 },
       { concept: 'forms', kind: 'mc', q: 'Your form has `required` on every field. Do you still need checks on the server?', options: ['No, the browser blocks bad input, so the server never receives any', 'Yes: browser validation can be bypassed in seconds, so the server must check too', 'Only for passwords, because every other field is already protected by required', 'Only on phones, because mobile browsers skip the required checks'], answer: 1 },
+      { concept: "dns", kind: "mc", q: "Your site's server is fine, but nobody can reach `summitgear.example` by name. Opening its IP address directly works. What's the likely problem?", options: ["The HTML is broken", "DNS: the name isn't turning into the right IP address", "The CSS failed", "The browser cache is full"], answer: 1, why: "If the number works and the name doesn't, the name-to-number step is what's broken." },
+      { concept: "event-bubbling", kind: "mc", q: "A click on an item inside a list runs both the item's listener and the list's. Why?", options: ["A bug in the browser", "The click bubbles up from the item to its parents", "Listeners run twice by default", "The list was clicked separately"], answer: 1, why: "Events travel up the DOM tree after firing on the element itself." },
     ],
   },
 ]

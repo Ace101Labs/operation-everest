@@ -182,12 +182,13 @@ app.listen(PORT, () => console.log('Summit Gear API on port ' + PORT))
 export const camp9 = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: '9-1', type: 'learn', mode: 'phone', xp: 30, mins: 55,
+    id: '9-1', type: 'learn', mode: 'phone', xp: 30, mins: 58,
     title: 'Your own server',
-    teaches: ['client-server', 'express', 'route'],
+    teaches: ['client-server', 'express', 'route', 'tcp-ip'],
     idea: [
       { h: 'You are now the server', b: "Until now you've been the one asking: your code called the weather station with `fetch` and read its answers. At the Yellow Band you build the **station itself**: a **server** that waits for requests and answers them.\n\nThe server is the **back end**: the part of an app people never see, holding the shared data, the secrets and the rules. Every page and phone app (the **front end**) is just a client talking to one." },
       { h: 'Express: a package for writing servers', b: "Node can run a server on its own, but it's fiddly. **Express**, the most popular npm package for this, lets you write a whole API in a few lines: make an **app**, add **routes** (\"when someone asks for THIS, answer THAT\"), and **listen** on a port.\n\nYou'll practise on a **practice server** inside the game: a simplified copy of Express. Your code runs, test requests are simulated, and you see each response. The cards also show what happens on a real computer." },
+      { h: "Under the hood: packets, TCP and IP", b: "When a client talks to your server, the message doesn't travel in one piece. It's cut into small **packets**. **IP** (Internet Protocol) stamps each one with the destination address, and routers pass it along hop by hop. Packets can take different routes, arrive out of order, or get lost.\n\n**TCP** sits on top and fixes that: it numbers the packets, puts them back in order and re-sends any that went missing, so your server sees one reliable stream. HTTP rides on top of TCP (the newest version, HTTP/3, uses a protocol called QUIC over UDP instead). And the **port** number (3000 for your dev server, 443 for HTTPS) picks which program on the machine gets the data. Each layer only deals with the one above and below it, which is how the internet keeps working while every part of it changes." },
     ],
     example: {
       intro: 'A complete Express server: two routes. Tap through it.',
@@ -231,6 +232,7 @@ export const camp9 = [
       'A **route** is method + path + handler. The handler sends exactly one response: `res.send`, `res.json`, `res.status(…).json`.',
       'No matching route? Express answers **404** `Cannot GET /path` on its own.',
       'The server never trusts the client: secrets and final checks live on the server.',
+      "Data travels as **packets**: IP addresses and routes them, TCP puts them back in order and re-sends lost ones, HTTP rides on top.",
     ],
     questions: [
       { concept: 'client-server', kind: 'mc', q: 'Your phone app shows your messages. Which part is the client?', options: ['The company\'s computers storing the messages', 'The app on your phone, which sends requests', 'Whichever machine is more powerful', 'The side that waits and answers'], answer: 1, why: 'The app asks; the servers answer. The client is whoever sends the request.' },
@@ -242,6 +244,8 @@ export const camp9 = [
       { concept: 'route', kind: 'mc', q: 'A client sends **POST /camp** to this server. What happens?', code: "app.get('/camp', (req, res) => {\n  res.json({ name: 'Camp III' })\n})", options: ['The GET route runs anyway, returning { name: \'Camp III\' }', '404 Cannot POST /camp: no route matches that method and path', '405 Method Not Allowed: the path exists but only for GET', '400 Bad Request: the server can\'t understand a POST here'], answer: 1, why: 'A route needs the method AND the path to match. Express answers 404 by itself (not 405).' },
       { concept: 'route', kind: 'type', q: 'Finish the line so GET requests to `/health` run the handler: `app.___(\'/health\', handler)`', accept: ['get'], why: '`app.get` registers a route for GET requests.' },
       { concept: 'route', kind: 'mc', q: "You open `http://localhost:3000/gear/7` and the browser shows only this. What does it tell you?", code: "Cannot GET /gear/7", options: ["The server is running, but it has no GET route that matches /gear/7", "The server is down, so it cannot answer", "The browser blocked the page because of a missing header", "The server found the item but could not read it"], answer: 0, why: "This is Express's default answer when no route matches. The server answered, so it is up. Check your route paths." },
+      { concept: "tcp-ip", kind: "mc", q: "A packet of your page gets lost on the way to the user. Why does the page still arrive complete?", options: ["Routers never lose packets", "TCP notices the missing packet and has it sent again", "The browser guesses the missing part", "HTTP sends every packet twice"], answer: 1, why: "TCP numbers each packet and re-sends any that don't arrive, so programs see a complete, ordered stream." },
+      { concept: "tcp-ip", kind: "mc", q: "Two programs on one server both receive network traffic. How does the data reach the right one?", options: ["By the IP address", "By the port number each program listens on", "By the file name", "The kernel guesses"], answer: 1, why: "The IP address finds the machine; the port picks the program on it, like a flat number in a building." },
     ],
   },
 
@@ -386,12 +390,13 @@ export const camp9 = [
 
   // ───────────────────────────── Trail 4 ─────────────────────────────
   {
-    id: '9-4', type: 'learn', mode: 'phone', xp: 35, mins: 65,
+    id: '9-4', type: 'learn', mode: 'phone', xp: 35, mins: 68,
     title: 'Middleware and REST design',
-    teaches: ['middleware', 'rest-api'],
+    teaches: ['middleware', 'rest-api', 'scaling'],
     idea: [
       { h: 'Middleware: code that runs before your route', b: "On a busy route, climbers pass checkpoints before the summit push: sign the log book, show your permit. **Middleware** is the same for requests: small functions that every request (or just some) passes through **before** your route answers. Each one can log, count, check a permit, or turn the request back.\n\nYou already met one: `express.json()`." },
       { h: 'REST: a standard way to design an API', b: "**REST** is a set of conventions for designing APIs: things are **nouns** with their own URLs (`/routes`, `/routes/2`), the **HTTP method** is the verb, results use **standard status codes**, and data is JSON. Follow it, and another developer can guess your whole API from one example." },
+      { h: "Under the hood: one server becomes many", b: "When one server can't keep up, you have two choices. **Vertical** scaling: a bigger machine. Simple, but there's a ceiling, and if it breaks everything stops. **Horizontal** scaling: several machines behind a **load balancer** that shares out the requests. That's how big sites run.\n\nHorizontal only works if your servers are **stateless**: nothing about a user is kept in one server's memory between requests. A `let visits = 0` counter in your Express file gives each server its own different count. Keep that kind of data in a database instead, and any server can answer any request. REST's rule that each request carries everything it needs exists for exactly this reason." },
     ],
     example: {
       intro: 'A logger for every request, and a permit check for the routes that change things. Tap through it.',
@@ -443,6 +448,7 @@ export const camp9 = [
       'Order matters: middleware and routes run in the order written, so middleware goes first. Middleware also runs for unknown paths, before the 404. Header names arrive lowercase.',
       '**REST**: plural nouns (`/routes`, `/routes/:id`), methods as verbs, standard status codes, JSON, stateless requests.',
       'Give each item a permanent `id` from a counter. Don\'t use array positions.',
+      "**Scaling:** bigger machine (vertical) or more machines behind a load balancer (horizontal), which needs **stateless** servers.",
     ],
     questions: [
       { concept: 'middleware', kind: 'mc', q: 'What must every middleware do?', options: ['Return true to continue', 'Call next() or send a response', 'Always send a response, then call next()', 'Return the request object'], answer: 1, why: 'Otherwise the request goes nowhere and the client hangs.' },
@@ -453,6 +459,7 @@ export const camp9 = [
       { concept: 'rest-api', kind: 'mc', q: 'Which URL best fits REST for "all tents at camp 2"?', options: ['/getTentsForCamp?camp=2', '/camps/2/tents', '/tent_list_camp2', '/Camps/2/Tent'], answer: 1, why: 'Lowercase plural nouns, nested to show that tents belong to a camp.' },
       { concept: 'rest-api', kind: 'mc', q: 'Why is `gear[req.params.id]` (the array position) a poor id?', options: ['Positions start at 0, so the first item can\'t be reached', 'After a delete, positions shift and the same URL points at a different item', 'Express forbids it', 'req.params values can\'t be used as array indexes'], answer: 1, why: 'Each item needs a permanent id field that never changes.' },
       { concept: 'rest-api', kind: 'type', q: 'REST stands for REpresentational State ___', accept: ['Transfer', 'transfer'], why: 'REpresentational State Transfer.' },
+      { concept: "scaling", kind: "mc", q: "Your app runs on 3 servers behind a load balancer. Logins are stored in a variable in each server's memory. Users keep getting logged out. Why?", options: ["The load balancer is broken", "Each request can land on a different server, which doesn't have that user's login in its memory", "Variables can't hold logins", "Three servers is too few"], answer: 1, why: "In-memory state isn't shared. Store sessions in a database or shared store so every server sees them." },
     ],
   },
 
@@ -528,12 +535,13 @@ export const camp9 = [
 
   // ───────────────────────────── Trail 6 ─────────────────────────────
   {
-    id: '9-6', type: 'learn', mode: 'phone', xp: 35, mins: 65,
+    id: '9-6', type: 'learn', mode: 'phone', xp: 35, mins: 68,
     title: 'Shipping live: hosting, deploys, domains, HTTPS',
-    teaches: ['hosting', 'deployment', 'dns-domains', 'https'],
+    teaches: ['hosting', 'deployment', 'dns-domains', 'https', 'caching'],
     idea: [
       { h: 'What it takes to put a server online', b: "`http://localhost:3000` only works on your machine, only while it's on. To let anyone use your API you need four things:\n• **Hosting**: an always-on computer in a data centre that runs your app.\n• **Deployment**: a safe, repeatable way to get each new version onto it.\n• **A domain** and **DNS**: a name people can remember, pointing at your host.\n• **HTTPS**: encryption plus a certificate proving the name is really yours.\n\nNone of these run inside a phone game, so this trail teaches them with real outputs, and the try-it prepares your server the way hosts expect." },
       { h: 'What a host expects from your code', b: "Hosts look for three things: they start you with **`npm start`**, they tell you which port to use in **`process.env.PORT`**, and they ask a **health check** route (often `/health`) whether you're alive before sending traffic. Your secrets go in the host's **environment settings**, and debug features stay **off in production**." },
+      { h: "Under the hood: keep a copy closer", b: "A **cache** keeps a copy of an answer somewhere faster or nearer, so the slow work isn't repeated. Your browser caches files for as long as the `Cache-Control` header allows. A **CDN** (content delivery network) keeps copies of your site on servers all over the world, so a user in Tokyo gets files from Tokyo instead of crossing an ocean: far less latency.\n\nThe hard part is knowing when a copy is out of date. A common trick: put a fingerprint (a hash) in the file name, like `app.3f9a1c.js`. A new version gets a new name, so no one is ever served the old one." },
     ],
     example: {
       intro: 'A real shipping session: run locally, push, check DNS, check the live URL. Tap through it.',
@@ -582,6 +590,7 @@ export const camp9 = [
       'Listen on `process.env.PORT`, keep secrets in the host\'s settings, debug routes off in production.',
       '**DNS** turns names into IP addresses using records: A (address), CNAME (another name), TXT (proof), with a TTL for caching.',
       '**HTTPS** = HTTP + TLS: private, tamper-proof, and the certificate proves the domain. The padlock does NOT mean the site is honest.',
+      "**Caching** keeps copies of answers nearer or faster (browser, CDN, server). The hard part is knowing when a copy is stale.",
     ],
     questions: [
       { concept: 'hosting', kind: 'mc', q: 'You have a plain HTML/CSS portfolio page with no back end. Simplest host?', options: ['A VPS you manage yourself', 'A static host', 'Your laptop with router ports opened', 'A platform host that runs Node'], answer: 1, why: 'Static hosts serve files: no server code, nothing to maintain.' },
@@ -593,6 +602,7 @@ export const camp9 = [
       { concept: 'https', kind: 'mc', q: 'A site shows the padlock. What does that prove?', options: ['The site is honest and safe to buy from, since scammers can\'t get one', 'The connection is encrypted and the certificate matches that domain', 'The site has no bugs, because the certificate was checked by the browser', 'The site is not storing any of your data, so your details stay private'], answer: 1, why: 'Scam sites get certificates too. Read the domain name.' },
       { concept: 'https', kind: 'mc', q: 'Which port does HTTPS use by default?', options: ['80', '443', '3000', '22'], answer: 1, why: '443 for HTTPS, 80 for plain HTTP.' },
       { concept: 'dns-domains', kind: 'mc', q: "You run `curl https://api.summitgear.example/gear` and see this. What does it tell you?", code: "curl: (6) Could not resolve host: api.summitgear.example", options: ["DNS has no address for that name: check the spelling or the DNS record", "The server was found but sent back a 404", "The server is on, but port 443 is closed", "The certificate has expired"], answer: 0, why: "Resolving a name happens first. If it fails, no connection is made at all, so the server's code never ran." },
+      { concept: "caching", kind: "mc", q: "You deploy a fix, but some users still see the old version of `app.js` for hours. Most likely cause?", options: ["The deploy failed", "Their browsers or a CDN still hold a cached copy of the old file", "DNS is broken", "The server is down"], answer: 1, why: "Cached copies live until they expire. Putting a hash in the file name gives each version a new name, so caches can't serve the old one." },
     ],
   },
 
@@ -933,6 +943,8 @@ app.listen(PORT, () => console.log('Listening on ' + PORT))` },
       { concept: 'cors', kind: 'mc', q: 'Your React page at `https://app.summitgear.example` calls `https://api.summitgear.example/gear`. The console shows a CORS error, but the same URL works in curl. What is the right fix?', options: ['Make the API send Access-Control-Allow-Origin for the page\'s origin', 'Turn off HTTPS on the API so the browser has nothing to check', 'Add a CORS header inside the page\'s own HTML', 'Send the request again until the browser lets it through'], answer: 0 },
       { concept: 'graceful-shutdown', kind: 'mc', q: 'Each deploy cuts off a few requests halfway through. The old process is stopped with SIGTERM. What is the best fix?', options: ['Handle SIGTERM: stop listening, finish the current requests, then exit', 'Stop the old process with kill -9 so it ends sooner', 'Remove the signal from the deploy settings', 'Move the server to a higher port number'], answer: 0 },
       { concept: 'process-manager', kind: 'mc', q: 'A teammate runs `node server.js` in a session on the production server and says "it\'s live". What is the problem?', options: ['It ends when the session closes or the program crashes: run it as a service with a restart rule', 'Node cannot run on a production server', 'It must have a health check before it may listen on any port', 'Express servers only work on localhost'], answer: 0 },
+      { concept: "scaling", kind: "mc", q: "Your site gets 10 times more visitors overnight. Which setup can grow just by adding servers?", options: ["One big server that stores sessions in memory", "Stateless servers behind a load balancer, with data in a database", "One server with a bigger hard drive", "Any setup"], answer: 1, why: "Stateless servers can be added freely, because none of them holds data the others need." },
+      { concept: "tcp-ip", kind: "mc", q: "What does TCP add on top of IP?", options: ["Encryption", "Reliable, in-order delivery: lost packets are re-sent and put back in order", "Domain names", "Faster CPUs"], answer: 1, why: "IP delivers packets on a best-effort basis. TCP makes them a reliable stream. (Encryption comes from TLS, the S in HTTPS.)" },
     ],
   },
 ]

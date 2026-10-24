@@ -39,12 +39,13 @@ const KNOWN_JS = 'const POPULAR = ["express", "cross-env", "lodash", "dayjs", "d
 export const campK = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: 'K-1', type: 'learn', mode: 'phone', xp: 30, mins: 50,
+    id: 'K-1', type: 'learn', mode: 'phone', xp: 30, mins: 53,
     title: 'The auditor\'s method',
-    teaches: ['audit-method', 'claims-evidence'],
+    teaches: ['audit-method', 'claims-evidence', 'halting-problem'],
     idea: [
       { h: 'What an audit is', b: "The Hillary Step is the last rock wall below the summit. Climbers have to decide there whether to go on or turn back.\n\nThis camp teaches the software version of that decision. Since Base Camp, every camp ended with a small **weather check**: a quick look at one suspicious claim. Here you turn those checks into a full **audit**: a method you can point at any codebase, product or tool and come back with a clear, defensible verdict." },
       { h: 'Your audit target for this camp', b: "A friend's climbing club wants to use **TrailPost**, an open-source app for sharing trip plans. Its README promises \"100% private\", \"10× faster\", \"actively maintained\" and \"free forever\". You've cloned the repo. Over the next trails you'll audit it from every side: claims, health, dependencies, threats, secrets, cost, privacy, licences and benchmarks.\n\nRule one of auditing: **read, don't run.** You'll open files and check them, but you won't run anything you haven't read. Next come the Field Guide cards: the method itself, and how to weigh claims against evidence." },
+      { h: "Under the hood: why auditors exist at all", b: "In 1936 Alan Turing proved that no program can look at every other program and always tell whether it will finish running. That's the **halting problem**, and it means no tool, however clever, can tell you, for every program, whether it is bug-free or safe. Scanners, linters and AI reviewers all either miss some real problems or flag some fine code.\n\nSo an auditor never treats one tool's \"all clear\" as proof. They gather evidence from several methods (tests, reading the code, scanners, running it) and spend the most care where a failure would hurt the most." },
     ],
     example: {
       intro: 'The first ten minutes of an audit. Tap through each line.',
@@ -86,6 +87,7 @@ export const campK = [
       'Every finding needs **evidence** someone else can re-check: file, line, command, output, exact quote.',
       'A **claim** is what they say; **evidence** is what you can check. Mark claims SUPPORTED, CONTRADICTED or UNVERIFIED.',
       'Keep notes outside the project, and never run what you haven\'t read.',
+      "The **halting problem** proves no tool can judge every program correctly, so a tool's \"all clear\" is evidence, never proof.",
     ],
     questions: [
       { concept: 'audit-method', kind: 'mc', q: 'What do you write down BEFORE opening any file of the project?', options: ['The verdict, so you know where you\'re heading and can collect evidence for it', 'The scope: the question, what\'s in and out, a time box, read-only', 'A list of every bug you expect, so you can tick them off as you find them', 'Nothing yet: the scope only becomes clear once you\'ve explored the files for a while'], answer: 1, why: 'The scope tells you what matters and when to stop. Without it you collect random observations.' },
@@ -96,6 +98,7 @@ export const campK = [
       { concept: 'claims-evidence', kind: 'mc', q: 'Who has to prove "10× faster than other trip apps"?', options: ['You, the auditor, by testing until you prove it false', 'The project making the claim', 'Nobody, because claims in a README are marketing and marketing is just opinion', 'The other trip apps, since they are the ones being compared against'], answer: 1, why: 'The burden of proof is on whoever makes the claim.' },
       { concept: 'claims-evidence', kind: 'mc', q: 'Which phrase is a classic weasel phrase that promises almost nothing?', options: ['"Median load time 230 ms on the published test script"', '"Up to 10× faster"', '"Median 230 ms, p95 410 ms, measured with the published script"', '"Measured on a 2021 laptop; test script is in BENCHMARKS.md"'], answer: 1, why: '"Up to" is satisfied by a single best-case result.' },
       { concept: 'audit-method', kind: 'mc', q: 'A cloned repo contains a `.env` file. What does that tell you?', options: ['Nothing alarming: .env files are normal local config and are always safe to ship', 'Someone committed it: a clone only contains committed files, so it\'s published', 'Git generated it automatically when you cloned, as a template for your own settings', 'It\'s safe because dotfiles are hidden from ls and from visitors browsing the repo'], answer: 1, why: 'Clones only contain what was committed. Hidden from ls is not hidden from the internet.' },
+      { concept: "halting-problem", kind: "mc", q: "A product claims \"our AI scanner guarantees your code has zero bugs\". What does computer science say?", options: ["It's possible with enough computing power", "It's impossible in general: the halting problem shows no tool can decide that for every program", "It's true for JavaScript only", "It's true if the code has tests"], answer: 1, why: "Turing proved no program can even decide \"will this finish?\" for all programs, so a guarantee of zero bugs is an overclaim." },
     ],
   },
 
@@ -770,6 +773,7 @@ module.exports = { summitCall, fetchReadings }` },
       { concept: 'package-hallucination', kind: 'mc', q: 'package.json lists only `express` and `dayjs`. A new diff adds these lines. Which one is the red flag?', code: "+const express = require('express')\n+const dayjs = require('dayjs')\n+const db = require('./db')\n+const pretty = require('pretty-trip-dates')", options: ["`require('express')`", "`require('./db')`", "`require('pretty-trip-dates')`", "`require('dayjs')`"], answer: 2 },
       { concept: 'reviewing-ai-code', kind: 'mc', q: 'The assistant says "I fixed the failing test." The diff shows the failing test was deleted and nothing else changed. What is your finding?', options: ['Fixed: the failing test is gone and the run is green', 'Not fixed: the test was deleted, so restore it and fix the code instead', 'Fine, as long as the remaining tests pass', 'The test was probably wrong, so deleting it is correct'], answer: 1 },
       { concept: 'ai-coding-assistant', kind: 'mc', q: 'Which request should you split into smaller steps before giving it to an assistant?', options: ['"Add a function that converts feet to metres. 100 feet is 30.48 metres."', '"Rename the variable `d` to `distance` in src/trip.js."', '"Build a booking system with sign-up, card payments, an admin area and email reminders."', '"Write a test for the empty-list case of average()."'], answer: 2 },
+      { concept: "halting-problem", kind: "mc", q: "Why does a careful audit combine tests, code reading and scanners instead of trusting one tool?", options: ["Tools are expensive", "No single tool can catch every problem in every program, so different methods cover each other's blind spots", "Scanners are illegal alone", "It doesn't matter"], answer: 1, why: "The halting problem rules out a perfect checker, so evidence comes from several imperfect ones." },
     ],
   },
 ]

@@ -309,4 +309,46 @@ export const GUIDE_CAMP5 = {
       phone: 'In an SSH app connected to a computer, `echo $?` works as shown. Inside this game, the Sherpa reports your program\'s errors directly.',
     },
   },
+
+  // ─────────────── Searching and sorting ───────────────
+  'binary-search': {
+    term: 'Binary search (halving)', short: 'Find something in a sorted list by checking the middle and throwing away the half it can\'t be in.',
+    what: '**Binary search** finds an item in a **sorted** list without checking every item. Look at the middle one. If it\'s your target, done. If your target is bigger, throw away the lower half. If smaller, throw away the upper half. Then repeat on what\'s left.',
+    how: 'Each check cuts the remaining list in half, so the work grows very slowly:\n\n• 1,000 items: at most about **10** checks.\n• 1,000,000 items: at most about **20** checks.\n\nChecking one by one (a **linear search**) could take 1,000 or 1,000,000 checks. In Big-O terms, binary search is **O(log n)** and checking one by one is **O(n)**.\n\nThe catch: the list **must be sorted first**. On an unsorted list, "the target must be in the other half" is a lie, and you\'ll get wrong answers.\n\nThe same halving idea finds bugs. Comment out half the code and see if the bug is still there, then halve again. Later in the climb, `git bisect` does this for you: it halves a long list of commits (save points) to find the one that broke things.',
+    usage: [
+      { code: 'function binarySearch(list, target) {\n  let low = 0\n  let high = list.length - 1\n  while (low <= high) {\n    const mid = Math.floor((low + high) / 2)\n    if (list[mid] === target) return mid\n    if (list[mid] < target) low = mid + 1\n    else high = mid - 1\n  }\n  return -1\n}\nconst heights = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]\nconsole.log(binarySearch(heights, 23))\nconsole.log(binarySearch(heights, 7))', out: '5\n-1', note: 'Returns the position of 23 (position 5, lists start at 0). For 7 it returns -1, the usual way to say "not found".' },
+      { code: 'const big = Array.from({ length: 1000 }, (_, i) => i + 1)\n// one by one: looking for 1000 takes 1000 checks\n// halving: looking for 1000 takes 10 checks\nconsole.log(Math.ceil(Math.log2(1000)), Math.ceil(Math.log2(1000000)))', out: '10 20', note: 'Math.log2 asks "how many times can I halve this?" 1,000 items need about 10 halvings, a million need about 20.' },
+    ],
+    uses: ['Looking up a name in a big sorted list, like a phone book or a dictionary.', 'Databases and search tools, which keep data sorted so they can jump straight to it.', 'Guessing games: "higher or lower?" is binary search.', 'Finding the commit that broke your program with `git bisect`.', 'Finding a bug by halving your code.'],
+    when: ['The data is already sorted, or you can sort it once and search many times.', 'The list is big and you search it again and again.'],
+    whenNot: ['When the list is not sorted. The answer will be wrong, with no error to warn you.', 'When the list is tiny (say 10 items). Checking one by one is just as fast and easier to read.', 'When you only search once in an unsorted list. Sorting first costs more than one plain pass.'],
+    mistakes: [
+      { prose: 'Running binary search on an unsorted list.', why: 'Throwing away half only makes sense if the list is in order. On an unsorted list it can say "not found" for something that is right there.' },
+      { wrong: 'while (low < high)  // instead of low <= high', result: '(misses the target when it is the last item left)', why: 'An off-by-one on the boundary. When low and high meet, there is still one item left to check. Use <=.' },
+      { wrong: 'low = mid  // instead of mid + 1', result: '(the loop can run forever)', why: 'You already checked mid and it was wrong. Skip past it, or low and high may never move.' },
+    ],
+    tips: ['Think "guess the number from 1 to 100": start at 50. That is binary search.', 'Return -1 for "not found". It can never be a real position.', 'Halving is a general trick: any time you can rule out half the options with one check, use it.'],
+    related: ['big-o', 'array', 'for-loop', 'sorting', 'debugging-process'],
+  },
+  sorting: {
+    term: 'Sorting', short: 'Putting items in order. Slow methods compare neighbours over and over; good ones split, sort and merge.',
+    what: '**Sorting** means putting items in order: smallest to biggest, A to Z, newest to oldest. It is one of the most studied problems in computer science, because so much else (like binary search) needs sorted data.',
+    how: 'There are many methods. Two to know:\n\n• **Bubble sort** compares neighbours and swaps them if they are in the wrong order, then goes around again, and again. It is easy to understand but slow: **O(n²)**. Ten times more items means about a hundred times more work.\n• **Merge sort** splits the list in half, sorts each half, then **merges** the two sorted halves into one. It is **O(n log n)**, and that is the best possible for sorting by comparing items.\n\nIn JavaScript you rarely write your own. `array.sort()` uses a fast built-in method. But it has two traps:\n\n1. By default it compares items as **text**, even numbers. So `10` comes before `9`, because the text "1" comes before "9".\n2. It **changes the original array**.\n\nFor numbers, pass a **compare function**: `(a, b) => a - b` for smallest first, `(a, b) => b - a` for biggest first. It returns a negative number if `a` goes first, a positive number if `b` goes first.',
+    usage: [
+      { code: 'console.log([10, 9, 1].sort())', out: '[ 1, 10, 9 ]', note: 'Sorted as text: "1", then "10", then "9". Not what you want for numbers.' },
+      { code: 'console.log([10, 9, 1].sort((a, b) => a - b))\nconsole.log([10, 9, 1].sort((a, b) => b - a))', out: '[ 1, 9, 10 ]\n[ 10, 9, 1 ]', note: 'With a compare function the numbers sort properly. a - b is ascending, b - a is descending.' },
+      { code: 'const heights = [3, 1, 2]\nheights.sort()\nconsole.log(heights)\n\nconst scores = [3, 1, 2]\nconsole.log(scores.toSorted())\nconsole.log(scores)', out: '[ 1, 2, 3 ]\n[ 1, 2, 3 ]\n[ 3, 1, 2 ]', note: 'sort() rearranged heights itself. toSorted() gives a new sorted copy and leaves scores alone. [...scores].sort() does the same.' },
+      { code: 'console.log(["pear", "apple", "fig"].sort())', out: '[ \'apple\', \'fig\', \'pear\' ]', note: 'Words sort A to Z by default, which is fine for plain text.' },
+    ],
+    uses: ['Leaderboards and rankings, highest score first.', 'Showing a list newest first, or A to Z.', 'Preparing data for binary search.', 'Finding duplicates, since equal items end up next to each other.'],
+    when: ['You need items shown in a clear order.', 'You want to search the same list many times with binary search.'],
+    whenNot: ['Don\'t write your own sorting code for real work. The built-in one is faster and tested.', 'Don\'t sort a big list again and again inside a loop. Sort once, then reuse it.', 'Don\'t sort when you only need the biggest item. One pass to find the max is quicker.'],
+    mistakes: [
+      { wrong: 'console.log([10, 9, 1].sort())', result: '[ 1, 10, 9 ]', why: 'The default sort compares as text. For numbers, always pass (a, b) => a - b.' },
+      { wrong: 'const sorted = scores.sort()  // scores is [3, 1, 2]', result: '(scores is now [ 1, 2, 3 ] too)', why: 'sort() changes the original array and hands the same array back. Use toSorted() or [...scores].sort() to keep the original.' },
+      { wrong: '[3, 1, 2].sort((a, b) => a > b)', result: '[ 3, 1, 2 ]   (not sorted at all)', why: 'The compare function must return a number: negative, zero or positive. true and false are not good enough. Use a - b.' },
+    ],
+    tips: ['Numbers: always pass a compare function. Text: the default is fine.', 'Biggest first is just the compare flipped: b - a.', 'To sort objects, subtract one of their fields: `people.sort((p, q) => p.age - q.age)`.'],
+    related: ['big-o', 'binary-search', 'array', 'array-methods', 'recursion'],
+  },
 }

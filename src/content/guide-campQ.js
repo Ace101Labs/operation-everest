@@ -784,4 +784,67 @@ export const GUIDE_CAMPQ = {
       'environment-variables',
     ],
   },
+
+  // ─────────────── How models learn and work inside ───────────────
+  'gradient-descent': {
+    term: 'Loss and gradient descent (how a model learns)',
+    short: 'Score how wrong a prediction was, then nudge every number a little to be less wrong. Repeat.',
+    what: "Training a model means finding good values for its **parameters** (the learned numbers). Nobody types those values in. They are found by a loop.\n\nTwo ideas drive the loop:\n• **Loss:** a single number that scores how wrong the model's prediction was. Lower is better, and 0 would be a perfect prediction.\n• **Gradient descent:** the method that lowers the loss by nudging the parameters.",
+    how: "Training starts with **random** parameters, so the first predictions are bad. Then, for each example:\n1. the model makes a prediction\n2. the **loss function** compares it with the right answer and gives one number\n3. **gradient descent** works out, for every parameter, which direction (up or down) would lower the loss a little\n4. every parameter is nudged a small step in that direction\n\nThe size of each step is the **learning rate**. Too big, and the model overshoots the good values and the loss bounces around or blows up. Too small, and it learns very slowly.\n\nReal models repeat this over a huge number of examples. Nobody writes the rules by hand: the behaviour **emerges** from millions of tiny nudges.\n\nA helpful picture is walking downhill in fog. You can't see the valley, but you can feel which way the ground slopes under your feet, so you step that way and check again.\n\nOne honest limit: gradient descent finds values that lower the loss on the training examples. That doesn't guarantee the model is right about new things. That is what **model evaluation** is for.",
+    usage: [
+      { code: 'const data = [[1, 2], [2, 4], [3, 6]]   // the rule is y = 2x\nlet w = 0                // one parameter, starting at 0\nconst lr = 0.02          // learning rate\nfor (let step = 1; step <= 5; step++) {\n  let slope = 0\n  for (const [x, y] of data) slope += 2 * (w * x - y) * x\n  slope /= data.length\n  w -= lr * slope        // nudge against the slope\n  console.log(step, w.toFixed(2))\n}', out: '1 0.37\n2 0.68\n3 0.92\n4 1.12\n5 1.29', note: 'The model starts knowing nothing (w = 0) and creeps toward 2, the value that fits the data.' },
+      { code: 'let big = 0\nfor (let i = 0; i < 3; i++) {\n  let slope = 0\n  for (const [x, y] of data) slope += 2 * (big * x - y) * x\n  big -= 0.5 * slope / data.length\n  console.log(big.toFixed(1))\n}', out: '9.3\n-24.9\n100.6', note: 'Same loop with a learning rate of 0.5. Every step overshoots the answer and lands further away. A learning rate that is too big breaks training.' },
+    ],
+    uses: ['Understanding what \"training\" actually does inside a model.', 'Reading training reports, where the loss number should fall over time.', 'Understanding why a small model can be fine-tuned on a good GPU, but a big one can\'t be trained from scratch at home.'],
+    when: ['Any time you ask how a model got its abilities without anyone programming them.', 'When a training run isn\'t improving: the learning rate is the first thing people check.'],
+    whenNot: ['Don\'t imagine this happens while you chat. Chatting is inference, and the parameters stay frozen.', 'Don\'t treat a low loss on training data as proof the model is good. Test it on examples it has never seen.'],
+    mistakes: [
+      { prose: 'Thinking someone wrote rules like \"if the user asks about weather, say...\" inside the model.', why: 'No such rules exist. The behaviour comes from the numbers that the nudges settled on, which is why it can be hard to explain any single answer.' },
+      { prose: 'Setting the learning rate very high to \"learn faster\".', why: 'Steps that are too large jump over the good values, so the loss gets worse instead of better.' },
+      { prose: 'Assuming a loss of 0 on the training data means a perfect model.', why: 'A model can memorise its training examples and still do badly on new ones. That is called overfitting.' },
+    ],
+    tips: ['Loss going down over time is the sign that training is working.', 'If the loss bounces around or shoots up, try a smaller learning rate.', 'Real models have billions of parameters, but the loop is the same as the one-parameter example here.'],
+    related: ['training-vs-inference', 'model-parameters', 'ai-model', 'model-evaluation'],
+  },
+  'next-token': {
+    term: 'Next-token prediction and attention',
+    short: 'A language model gives a probability for every possible next token, picks one, adds it and repeats.',
+    what: "A language model does **one job**, over and over: given the tokens so far, give a **probability for every possible next token**. Pick one, add it to the text, and go again.\n\nEverything a chat model writes, from poems to code, comes out of that loop.",
+    how: "One round of the loop:\n1. the model reads all the tokens so far\n2. it gives every token in its vocabulary a probability, and the probabilities add up to 1\n3. one token is **picked**. A low **temperature** makes the pick stick close to the most likely token. A higher one allows more surprising picks\n4. the picked token is added to the text, and the loop runs again\n\nInside most modern models is a design called the **transformer**. Its key part is **attention**. For each token, the model weighs how relevant **every earlier token** is. That is how a word like \"it\" gets linked to the right noun earlier in the sentence: in \"The rope frayed because it was old\", attention helps connect \"it\" with \"rope\".\n\nBecause the model produces **likely text**, not checked facts, it can state false things in a confident voice. That is the root of **hallucination**. Likely and true often match, but nothing in the loop checks that they do.",
+    usage: [
+      { code: 'const next = { \" summit\": 0.62, \" top\": 0.21, \" camp\": 0.17 }  // made-up table, not a real model\nconst total = Object.values(next).reduce((a, b) => a + b, 0)\nconsole.log(total.toFixed(2))', out: '1.00', note: 'Probabilities for all the options add up to 1. Here the text so far is \"We reached the\".' },
+      { code: 'const best = Object.entries(next).sort((a, b) => b[1] - a[1])[0][0]\nconsole.log(\"We reached the\" + best)', out: 'We reached the summit', note: 'Always picking the most likely token is the deterministic choice, like a temperature near 0.' },
+      { code: 'const roll = 0.7   // pretend random number between 0 and 1\nlet acc = 0\nfor (const [token, p] of Object.entries(next)) {\n  acc += p\n  if (roll < acc) { console.log(JSON.stringify(token)); break }\n}', out: '\" top\"', note: 'Sampling: a random roll lands somewhere along the probabilities. Here 0.7 falls past the first 0.62 and into the second slice, so \" top\" wins. Other rolls pick other tokens.' },
+    ],
+    uses: ['Understanding why answers vary from run to run.', 'Understanding why a model can sound sure and still be wrong.', 'Understanding why a model with a bigger context window can still look back at earlier text.'],
+    when: ['Explaining how a chat model produces an answer.', 'Choosing a temperature: low for steady answers, higher for variety.'],
+    whenNot: ['Don\'t picture the model looking facts up. It continues text.', 'Don\'t read a confident tone as a sign of accuracy.'],
+    mistakes: [
+      { prose: 'Believing the model \"knows\" the answer and is deciding whether to tell you.', why: 'It only scores likely next tokens. A made-up answer and a true one come out of the same loop.' },
+      { prose: 'Expecting the same answer every time at a normal temperature.', why: 'The pick involves chance, so runs differ. Use a very low temperature when you need steadier output, though even then results aren\'t guaranteed identical.' },
+    ],
+    tips: ['When a fact matters, give the model the source text in the prompt, or check the answer yourself.', 'The code above is a sketch of picking a token. A real model computes the probabilities itself, for a vocabulary of tens of thousands of tokens.'],
+    related: ['ai-model', 'token', 'temperature', 'hallucination', 'context-window'],
+  },
+  'cosine-similarity': {
+    term: 'Cosine similarity',
+    short: 'A score from -1 to 1 for how closely two vectors point in the same direction. Used to compare embeddings.',
+    what: "An **embedding** is a list of numbers (a **vector**) that stands for the meaning of a piece of text. Texts with similar meaning get vectors that point in **similar directions**.\n\n**Cosine similarity** measures the angle between two vectors:\n• **1** means they point the same way\n• **0** means they are unrelated (at a right angle)\n• **-1** means they point in opposite directions",
+    how: "The formula is: **dot product ÷ (length of A × length of B)**.\n• The **dot product** multiplies matching positions and adds them up: `[1,2,3]` and `[2,4,6]` give 1×2 + 2×4 + 3×6 = 28.\n• The **length** of a vector is the square root of the sum of its squares.\n\nDividing by the lengths means only the **direction** counts, not how big the numbers are. `[1,2,3]` and `[2,4,6]` point the same way, so their score is 1 even though one is twice as long.\n\nThis is how **RAG** search works. Every stored chunk of text has a vector. The question gets a vector too. The search returns the chunks whose vectors have the **highest cosine similarity** to the question's vector.\n\nReal embeddings have hundreds or thousands of numbers, but the formula is the same as with three.",
+    usage: [
+      { code: 'function cosine(a, b) {\n  const dot = a.reduce((sum, v, i) => sum + v * b[i], 0)\n  const len = v => Math.sqrt(v.reduce((sum, x) => sum + x * x, 0))\n  return dot / (len(a) * len(b))\n}\nconsole.log(cosine([1, 2, 3], [2, 4, 6]))', out: '1', note: 'Same direction, so the score is 1. The second vector is just twice as long.' },
+      { code: 'console.log(cosine([1, 0, 0], [0, 1, 0]))', out: '0', note: 'At a right angle: nothing in common.' },
+      { code: 'console.log(cosine([1, 0], [-1, 0]))\nconsole.log(cosine([1, 2, 3], [3, 2, 1]).toFixed(3))', out: '-1\n0.714', note: 'Opposite directions give -1. Partly alike gives a number in between.' },
+    ],
+    uses: ['Finding the stored chunks closest in meaning to a question (RAG).', 'Finding similar items: related notes, duplicate questions, \"more like this\".', 'Comparing any two embeddings.'],
+    when: ['You have embeddings from the same model and want to rank which are closest in meaning.'],
+    whenNot: ['Don\'t compare vectors made by different embedding models. Their numbers mean different things.', 'Don\'t treat a score as a fact check. High similarity means related meaning, not that the text is true.'],
+    mistakes: [
+      { prose: 'Comparing a vector from one embedding model with a vector from another.', why: 'Each model has its own space, so the score is meaningless. Use the same model for the stored text and the question.' },
+      { prose: 'Using a fixed cutoff like \"above 0.8 means a match\" for every model.', why: 'Typical scores differ between models. Look at real examples from your own model and pick the cutoff from those.' },
+      { prose: 'Dividing by zero with an all-zero vector.', why: 'A vector of all zeros has length 0, so the score is not a number. Check for that case.' },
+    ],
+    tips: ['Many vector tools store vectors already scaled to length 1. Then the dot product alone gives the cosine similarity.', 'Test with a few pairs you know are related and a few you know are not before trusting the scores.'],
+    related: ['embeddings', 'rag', 'token', 'ai-model'],
+  },
 }

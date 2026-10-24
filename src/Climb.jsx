@@ -8,10 +8,24 @@ import { altAt } from './progress.js'
 // back after an avalanche) the next time the map is shown.
 const SEEN = 'everest.seenClimb' // where the map last showed the climber (not progress)
 const FLOWN = 'everest.flown' // the flight into Lukla has been shown on this device
-// The flight in: from high over the range, down onto the Lukla airstrip.
-const FLY = [[352, 40], [330, 470], [70, 535]]
+// The flight in: a long, shallow approach from the right, a flare, touchdown, then a roll-out to Lukla.
+// It must read as a calm landing (Ace, 2026-10-23: the old steep dive looked like a crash).
+const FLY = [[400, 492], [260, 514], [150, 531]] // approach curve: in from the right, down to the strip
+const LUKLA = [70, 535]
+const AIR = 0.7 // share of the flight spent in the air; the rest is the roll-out
 const bez = (k, i) => (1 - k) ** 2 * FLY[0][i] + 2 * (1 - k) * k * FLY[1][i] + k * k * FLY[2][i]
 const bezD = (k, i) => 2 * (1 - k) * (FLY[1][i] - FLY[0][i]) + 2 * k * (FLY[2][i] - FLY[1][i])
+// Where the plane is at flight progress k (0..1), and how far its nose points down (degrees, + = down).
+const flightAt = k => {
+  if (k < AIR) {
+    const u = k / AIR, x = bez(u, 0), y = bez(u, 1)
+    const slope = Math.atan2(bezD(u, 1), -bezD(u, 0)) * 180 / Math.PI // descent angle, flying left
+    const flare = u > 0.82 ? (u - 0.82) / 0.18 : 0 // nose comes up just before touchdown
+    return [x, y, Math.min(9, Math.max(0, slope)) * (1 - flare) - 4 * flare]
+  }
+  const v = (k - AIR) / (1 - AIR), e = 1 - (1 - v) ** 1.2 // roll-out slows to a stop, starting at touchdown speed
+  return [FLY[2][0] + (LUKLA[0] - FLY[2][0]) * e, FLY[2][1] + (LUKLA[1] - FLY[2][1]) * e, 0]
+}
 
 // One marker per entry in ALTITUDE: Lukla, then where each camp starts, up to the summit.
 const W = [[70, 535], [250, 500], [110, 462], [255, 425], [105, 388], [250, 350], [115, 312], [240, 275],
@@ -38,15 +52,15 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPi
   const [pop, setPop] = useState(null) // { m: metres gained (or lost), key }
   const raf = useRef(0)
   // A brand-new player flies into Lukla first; the plane lands and becomes their climber.
-  const [flight, setFlight] = useState(() => (!still && t === 0 && !localStorage.getItem(FLOWN) ? 0 : null))
+  const [flight, setFlight] = useState(() => (!still && !matchMedia('(prefers-reduced-motion: reduce)').matches && t === 0 && !localStorage.getItem(FLOWN) ? 0 : null))
   const [landed, setLanded] = useState(false)
   useEffect(() => {
     if (paused || flight === null || flight > 0) return
     let start = 0, id = 0
     const step = now => {
       if (!start) start = now
-      const k = Math.min(1, (now - start) / 2600)
-      setFlight(Math.max(0.0001, 1 - (1 - k) ** 2)) // eases in to touchdown
+      const k = Math.min(1, (now - start) / 3800)
+      setFlight(Math.max(0.0001, 0.5 - Math.cos(Math.PI * k) / 2)) // gentle start and a gentle stop
       if (k < 1) id = requestAnimationFrame(step)
       else setTimeout(() => { localStorage.setItem(FLOWN, '1'); setFlight(null); setLanded(true) }, 450)
     }
@@ -114,11 +128,11 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPi
         {!still && <text x="300" y="80" fontSize="13" className="bird">🦅<animateTransform attributeName="transform" type="translate" values="0 0; -40 10; -80 -5; -40 -12; 0 0" dur="24s" repeatCount="indefinite" /></text>}
         <text x="300" y="545" fontSize="14">🐂<animateTransform attributeName="transform" type="translate" values={still ? '0 0' : '40 0; -320 0'} dur="60s" repeatCount="indefinite" /></text>
         {flight !== null && (() => {
-          const k = flight, x = bez(k, 0), y = bez(k, 1)
-          // ✈️ points up-right (-45°); turn it to face the way it's flying
-          const deg = Math.atan2(bezD(k, 1), bezD(k, 0)) * 180 / Math.PI + 45
+          const k = flight, [x, y, down] = flightAt(k)
+          // ✈️ points up-right. Mirrored it points up-left; turn it to fly left with the nose `down` degrees below level.
+          const deg = -45 - down
           return <g transform={`translate(${x.toFixed(1)} ${y.toFixed(1)})`}>
-            <text fontSize={30 - 10 * k} textAnchor="middle" dominantBaseline="central" transform={`rotate(${deg.toFixed(1)})`}>✈️</text>
+            <text fontSize={24 - 4 * k} textAnchor="middle" dominantBaseline="central" transform={`rotate(${deg.toFixed(1)}) scale(-1 1)`}>✈️</text>
             {k > 0.97 && <text y="-26" textAnchor="middle" className="touchdown">Touchdown · Lukla</text>}
           </g>
         })()}

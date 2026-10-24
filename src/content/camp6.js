@@ -70,12 +70,13 @@ export const camp6 = [
 
   // ───────────────────────────── Trail 2 ─────────────────────────────
   {
-    id: '6-2', type: 'learn', mode: 'phone', xp: 30, mins: 45,
+    id: '6-2', type: 'learn', mode: 'phone', xp: 30, mins: 48,
     title: 'JSON: saving data as text',
-    teaches: ['json', 'json-parse-stringify'],
+    teaches: ['json', 'json-parse-stringify', 'serialization'],
     idea: [
       { h: 'Files hold text, programs use objects', b: 'A file can only hold **text**. But your program works with **objects and lists**: a trip with a peak, a height, a list of camps. You need a way to turn data into text to save it, and text back into data to use it.\n\n**JSON** does that. It\'s a strict text format that looks almost exactly like a JavaScript object, and nearly every programming language and website can read it.' },
       { h: 'Read, parse, change, stringify, write', b: '**read** the file → **parse** the text into data → **change** the data → **stringify** it back into text → **write** the file.\n\nAlmost every program that saves data follows this loop. Two functions do the converting: `JSON.parse` (text → data) and `JSON.stringify` (data → text).' },
+      { h: "Under the hood: turning memory into bytes", b: "In a running program, an object lives in RAM as values and references pointing at each other. A file or a network connection can only carry a flat row of **bytes**. Turning one into the other is called **serialization**, and turning it back is deserialization. JSON is the most common way to do it as text.\n\nSome things don't survive the trip. Functions and `undefined` values are dropped from objects (in an array they become `null`), a `Date` comes back as a plain string, and an object that refers to itself can't be written at all (`TypeError: Converting circular structure to JSON`). Knowing what gets lost is half the skill." },
     ],
     example: {
       intro: 'Adding a camp to a saved trip: read, parse, change, stringify, write. Tap through it.',
@@ -112,10 +113,11 @@ export const camp6 = [
       '`JSON.parse(text)` turns JSON text into real data.',
       '`JSON.stringify(data, null, 2)` turns data into pretty JSON text.',
       'The round trip: read → parse → change → stringify → write.',
+      "**Serialization** turns objects in memory into bytes you can save or send. JSON drops functions and undefined, and turns Dates into strings.",
     ],
     questions: [
       { concept: 'json', kind: 'mc', q: 'Which of these is valid JSON?', options: ['{ peak: "Everest" }', '{ \'peak\': \'Everest\' }', '{ "peak": "Everest" }', '{ "peak": "Everest", }'], answer: 2, why: 'Keys and strings in double quotes, no trailing comma.' },
-      { concept: 'json', kind: 'mc', q: 'What does JSON stand for?', options: ['Java Serialized Object Notation', 'JavaScript Object Notation', 'JavaScript Object Navigation', 'JavaScript Online Notation'], answer: 1, why: 'JavaScript Object Notation: it borrows JavaScript\'s object style.' },
+      { concept: "serialization", kind: "mc", q: "Why does a program have to serialize an object before writing it to a file?", options: ["Files can only hold numbers", "In memory the object is values and references; a file can only hold a flat row of bytes", "Serializing encrypts it", "It makes the object smaller in memory"], answer: 1, why: "References are memory addresses that mean nothing on disk or on another computer. Serializing writes the actual values out as bytes, for example as JSON text." },
       { concept: 'json', kind: 'mc', q: 'Which value can\'t be stored in JSON?', options: ['null', 'true', 'a function', '[1, 2, 3]'], answer: 2, why: 'JSON holds strings, numbers, booleans, null, arrays and objects. No functions, no undefined.' },
       { concept: 'json-parse-stringify', kind: 'mc', q: 'You read a .json file and have its text. What turns it into an object you can use?', options: ['JSON.stringify(text)', 'JSON.parse(text)', 'JSON.toObject(text)', 'fs.parse(text)'], answer: 1, why: 'parse = text in, data out.' },
       { concept: 'json-parse-stringify', kind: 'mc', q: 'What prints?', code: 'console.log(JSON.stringify({ name: "Ama", days: 3 }))', options: ['{ name: "Ama", days: 3 }', '{"name":"Ama","days":3}', '[object Object]', '{"name": "Ama", "days": 3}'], answer: 1, why: 'Compact JSON: double quotes on keys, no spaces.' },
@@ -124,17 +126,19 @@ export const camp6 = [
       { concept: 'json-parse-stringify', kind: 'mc', q: '`JSON.parse(\'\')` on an empty file gives…', options: ['SyntaxError: Unexpected token { in JSON at position 0', 'TypeError: Cannot convert an empty string to an object', 'SyntaxError: Unexpected end of JSON input', 'RangeError: JSON input must not be empty'], answer: 2, why: 'Empty text isn\'t JSON. Put `{}` or `[]` in new files.' },
       { concept: 'json', kind: 'type', q: 'In JSON, what kind of quotes must keys and strings use? Type `single` or `double`.', accept: ['double', 'double quotes', '"'], why: 'Always double quotes in JSON.' },
       { concept: 'json-parse-stringify', kind: 'mc', q: "Your program crashes with this. What is wrong?", code: "SyntaxError: Unexpected end of JSON input\n    at JSON.parse (<anonymous>)\n    at Object.<anonymous> (/home/climber/trip/scores.js:2:19)\n    at Module._compile (node:internal/modules/cjs/loader:1521:14)", options: ["The JSON has single quotes where double quotes are needed", "The file scores.js has a typo on line 2", "The text given to JSON.parse is empty or cut off, for example an empty file", "JSON.parse can't be called from a .js file"], answer: 2, why: "`Unexpected end of JSON input` means the text stopped before a complete value. An empty file does this. Line 2 of scores.js is where parse was called." },
+      { concept: "serialization", kind: "mc", q: "You save `{ start: new Date() }` as JSON and load it back with JSON.parse. What is `start` now?", options: ["A Date object, the same as before", "A string like \"2026-10-22T05:00:00.000Z\"", "undefined", "A number of milliseconds"], answer: 1, why: "JSON has no date type. stringify writes the Date as text, and parse gives you back that text, not a Date." },
     ],
   },
 
   // ───────────────────────────── Trail 3 ─────────────────────────────
   {
-    id: '6-3', type: 'learn', mode: 'phone', xp: 35, mins: 55,
+    id: '6-3', type: 'learn', mode: 'phone', xp: 35, mins: 58,
     title: 'Git: saving snapshots of your project',
-    teaches: ['git', 'repository', 'staging-area', 'commit', 'git-log'],
+    teaches: ['git', 'repository', 'staging-area', 'commit', 'git-log', 'hashing'],
     idea: [
       { h: 'Why you need Git', b: '`writeFileSync` replaces a file with no undo. Your own edits do the same: delete the wrong lines, save, and yesterday\'s working version is gone.\n\n**Git** fixes that. It takes **snapshots** of your whole project whenever you tell it to. Each snapshot is a **commit**, like a save point in a game. If you break something, you can go back. To see what changed, ask Git. Almost every professional team uses it, and employers expect you to know it.' },
       { h: 'The five commands you use most', b: 'You will repeat these in this order:\n**init** (once per project) → **status** → **add** → **commit** → **log**\n\n• `git init`: start tracking this folder\n• `git status`: what\'s changed?\n• `git add`: put changes in the bag for the next save\n• `git commit -m "…"`: make the save point\n• `git log --oneline`: list your save points\n\nEach one has its own Field Guide card.' },
+      { h: "Under the hood: every commit has a fingerprint", b: "That code like `ef4fec3` in `git log` is the start of a **hash**: a fingerprint Git computes from the commit's contents, its author, its message and the hash of the commit before it. A hash function always gives the same fingerprint for the same input, and a completely different one if a single character changes. You can't run it backwards to recover the input.\n\nBecause each commit includes the hash of the one before, nobody can quietly change old history: edit one old commit and its hash changes, and so does every hash after it. The same idea checks that a download isn't corrupted, and, with extra safeguards you'll meet at Camp IV, protects stored passwords." },
     ],
     example: {
       intro: 'A climber starts tracking a trip log with Git. This is real Git output. Tap through it.',
@@ -176,6 +180,7 @@ export const camp6 = [
       '`git init` once per project. Then: `git status` → `git add` → `git commit -m "message"`.',
       'The **staging area** is the bag you pack before each commit. `git add .` stages everything here and below.',
       '`git log --oneline` lists your commits, newest first. `HEAD -> main` = you are here.',
+      "A **hash** is a fingerprint of data: same input, same hash; one change, a totally different hash. Git names every commit by one.",
     ],
     questions: [
       { concept: 'git', kind: 'mc', q: 'What is Git, in one line?', options: ['A website where developers upload their projects so other people can find them', 'A program that records save points of your project so you can see and undo changes', 'A service that copies your folder to the cloud every night so nothing is lost', 'A package manager that downloads other people\'s code and installs it into your project'], answer: 1, why: 'Git is version control on your own computer. GitHub (later) is the website.' },
@@ -191,6 +196,8 @@ export const camp6 = [
       { concept: 'commit', kind: 'type', q: 'Type the full command to commit with the message `Add notes`.', accept: ['git commit -m "Add notes"', 'git commit -m \'Add notes\''], why: '`git commit -m "message"`, with quotes.' },
       { concept: 'git', kind: 'mc', q: 'Your computer doesn\'t have Git yet. Which command installs it?', options: ['sudo apt install git', 'git --version', 'sudo git install', 'sudo install git'], answer: 0, why: 'apt is this computer\'s package manager, and sudo lets it install for the whole system. `git --version` only checks that Git is there.' },
       { concept: 'staging-area', kind: 'mc', q: "You run `git status`. If you run `git commit -m \"Pack\"` now, which file goes into the commit?", code: "On branch main\nChanges to be committed:\n  (use \"git restore --staged <file>...\" to unstage)\n\tmodified:   gear.txt\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   notes.txt\n\nUntracked files:\n  (use \"git add <file>...\" to include in what will be committed)\n\tmap.txt", options: ["gear.txt only", "gear.txt and notes.txt", "gear.txt, notes.txt and map.txt", "notes.txt and map.txt"], answer: 0, why: "Only what is under 'Changes to be committed' is staged. notes.txt is changed but not staged, and map.txt is not tracked yet." },
+      { concept: "hashing", kind: "mc", q: "You change one letter in a commit message from last week (rewriting history). What happens to the hashes?", options: ["Nothing changes", "Only that commit's hash changes", "That commit's hash changes, and so does every commit's after it", "Every commit in the project changes, even older ones"], answer: 2, why: "Each commit's hash includes its parent's hash, so a change ripples forward through every later commit." },
+      { concept: "hashing", kind: "mc", q: "Why can't someone recover your file from its hash?", options: ["Hashes are encrypted with a password", "A hash is a one-way fingerprint: there is no way to run it backwards", "Git deletes the original file", "They can, with git log"], answer: 1, why: "Hash functions are built to be one-way. Many different inputs could in theory share a fingerprint, so the hash alone doesn't contain the file." },
     ],
   },
 
@@ -259,12 +266,13 @@ export const camp6 = [
 
   // ───────────────────────────── Trail 5 ─────────────────────────────
   {
-    id: '6-5', type: 'learn', mode: 'phone', xp: 35, mins: 55,
+    id: '6-5', type: 'learn', mode: 'phone', xp: 35, mins: 58,
     title: 'Branches and merging',
-    teaches: ['branch', 'merge', 'merge-conflict'],
+    teaches: ['branch', 'merge', 'merge-conflict', 'commit-graph'],
     idea: [
       { h: 'Try changes without risking your working code', b: 'You have a working project on `main`. You want to try something new that might break things for a while. A **branch** is a separate line of commits, like scouting a side route while the main route stays as it is.\n\nIf the change works, you **merge** it into main. If it doesn\'t, you drop the branch and main is untouched. Teams work this way: every feature gets its own branch.' },
       { h: 'Merge conflicts', b: 'Usually Git combines branches by itself. But if both branches changed **the same line** in different ways, Git won\'t guess. It stops and asks you to choose. That\'s a **merge conflict**. It sounds scary, but it\'s routine, and this trail shows you how to resolve one.' },
+      { h: "Under the hood: a branch is just a pointer", b: "Each commit stores the hash of its **parent**, the commit before it. So history is a chain you can walk backwards, and a merge commit has **two** parents. Computer scientists call that shape a **graph**: commits are the dots, parent links are the arrows, and the arrows never loop back.\n\nA **branch** is surprisingly small: a name that points at one commit (a tiny file holding a hash). When you commit, the branch you're on slides forward to the new commit. `HEAD` marks which branch you're on. A fast-forward merge simply slides the pointer ahead, with no new commit at all." },
     ],
     example: {
       intro: 'Adding Day 3 on a branch, then merging it into main. Real output. Tap through it.',
@@ -305,6 +313,7 @@ export const camp6 = [
       '**Merge INTO where you stand:** `git switch main`, then `git merge feature`.',
       'Fast-forward = main simply catches up. Otherwise Git makes a **merge commit**.',
       '**Conflict:** edit the file, remove the three marker lines, `git add`, `git commit`. `git merge --abort` cancels.',
+      "History is a **graph**: each commit points to its parent, and a merge commit has two. A branch is just a name pointing at one commit.",
     ],
     questions: [
       { concept: 'branch', kind: 'mc', q: 'Why make a branch for a new feature?', options: ['Branches make your code run faster because Git skips the other work', 'So you can work and commit without touching the working main version', 'To back up your work to GitHub so it\'s safe while you experiment', 'To make a full second copy of the folder that you can edit separately'], answer: 1, why: 'main stays safe while the side route is explored.' },
@@ -318,6 +327,8 @@ export const camp6 = [
       { concept: 'merge-conflict', kind: 'mc', q: 'Mid-conflict you panic and want everything back how it was before the merge. Real Git command?', options: ['git revert HEAD', 'git merge --abort', 'git restore .', 'git checkout main'], answer: 1, why: '`git merge --abort` cancels the merge safely.' },
       { concept: 'merge-conflict', kind: 'mc', q: "After `git merge summit` you open gear.txt and see this. What do you do?", code: "rope\nstove\ntent\n<<<<<<< HEAD\nbase tent\n=======\nsummit tent\n>>>>>>> summit", options: ["Edit the file to the lines you want, delete the three marker lines, then git add and git commit", "Run git merge summit again until the markers go away", "Delete gear.txt and run git restore to get a clean copy", "Commit as it is, because the markers are only comments"], answer: 0, why: "Git can't choose between two edits on the same lines, so it writes both with markers and waits. You decide the final text, remove `<<<<<<<`, `=======` and `>>>>>>>`, then stage and commit." },
       { concept: 'branch', kind: 'mc', q: "You run `git log --oneline --decorate`. Which branch are you on, and what does the other name mean?", code: "74ce2f8 (HEAD -> main) Pack base tent\nb462630 (summit) Pack summit tent\ned278df Add tent\ncc9417d Add gear list", options: ["On summit; main's newest commit is b462630", "On main; summit and main both point at 74ce2f8", "On main; the summit branch's newest commit is b462630", "On a detached commit; neither branch is checked out"], answer: 2, why: "`HEAD -> main` is where you are now. A name in brackets on another commit is a branch pointing there, so summit's newest commit is b462630." },
+      { concept: "commit-graph", kind: "mc", q: "What is a Git branch, underneath?", options: ["A full copy of every file in the project", "A name that points at one commit", "A separate folder on the disk", "A list of every change ever made"], answer: 1, why: "A branch is a tiny file holding one commit hash. That's why making a branch is instant, even in a huge project." },
+      { concept: "commit-graph", kind: "mc", q: "How is a merge commit different from a normal commit?", options: ["It has no files", "It has two parent commits instead of one", "It can't be undone", "It has no hash"], answer: 1, why: "It joins two lines of history, so it points back to the tip of both branches." },
     ],
   },
 
@@ -598,6 +609,8 @@ console.log(\`\${names.length} climbers on the board\`)` },
       { concept: 'merge', kind: 'mc', q: 'To bring `idea` into main, you first…', options: ['stay on idea', 'git switch main', 'git push', 'git merge main'], answer: 1 },
       { concept: 'merge-conflict', kind: 'mc', q: 'Which lines must you delete when resolving a conflict?', options: ['Every line both sides share', 'The <<<<<<<, ======= and >>>>>>> marker lines', 'Only your version', 'None: Git removes them when you run git add'], answer: 1 },
       { concept: 'push-pull', kind: 'mc', q: 'Your push was rejected because GitHub has commits you don\'t. Do this:', options: ['git push --force', 'git pull, then git push', 'git commit --amend', 'git reset --hard, then git push'], answer: 1 },
+      { concept: "hashing", kind: "mc", q: "A teammate force-pushes an edited version of an old commit. Why does everyone's Git notice?", options: ["GitHub sends an email", "The edited commit, and every commit after it, now has a different hash", "Git compares file sizes", "It doesn't notice"], answer: 1, why: "Hashes chain through the parents, so rewriting one commit changes every hash after it." },
+      { concept: "serialization", kind: "mc", q: "What prints?", code: "console.log(JSON.stringify({ a: 1, f() {} }))", options: ["{\"a\":1,\"f\":\"function\"}", "{\"a\":1}", "{\"a\":1,\"f\":null}", "An error"], answer: 1, why: "Functions can't be serialized to JSON, so stringify skips them." },
     ],
   },
 ]

@@ -125,12 +125,13 @@ if (problem !== "") {
 export const camp5 = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: '5-1', type: 'learn', mode: 'phone', xp: 30, mins: 45,
+    id: '5-1', type: 'learn', mode: 'phone', xp: 30, mins: 48,
     title: 'Reading an error message',
     teaches: ['error-types', 'stack-trace'],
     idea: [
       { h: 'What an error message tells you', b: 'Every developer writes code that crashes, every day. The difference is that a pro **reads** the error.\n\nWhen Node crashes it prints a short report: **what** went wrong, **where**, and **how the program got there**. Beginners often see a wall of red text and panic. By the end of this trail you\'ll know which lines to read.' },
       { h: 'What this camp covers', b: 'The Western Cwm is a valley of hidden crevasses, crossed by testing every step. In this camp you\'ll learn to read errors, find bugs that print no error, handle unusual input, and build a real command-line tool: a **day planner** you run with `node planner.js 9 17`.\n\nEach new idea gets a **Field Guide card**. Read them closely: this camp is about details.' },
+      { h: "Under the hood: a stack trace is the call stack", b: "Remember the **call stack** from Camp I, the pile of function calls waiting for each other? When a program crashes, Node prints that pile at the moment of the crash. That printout is the **stack trace**. The top line is the function that was running; each line below it is the function that called the one above. Read it top down and you are walking back along the chain of calls that led to the bug." },
     ],
     example: {
       intro: 'planner.js has a function, buildPlan, that should print the hours from 8 to 11. Line 8 is console.log(formatHour(hour)), and line 12 calls buildPlan(8, 11). Here is what Node prints when you run it. Tap through the report, top to bottom.',
@@ -232,11 +233,12 @@ export const camp5 = [
 
   // ───────────────────────────── Trail 3 ─────────────────────────────
   {
-    id: '5-3', type: 'learn', mode: 'phone', xp: 35, mins: 50,
+    id: '5-3', type: 'learn', mode: 'phone', xp: 35, mins: 53,
     title: 'Debugging: find a bug step by step',
-    teaches: ['debugging-process', 'console-debugging', 'rubber-duck'],
+    teaches: ['debugging-process', 'console-debugging', 'rubber-duck', 'binary-search'],
     idea: [
       { h: 'Bugs that print no error', b: 'An error message tells you what went wrong and where. Some bugs give **no error at all**: the program runs and prints the wrong answer.\n\nFor those you need a **process**, not luck. Like climbers testing the snow before each step, you check one thing at a time: reproduce the bug, look inside with **console.log**, make one guess, test one change. When you\'re stuck, explain the code out loud to a rubber duck (a toy duck on your desk; it really works).' },
+      { h: "Under the hood: find it by halving", b: "Debugging is the scientific method: you **guess** a cause (a hypothesis), **test** it with one change or one log, and **keep or throw out** the guess based on what you see. Never change three things at once, or you can't tell which one mattered.\n\nWhen you have no idea where a bug is, halve the search. Check the middle of the code: is the value already wrong there? Then the bug is above; if not, below. Each check throws away half of what's left, so even 1,000 lines take only about 10 checks. That's **binary search**, the same O(log n) method computers use to find a name in a sorted list of millions. Developers use it on history too: `git bisect` halves a list of saved versions to find the exact change that broke something." },
     ],
     example: {
       intro: 'Three days of climbing: 300 m, 450 m and 250 m. The total should be 1000, but it prints 700. No error. Watch a debug log find the bug.',
@@ -267,6 +269,8 @@ export const camp5 = [
       '**console.log debugging**: label your logs, show types with `typeof` or `JSON.stringify`, log *before* the suspicious line.',
       '**Rubber duck**: explain each line and its values out loud; the bug appears where what you *say* differs from what you *wrote*.',
       'Delete your debug logs when you\'re done.',
+      "Debugging is the scientific method: guess a cause, test one change, keep or drop the guess.",
+      "**Binary search:** halve what's left each step. 1,000 places take about 10 checks, a million about 20.",
     ],
     questions: [
       { concept: 'debugging-process', kind: 'mc', q: 'A friend says your tool "sometimes prints the wrong plan". What\'s your FIRST step?', options: ['Change the code you suspect', 'Reproduce it: find the exact input that makes it go wrong every time', 'Assume it was a fluke and wait for it to happen again', 'Add twenty console.logs everywhere'], answer: 1, why: 'If you can\'t make it happen on demand, you can\'t prove you\'ve fixed it.' },
@@ -277,6 +281,8 @@ export const camp5 = [
       { concept: 'debugging-process', kind: 'mc', q: 'The total says 700 but should be 1000. A teammate adds `total = total + 300` at the end. That\'s…', options: ['A proper fix, because the total now shows the right number', 'Fixing the symptom, not the cause: it breaks with any other list', 'A boundary test of the loop, to see what the last item adds', 'A type conversion fix, as the total was the wrong kind of value'], answer: 1, why: 'Find out why 300 went missing (the loop started at 1) and fix that.' },
       { concept: 'console-debugging', kind: 'mc', q: 'The bug is fixed. What do you do with your debug logs?', options: ['Leave them in', 'Delete them', 'Leave them in, in case the bug comes back', 'Change them all to console.error'], answer: 1, why: 'Debug logs clutter the output and can break tools (and exact-output checks) that read it.' },
       { concept: 'debugging-process', kind: 'mc', q: 'After fixing a bug, what should you run again?', options: ['Only the input that failed, since that is the one you fixed', 'The input that failed, the inputs that already worked, and the edge cases', 'Nothing, because the fix already worked on the input that failed', 'Only brand-new inputs, because the old ones were already tested'], answer: 1, why: 'A fix can break something else. Re-check the old good inputs too.' },
+      { concept: "binary-search", kind: "mc", q: "Your program worked 1,024 saved versions ago and is broken now. Checking the version halfway between good and bad each time, about how many checks do you need at most?", options: ["10", "512", "1,024", "100"], answer: 0, why: "Each check halves what's left: 1,024 → 512 → 256 → … → 1 takes 10 halvings. That's O(log n)." },
+      { concept: "binary-search", kind: "mc", q: "Binary search only works if the list is…", options: ["Short", "Sorted", "Made of numbers", "Stored in a file"], answer: 1, why: "Throwing away half only makes sense if you know which half the item must be in, and that needs order." },
     ],
   },
 
@@ -340,11 +346,12 @@ export const camp5 = [
 
   // ───────────────────────────── Trail 5 ─────────────────────────────
   {
-    id: '5-5', type: 'learn', mode: 'phone', xp: 30, mins: 40,
+    id: '5-5', type: 'learn', mode: 'phone', xp: 30, mins: 43,
     title: 'Edge cases: unusual input',
-    teaches: ['edge-cases'],
+    teaches: ['edge-cases', 'sorting'],
     idea: [
       { h: 'Normal input vs unusual input', b: 'Your program probably works for normal input: `node planner.js 9 17`. Real users also type other things: nothing at all, blank, "nine", 9.5, -2, 25, or the hours backwards.\n\nThose unusual inputs are **edge cases**, and they\'re where most bugs hide. A good developer goes looking for them **before** anyone else finds them, and decides for each one: accept it, or reject it with a clear message. Never crash, and never quietly print a wrong result.' },
+      { h: "Under the hood: the sorting trap", b: "Here's a real edge case that catches professionals: `[10, 9, 1].sort()` gives `[1, 10, 9]`. By default JavaScript's `sort` compares items **as text**, and as text \"10\" comes before \"9\", the way \"ab\" comes before \"b\". For numbers, pass a compare function: `.sort((a, b) => a - b)`.\n\nSorting is one of the most studied problems in computer science. Simple methods, like bubble sort (swap neighbours until nothing moves), take **O(n²)** steps: fine for 100 items, hopeless for a million. Good methods like merge sort split the list in half, sort each half and merge them, in **O(n log n)**. That is the best any method that compares items can do." },
     ],
     example: {
       intro: 'A tiny test bench: run one hour-checker against a whole list of tricky inputs. Tap through.',
@@ -384,6 +391,8 @@ export const camp5 = [
       '`Number("")` is 0, so check blanks yourself with `text.trim() === ""`.',
       '`Number.isInteger(x)` rejects NaN, decimals and Infinity in one go.',
       'For every edge case: accept it, or reject it with a **clear message**. Never crash, never quietly print a wrong result.',
+      "`sort()` compares as **text** by default: use `.sort((a, b) => a - b)` for numbers.",
+      "Good sorting is O(n log n); simple swapping methods are O(n²).",
     ],
     questions: [
       { concept: 'edge-cases', kind: 'mc', q: 'What is an edge case?', options: ['A bug in the last line of a file, where programs tend to break', 'An unusual input at the edge of what the program expects, like blank, zero or too big', 'A bug that only shows up on some computers, such as older machines', 'A syntax error at the very edge of a line, such as a missing bracket'], answer: 1, why: 'The edges of the input range are where programs most often break.' },
@@ -392,6 +401,8 @@ export const camp5 = [
       { concept: 'edge-cases', kind: 'mc', q: 'Why does `Number("")` being 0 matter for a planner?', options: ['It does not matter, since an empty box is treated as an error anyway', 'Blank input slips past a NaN check, so the plan quietly starts at midnight', 'It crashes the program with an error, so the user notices at once', 'Blank input becomes NaN, and the check catches it only too late'], answer: 1, why: 'Quietly wrong is worse than a clear error. Check blank text yourself.' },
       { concept: 'edge-cases', kind: 'mc', q: 'Someone types -2 as the start hour. Best response?', options: ['Silently change it to 2', 'Reject it with a clear message', 'Let it crash', 'Silently use 0 instead'], answer: 1, why: 'Silently changing input hides mistakes. A clear message lets them fix it.' },
       { concept: 'edge-cases', kind: 'mc', q: 'Which of these is NOT an edge case for `node planner.js <start> <end>`?', options: ['node planner.js 9 17', 'node planner.js (no arguments)', 'node planner.js 17 9', 'node planner.js 9.5 13'], answer: 0, why: '9 to 17 is the normal "happy path". The others are missing, backwards and decimal input.' },
+      { concept: "sorting", kind: "mc", q: "What prints?", code: "console.log([10, 9, 1].sort())", options: ["[1, 9, 10]", "[1, 10, 9]", "[10, 9, 1]", "An error"], answer: 1, why: "sort() compares as text by default, and \"10\" comes before \"9\" as text." },
+      { concept: "sorting", kind: "mc", q: "Why would a team pick merge sort (O(n log n)) over bubble sort (O(n²)) for a million items?", options: ["Merge sort uses less code", "n² for a million is a trillion steps; n log n is about 20 million", "Bubble sort can't sort numbers", "Merge sort doesn't need to compare items"], answer: 1, why: "Growth is what matters at scale: 1,000,000² is 10¹², while 1,000,000 × 20 is 2 × 10⁷." },
     ],
   },
 
@@ -684,6 +695,8 @@ TypeError: Cannot read properties of undefined (reading 'trim')
       { concept: 'process-argv', kind: 'mc', q: 'What does `process.argv.slice(2)` give for `node total.js 5 6`?', options: ['[\'node\', \'total.js\']', '[\'5\', \'6\']', '[5, 6]', '\'5 6\''], answer: 1 },
       { concept: 'exit-codes', kind: 'mc', q: 'Your tool prints an error but exits with 0. What breaks?', options: ['Nothing, since the error text was already printed to the screen', 'Scripts and other tools think it succeeded and carry on', 'The error text is printed twice, once by each stream', 'The program runs slower next time, because failures are cached'], answer: 1 },
       { concept: 'cli-tool', kind: 'mc', q: 'Best response when the user forgets every argument?', options: ['Print `Done!` and exit with 0, because nothing was asked for so nothing failed', 'Print nothing and exit quietly, so the tool never annoys the user', 'Print a usage message like `Usage: node planner.js <start> <end>` and exit with 1', 'Guess some sensible default hours, like 9 to 17, and run anyway'], answer: 2 },
+      { concept: "binary-search", kind: "mc", q: "A bug appeared somewhere in the last 64 changes. Testing the middle change each time, what's the most tests you need?", options: ["6", "32", "64", "8"], answer: 0, why: "64 → 32 → 16 → 8 → 4 → 2 → 1: six halvings." },
+      { concept: "sorting", kind: "mc", q: "What prints?", code: "console.log([5, 30, 2].sort())", options: ["[2, 5, 30]", "[2, 30, 5]", "[30, 5, 2]", "[5, 30, 2]"], answer: 1, why: "Compared as text, \"2\" < \"30\" < \"5\", because text is compared character by character." },
     ],
   },
 ]

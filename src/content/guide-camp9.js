@@ -570,4 +570,62 @@ export const GUIDE_CAMP9 = {
     tips: ['Open the browser\'s Network tab: the preflight appears as a separate OPTIONS request just before the real one.', 'A request that works in `curl` but fails in the page is the classic CORS sign.'],
     related: ['client-server', 'middleware', 'http-methods', 'status-codes'],
   },
+
+  // ─────────────── How big servers work ───────────────
+  'tcp-ip': {
+    term: 'TCP/IP (how data crosses the internet)', short: 'The rules that cut data into packets, send them across the world, and put them back in order.',
+    what: "Data does not travel the internet in one piece. It is cut into small chunks called **packets**. Two partner rules move them.\n\n**IP** (Internet Protocol) gives every packet the destination address. Routers along the way read that address and pass the packet to the next router, hop by hop. Packets from the same message can take different routes, arrive out of order, or get lost.\n\n**TCP** (Transmission Control Protocol) sits on top of IP and fixes that. It numbers the packets, puts them back in order, and asks for a re-send when one is missing. Your program sees a reliable stream, as if the wire were perfect.",
+    how: "Think of mailing a book one page per envelope. IP is the address on each envelope. The post office sends each one by whatever route is free, so they arrive mixed up. TCP is the page numbers and the \"I did not get page 7, send it again\" note.\n\n**Ports.** An address finds the computer. A **port number** finds the program on it. 443 is HTTPS, 80 is HTTP, 22 is SSH, and 3000 is a common choice for a local development server.\n\n**Layers.** Each layer only talks to the one above it and the one below. HTTP does not care how packets travel. TCP does not care what the bytes mean. That is why HTTP works the same over Wi-Fi, cable or mobile data.\n\nHTTP normally rides on TCP. HTTP/3 uses QUIC, which runs over UDP, a simpler transport without TCP's ordering and re-sending.",
+    usage: [
+      { code: '$ curl -v http://localhost:3000/', out: '*   Trying 127.0.0.1:3000...\n* Connected to localhost (127.0.0.1) port 3000\n> GET / HTTP/1.1\n> Host: localhost:3000', note: 'The first two lines are TCP and IP at work: find the address, open a connection to port 3000. The `>` lines are HTTP, sent over that connection.' },
+      { code: '$ traceroute example.com', out: ' 1  router.lan (192.168.1.1)  1.2 ms\n 2  isp-gateway (10.20.0.1)  8.4 ms\n 3  core1.isp.net (203.0.113.9)  12.1 ms\n 4  edge.example.com (198.51.100.7)  24.6 ms', note: 'Each line is one router hop. The times are how long each hop took to answer. The names and numbers here are made up.' },
+    ],
+    uses: ['Understanding why a request can be slow or fail: every hop and every re-send costs time.', 'Reading port numbers in URLs, error messages and server settings.', 'Knowing which layer to blame: a bad address is an IP problem, a wrong port is a program problem.'],
+    when: ['You see a connection error and need to know whether the machine, the port or the program is the problem.', 'You choose a port for a server.'],
+    whenNot: ['You rarely write TCP or IP code yourself. Your language and your server library do it for you.'],
+    mistakes: [
+      { prose: 'Thinking one request travels as one unbroken piece.', why: 'It is split into packets that may take different routes. TCP rebuilds the order for you.' },
+      { prose: 'Mixing up the address and the port.', why: 'The address finds the computer. The port finds the program on it. A right address with a wrong port still fails.' },
+    ],
+    tips: ['`Connection refused` usually means the computer answered but nothing listens on that port.', 'A connection that just hangs often means packets are being dropped on the way.', 'Latency is mostly distance and hops. Fewer hops and closer servers are faster.'],
+    related: ['client-server', 'port', 'http-methods', 'latency', 'dns-domains', 'https'],
+  },
+
+  scaling: {
+    term: 'Scaling (handling more users)', short: 'Making a service cope with more traffic: a bigger machine, or more machines.',
+    what: "**Scaling** means keeping your service fast when more people use it. There are two ways.\n\n**Vertical scaling** means a bigger machine: more CPU, more memory. It is simple, because your app does not change. But there is a ceiling (the biggest machine you can buy), and if that one machine fails, everything is down.\n\n**Horizontal scaling** means more machines running the same app behind a **load balancer**, which spreads incoming requests across them. You can keep adding machines, and one failing does not stop the rest.",
+    how: "Horizontal scaling has one big rule: servers must be **stateless**. That means a server keeps no user data in its own memory between requests. A user's next request may land on a different machine, and that machine knows nothing about the first.\n\nSo anything that must be remembered (sessions, carts, counters) goes in a **database** or another store that every server shares. Then any server can answer any request, and you can add or remove servers freely.\n\nThe load balancer also checks that each server is healthy, and stops sending requests to one that is not.",
+    usage: [
+      { code: "let visits = 0\n\napp.get('/visit', (req, res) => {\n  visits++\n  res.send(`Visits: ${visits}`)\n})", note: 'Stateful. The count lives in this one process. Run two servers and each has its own count, so users see numbers jump around. Restarting also resets it to 0.' },
+      { code: "app.get('/visit', async (req, res) => {\n  // read the count from the database, add 1, save it back\n  const visits = await db.incrementVisits()\n  res.send(`Visits: ${visits}`)\n})", note: 'Stateless. The count is in a shared database (`db.incrementVisits` stands for your own database code), so every server shows the same number and a restart loses nothing.' },
+    ],
+    uses: ['Surviving a traffic spike, like a launch day.', 'Keeping a site up when one machine fails.', 'Deploying a new version one machine at a time without downtime.'],
+    when: ['One machine is regularly near its limit on CPU or memory.', 'You need the service to stay up even if a machine dies.'],
+    whenNot: ["Don't scale before you need to. A small app on one modest machine is simpler, cheaper and easier to fix.", 'Do not add machines to fix slow code. Find the slow part first.'],
+    mistakes: [
+      { prose: 'Keeping sessions or carts in a variable in server memory.', why: 'With more than one server, the next request may hit a machine that never saw them. Store them in a database.' },
+      { prose: 'Saving uploaded files on the server\'s own disk.', why: 'Other servers cannot see that file. Use shared storage instead.' },
+    ],
+    tips: ['Ask of every variable: "if two servers ran this, would they disagree?"', 'The database often becomes the next bottleneck after the web servers.', 'Hosts that run many copies of your app for you only work if the app is stateless.'],
+    related: ['client-server', 'hosting', 'process', 'health-check', 'caching', 'latency'],
+  },
+
+  caching: {
+    term: 'Caching', short: 'Keeping a copy of an answer closer or faster to reach, so slow work is not repeated.',
+    what: "**Caching** means saving the result of slow work and reusing it. Instead of fetching or computing the same thing again, you hand back the saved copy.\n\nThere are three common layers:\n- **Browser cache.** The browser keeps files it already downloaded. Your server controls this with the `Cache-Control` header, like `Cache-Control: public, max-age=3600` (\"keep this for 3600 seconds\").\n- **CDN** (content delivery network). Copies of your files on servers around the world, near your users. A visitor far from your server gets the file from a nearby copy, which cuts latency.\n- **Server-side cache.** Your server remembers results of slow work, like a database query, for a short time.",
+    how: "A cache has two outcomes. A **hit** means the saved copy was found and used. A **miss** means it was not, so the slow work runs and the result is saved for next time.\n\nThe hard part is **invalidation**: knowing when a saved copy is stale because the real data changed. A cache that never updates shows old data forever.\n\nA common trick for files is to put a hash of the content in the file name, like `app.3f9a1c.js`. When the file changes, the name changes, so browsers and CDNs fetch the new one. The old name can be cached for a very long time, because that name never changes its content.",
+    usage: [
+      { code: "app.get('/logo.png', (req, res) => {\n  res.set('Cache-Control', 'public, max-age=3600')\n  res.sendFile(logoPath)\n})", note: 'Tells browsers and CDNs they may reuse this file for one hour (3600 seconds) without asking again.' },
+      { code: '$ curl -I https://example.com/logo.png', out: 'HTTP/2 200\ncontent-type: image/png\ncache-control: public, max-age=3600\nage: 120', note: '`-I` asks for headers only. `cache-control` shows the rule. `age` (when a CDN adds it) is how many seconds the saved copy has already been kept.' },
+    ],
+    uses: ['Making repeat page loads fast by reusing downloaded files.', 'Serving files from a CDN near the user.', 'Saving the result of an expensive database query for a minute.'],
+    when: ['The same answer is asked for again and again, and it changes rarely.', 'Files like images, scripts and fonts that only change when you deploy.'],
+    whenNot: ['Private data that differs per user, unless the cache is also per user. Mark such responses `Cache-Control: private` or `no-store`.', 'Data that must always be fresh, like a bank balance.'],
+    mistakes: [
+      { prose: 'Caching a file for a long time under a fixed name.', why: 'After you deploy a fix, users keep the old copy. Use hashed file names, or a short `max-age`.' },
+      { prose: 'Caching a response that contains one user\'s private data in a shared cache.', why: 'The next user could be served it. Use `private` or `no-store`.' },
+    ],
+    tips: ['When a change "does not show up", suspect a cache. A hard refresh bypasses the browser cache.', 'Open the Network tab to see which files came from cache.', 'Caching trades freshness for speed. Decide how stale is acceptable for each thing.'],
+    related: ['latency', 'hosting', 'deployment', 'scaling', 'http-methods', 'request-response'],
+  },
 }

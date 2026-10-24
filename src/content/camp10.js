@@ -28,12 +28,13 @@ INSERT INTO accounts VALUES (1, 'ana', '$2b$12$sP08055BwvEFkZqtVeCXFOyQKU2S7g45.
 export const camp10 = [
   // ───────────────────────────── Trail 1 ─────────────────────────────
   {
-    id: '10-1', type: 'learn', mode: 'phone', xp: 30, mins: 110,
+    id: '10-1', type: 'learn', mode: 'phone', xp: 30, mins: 113,
     title: 'What is a database?',
-    teaches: ['database', 'table-row-column', 'primary-key', 'sql-select'],
+    teaches: ['database', 'table-row-column', 'primary-key', 'sql-select', 'normalization'],
     idea: [
       { h: 'What a database is', b: 'An expedition has to record who is on the team, which camp each person is at, what gear they carry and whose permit is approved. Lose that record and nobody knows who is where.\n\nApps keep this kind of record in a **database**. Your JSON files from Camp II were like a notebook in your pocket. A database is more like a proper office: the data is organised into **tables**, every row has a unique **id**, and a small language called **SQL** is used to ask questions.\n\nThe SQL in this camp runs on **real SQLite**, the same database that sits inside phones and browsers. What works here works on a real computer.' },
       { h: 'Why databases need protecting', b: 'Databases hold what people care about most: passwords, money, addresses, messages. That makes them the first target for attackers. The second half of this camp covers how to protect a database, and **when to be extra careful**.\n\nRead each Field Guide card fully, especially the **⛔ Don\'t use it when** parts.' },
+      { h: "Under the hood: one fact, one place", b: "Good database design follows one rule above all: **store each fact once**. If a `climbs` table repeats the climber's name and email on every row, changing an email means updating every one of those rows, and missing one leaves the data disagreeing with itself. Instead, keep climbers in their own table and give each climb a `climber_id` that points to the right row. That's **normalization**, and it's why real apps have many small tables joined by ids.\n\nSometimes teams copy data on purpose to make reading faster (denormalization), but they do it knowingly, with a plan to keep the copies in step." },
     ],
     example: {
       intro: 'How a table is made, and how you read from it. Lines starting with `--` are SQL comments; here they show the results. Tap through.',
@@ -72,6 +73,7 @@ export const camp10 = [
       'Every row gets a unique **primary key**, usually `id INTEGER PRIMARY KEY`. Other tables point at rows by that id, and a column holding another table\'s id (like `camp_id`) is called a **foreign key**.',
       '`SELECT columns FROM table;` reads data. `*` means every column. It never changes anything.',
       '**NULL** means unknown, not zero and not empty.',
+      "**Normalization:** store each fact once, in its own table, and point to it by id instead of copying it.",
     ],
     questions: [
       { concept: 'database', kind: 'mc', q: 'Why would an app use a database instead of a JSON file?', options: ['A database keeps data in memory, so it is always faster than reading any file from disk', 'Many users can read and write at once safely, and it can find one row among millions fast', 'JSON files cannot store lists or numbers, so an app has to use a database for those', 'Databases encrypt everything automatically, which a JSON file cannot do at all'], answer: 1, why: 'Safe concurrent writes, fast search and enforced rules are what databases are built for.' },
@@ -84,6 +86,7 @@ export const camp10 = [
       { concept: 'sql-select', kind: 'type', q: 'Type the query that reads every column of every row from the `camps` table.', accept: ['SELECT * FROM camps;', 'SELECT * FROM camps'], why: '`*` means every column.' },
       { concept: 'sql-select', kind: 'mc', q: 'Which value is written correctly as text in SQL?', options: ['Nepal', '[Nepal] (square brackets)', '\'Nepal\' (single quotes)', '`Nepal`'], answer: 2, why: 'Text goes in single quotes. Double quotes are for table and column names (SQLite forgives them, other databases don\'t).' },
       { concept: "sql-select", kind: "mc", q: "You run this query and get an error. What is wrong?", code: "sqlite> SELECT item FROM gears;\nParse error: no such table: gears", options: ["The item column was never created", "The query needs a WHERE before it can run", "No table has exactly that name: compare it with the CREATE TABLE", "The database file is locked by another program"], answer: 2, why: "`no such table: gears` repeats the name you typed. Compare it letter by letter with the table you created: here the table is called `gear`." },
+      { concept: "normalization", kind: "mc", q: "A `climbs` table stores the climber's email on every climb. Ana changes her email, and only some rows get updated. What design rule was broken?", options: ["Every table needs a DELETE", "Store each fact once: emails belong in a climbers table, and climbs should point to it by id", "Emails must be numbers", "Tables can't have more than 3 columns"], answer: 1, why: "Copies drift apart. With one climbers row per person, there is only one email to change." },
     ],
   },
 
@@ -147,12 +150,13 @@ export const camp10 = [
 
   // ───────────────────────────── Trail 3 ─────────────────────────────
   {
-    id: '10-3', type: 'learn', mode: 'phone', xp: 30, mins: 105,
+    id: '10-3', type: 'learn', mode: 'phone', xp: 30, mins: 108,
     title: 'Changing data: INSERT, UPDATE, DELETE',
-    teaches: ['sql-insert', 'sql-update-delete'],
+    teaches: ['sql-insert', 'sql-update-delete', 'transaction'],
     idea: [
       { h: 'Adding, changing and deleting rows', b: 'So far you\'ve only read data. Now you\'ll **write** it: add new rows (INSERT), change existing ones (UPDATE) and remove them (DELETE). With SELECT, that\'s all four jobs every app does with data, nicknamed **CRUD**: **C**reate (INSERT), **R**ead (SELECT), **U**pdate (UPDATE), **D**elete (DELETE).\n\nOne warning before you start, the most important sentence in SQL: **UPDATE and DELETE change EVERY row unless a WHERE says otherwise.** No "are you sure?". Read the **⛔** sections twice.' },
       { h: 'Test your WHERE with a SELECT first', b: 'Climbers test a snow bridge before they trust it. Do the same with a WHERE: run it as a **SELECT** first, check exactly which rows come back, and only then turn it into an UPDATE or DELETE.' },
+      { h: "Under the hood: all or nothing", b: "Some changes only make sense together. Moving a permit from one climber to another is two UPDATEs. If the power cuts out between them, the permit could vanish or end up with both. A **transaction** wraps them: `BEGIN;` … `COMMIT;` makes them happen together, and `ROLLBACK;` cancels the lot.\n\nDatabases promise four things about transactions, known as **ACID**: **A**tomic (all or nothing), **C**onsistent (the rules still hold afterwards), **I**solated (overlapping transactions don't see each other's half-finished work), and **D**urable (once committed, it survives a crash).\n\nIsolation alone doesn't stop every race. The lost \"like\" from Lhotse Face still happens if two requests each read 5 and write 6, even inside transactions, at the settings most databases use by default. The fix is to let the database do the change in one statement (`UPDATE posts SET likes = likes + 1`), lock the row first, or add a UNIQUE rule so a double-booking is refused." },
     ],
     example: {
       intro: 'Adding, changing and removing gear, the careful way. Tap through.',
@@ -198,6 +202,7 @@ export const camp10 = [
       '`DELETE FROM table WHERE …;` removes rows.',
       'No WHERE = EVERY row. SELECT with the same WHERE first, and target single rows by id.',
       '`BEGIN;` … `ROLLBACK;` is an undo button; `COMMIT;` makes it final.',
+      "A **transaction** (BEGIN … COMMIT) makes several changes happen all together or not at all: atomic, consistent, isolated, durable (ACID).",
     ],
     questions: [
       { concept: 'sql-insert', kind: 'mc', q: 'Which INSERT is written best?', options: ["INSERT INTO camps VALUES ('Camp V', 8300);", "INSERT INTO camps (name, altitude) VALUES ('Camp V', 8300);", 'INSERT INTO camps SET name = \'Camp V\', altitude = 8300;', "INSERT INTO camps (id, name, altitude) VALUES (1, 'Camp V', 8300);"], answer: 1, why: 'List the columns, leave out id. The first fails (3 columns, 2 values); the last clashes with id 1.' },
@@ -211,17 +216,20 @@ export const camp10 = [
       { concept: 'sql-update-delete', kind: 'type', q: 'Type the statement that sets Bo\'s (id 2) age to 42.', accept: ['UPDATE climbers SET age = 42 WHERE id = 2;', 'UPDATE climbers SET age = 42 WHERE id = 2', 'UPDATE climbers SET age=42 WHERE id=2;', 'UPDATE climbers SET age=42 WHERE id=2'], why: 'UPDATE table SET column = value WHERE id = …' },
       { concept: "sql-insert", kind: "mc", q: "This INSERT fails. What is the fix?", code: "sqlite> INSERT INTO gear (weight_kg, climber_id) VALUES (1.2, 3);\nRuntime error: NOT NULL constraint failed: gear.item (19)", options: ["Set weight_kg to 0 instead of 1.2", "Use UPDATE instead of INSERT", "Give the new row an id of 3", "Add a value for the item column"], answer: 3, why: "`NOT NULL constraint failed: gear.item` names the column that was left empty. The statement did not list `item`, so it got NULL, which that column refuses." },
       { concept: "sql-update-delete", kind: "mc", q: "You only meant to move the headlamp (id 7). What does the 7 in this output tell you?", code: "sqlite> UPDATE gear SET climber_id = 3;\nsqlite> SELECT changes();\n7", options: ["Every row in gear changed: the UPDATE had no WHERE", "Only the headlamp changed, because 7 is its id", "Seven columns were changed in one row", "The UPDATE stopped at its seventh row because of an error"], answer: 0, why: "`changes()` counts the rows the last statement touched. The table has 7 rows, so all of them changed. Add `WHERE id = 7` to touch one row." },
+      { concept: "transaction", kind: "mc", q: "Moving money takes two UPDATEs: subtract from one account, add to another. The server crashes between them. With a transaction, what happens?", options: ["The money is lost", "Neither change is kept, because the transaction never committed", "Only the subtraction is kept", "Both are kept"], answer: 1, why: "Atomic: all or nothing. An uncommitted transaction is rolled back, so the accounts are as they were." },
+      { concept: "transaction", kind: "mc", q: "Two requests each read likes = 5, add 1 in JavaScript and save 6, so one like is lost. What reliably fixes it?", options: ["Wrapping each request in BEGIN and COMMIT", "Letting the database do it in one statement: UPDATE posts SET likes = likes + 1", "Adding an index on likes", "Saving the value twice"], answer: 1, why: "A single UPDATE that adds to the current value can't lose a like. Plain transactions don't prevent this at most databases' default settings: both can still read 5." },
     ],
   },
 
   // ───────────────────────────── Trail 4 ─────────────────────────────
   {
-    id: '10-4', type: 'learn', mode: 'phone', xp: 30, mins: 110,
+    id: '10-4', type: 'learn', mode: 'phone', xp: 30, mins: 113,
     title: 'Joining tables, and indexes',
     teaches: ['sql-join', 'db-index'],
     idea: [
       { h: 'Store each fact once', b: 'The gear table doesn\'t say "rope, carried by Ana from Chile". It says "rope, climber 1". Each fact lives in exactly one place, so renaming Ana means changing one row, not hunting down copies.\n\nThe price: to answer "who carries what?" you put the tables back together with a **JOIN**.' },
       { h: 'What an index does', b: 'Looking for one valley in a 600-page guidebook, you don\'t read every page: you use the index. Databases do the same. An **index** turns "read every row" into "jump straight there". With 8 climbers it doesn\'t matter. With 8 million, it\'s the difference between instant and unusable.' },
+      { h: "Under the hood: why an index is fast", b: "Without an index, finding a row means checking every row: O(n), the `SCAN` you see in a query plan. An index keeps the column's values sorted in a structure called a **B-tree**, a short, wide tree where each step narrows the search a lot, like binary search at Western Cwm. Finding one row among millions takes only a handful of steps: O(log n).\n\nThe cost is that every INSERT, UPDATE and DELETE must also update the index, and it takes space. So you index the columns you search or join on, not everything." },
     ],
     example: {
       intro: 'Joining permits to climbers, then helping that join go fast. Tap through.',
@@ -274,6 +282,7 @@ export const camp10 = [
       { concept: 'db-index', kind: 'type', q: 'Type the statement that creates an index named `idx_climbers_country` on the `country` column of `climbers`.', accept: ['CREATE INDEX idx_climbers_country ON climbers(country);', 'CREATE INDEX idx_climbers_country ON climbers(country)', 'CREATE INDEX idx_climbers_country ON climbers (country);', 'CREATE INDEX idx_climbers_country ON climbers (country)'], why: 'CREATE INDEX name ON table(column);' },
       { concept: "sql-join", kind: "mc", q: "The climbers table has 8 rows, but only 4 names appear here. How do you make the other climbers show too, with an empty item?", code: "sqlite> SELECT climbers.name, gear.item\n   ...> FROM climbers\n   ...> JOIN gear ON gear.climber_id = climbers.id;\nAna|rope\nBo|ice axe\nBo|crampons\nDawa|tent\nDawa|oxygen bottle\nFatima|stove", options: ["Add DISTINCT after SELECT", "Add ORDER BY climbers.name at the end", "Add WHERE gear.item IS NULL at the end", "Change JOIN to LEFT JOIN"], answer: 3, why: "A plain JOIN keeps only rows that match on both sides, so climbers with no gear vanish. LEFT JOIN keeps every climber and fills the missing item with NULL." },
       { concept: "db-index", kind: "mc", q: "What does this query plan tell you?", code: "sqlite> EXPLAIN QUERY PLAN\n   ...> SELECT * FROM gear WHERE climber_id = 4;\nQUERY PLAN\n`--SEARCH gear USING INDEX idx_gear_climber (climber_id=?)", options: ["SQLite uses the index idx_gear_climber to jump to the matching rows", "SQLite reads every row in gear, one by one", "SQLite is creating the index idx_gear_climber right now", "Only one row in gear can match this query"], answer: 0, why: "`SEARCH ... USING INDEX` means SQLite looks rows up through the index. A full read of the table would say `SCAN gear`." },
+      { concept: "db-index", kind: "mc", q: "A table grows from 1,000 to 1,000,000 rows. Roughly how does a lookup on an indexed column change?", options: ["It takes 1,000 times longer", "Only a few more steps: an index lookup is O(log n)", "It becomes impossible", "It gets faster"], answer: 1, why: "The B-tree only gets a little taller as rows are added, so lookups stay fast. Without the index, the scan would take about 1,000 times longer." },
     ],
   },
 
@@ -345,12 +354,13 @@ export const camp10 = [
 
   // ───────────────────────────── Trail 6 ─────────────────────────────
   {
-    id: '10-6', type: 'learn', mode: 'phone', xp: 35, mins: 130,
+    id: '10-6', type: 'learn', mode: 'phone', xp: 35, mins: 133,
     title: 'Passwords, permissions and people\'s data',
-    teaches: ['password-hashing', 'authentication', 'authorization', 'sensitive-data'],
+    teaches: ['password-hashing', 'authentication', 'authorization', 'sensitive-data', 'encryption'],
     idea: [
       { h: 'Authentication and authorization', b: 'Two questions guard every app:\n• **Authentication**: *who are you?* Prove it with a password, a code, a passkey.\n• **Authorization**: *what may you do?* Ana may edit her own permit, not Bo\'s.\n\nMix them up and you get the most common hole on the web: logged-in users reading other people\'s data by changing a number in the URL.' },
       { h: 'When to be extra secure', b: 'Not all data is equal. A leaked list of favourite peaks is embarrassing. Leaked **passwords, money details, health records, children\'s data or someone\'s live location** can ruin lives.\n\nThe rules: **hash** passwords (never store them), **don\'t collect** what you don\'t need, and when money, health, kids, location or IDs are involved, **slow down and add layers**.' },
+      { h: "Under the hood: hashing vs encryption", b: "Two tools look alike but do opposite jobs. A **hash** is one-way: you can check a password against it but never get the password back. That's why passwords are hashed, with a random salt and a deliberately slow method like bcrypt. **Encryption** is two-way: data is scrambled with a key and unscrambled with the right key.\n\nIn **symmetric** encryption one shared key locks and unlocks (AES). In **public-key** encryption, a public key anyone can use locks, and only the owner's private key unlocks. HTTPS uses both: public-key maths to agree on a fresh secret key, then fast symmetric encryption for the rest of the visit. The golden rule: never invent your own encryption. Use well-tested libraries." },
     ],
     example: {
       intro: 'Real-computer code (Node + better-sqlite3 + the bcrypt package): sign-up, log-in and a permission check. Tap through.',
@@ -390,6 +400,7 @@ export const camp10 = [
       'Check authorization on the server, for the specific object, every request. Deny by default.',
       '**PII** identifies people. Collect the minimum; keep it out of logs and URLs; delete it when done.',
       'Be extra secure with passwords, money, health, children, location and ID documents.',
+      "**Hashing** is one-way (for passwords). **Encryption** is two-way with a key: symmetric (one shared key) or public-key (public locks, private unlocks).",
     ],
     questions: [
       { concept: 'password-hashing', kind: 'mc', q: 'Why is SHA-256 a bad choice for storing passwords?', options: ['It is too slow to check at login, so users wait several seconds every time they sign in', 'It\'s fast and unsalted on its own, so attackers can test billions of guesses per second', 'It can be decrypted with a key, so anyone who steals the key can read every password', 'It only works on short passwords, so longer ones are cut off and are easy to guess'], answer: 1, why: 'Password hashes must be slow and salted: bcrypt, scrypt, Argon2.' },
@@ -403,6 +414,8 @@ export const camp10 = [
       { concept: 'sensitive-data', kind: 'mc', q: 'What does PII stand for?', options: ['Personal Internet Identity', 'Personally Identifiable Information', 'Primary Integer ID', 'Protected Identity Information'], answer: 1, why: 'Data that identifies a real person.' },
       { concept: 'sensitive-data', kind: 'mc', q: 'A newsletter sign-up asks for email, birth date, home address and phone. What\'s the best change?', options: ['Encrypt all of it', 'Only collect the email: data you don\'t collect can\'t leak', 'Collect it all, but only show it on the admin page', 'Store it in a second database'], answer: 1, why: 'Minimise first. The rest isn\'t needed for a newsletter.' },
       { concept: 'sensitive-data', kind: 'mc', q: 'Which of these calls for the MOST extra care?', options: ['Users\' public display names', 'Children\'s names with their live location', 'Adults\' email addresses', 'The last four digits of a payment card'], answer: 1, why: 'Children\'s data and location can put people in real danger.' },
+      { concept: "encryption", kind: "mc", q: "Why are passwords hashed rather than encrypted?", options: ["Hashing is faster to type", "Encrypted passwords can be decrypted by anyone who gets the key; a hash can't be reversed at all", "Encryption only works on numbers", "There is no difference"], answer: 1, why: "The site never needs your actual password back, only to check it. A one-way hash removes the risk of a stolen key revealing every password." },
+      { concept: "encryption", kind: "mc", q: "In public-key encryption, which key do you give away freely?", options: ["The private key", "The public key", "Both", "Neither"], answer: 1, why: "Anyone can lock a message with your public key, but only your private key, which never leaves you, can unlock it." },
     ],
   },
 
@@ -644,6 +657,8 @@ module.exports = { pendingPermits, permitsFor, searchClimbers, approvePermit, ap
       { concept: 'password-hashing', kind: 'mc', q: 'Which stored value is a properly hashed password?', options: ['558759281f71e325c42251c04b7c89a52d0321f99c7010579151e18db00ce7b2', '5f4dcc3b5aa765d61d8327deb882cf99', '$2b$12$NkkuZl.Ta7ugjJX2Op0gyuZ/hXwEFi86NOpHGgQnDvuYvWQ3fYbxm', 'c3VtbWl0MTIzJHN1bW1pdDEyMyRzdW1taXQxMjM='], answer: 2 },
       { concept: 'authorization', kind: 'mc', q: 'Logged-in climber 4 opens `/permits/8` (not theirs) and sees it. Which control is broken?', options: ['Authentication', 'Authorization', 'Least privilege', 'Encryption'], answer: 1 },
       { concept: 'sensitive-data', kind: 'mc', q: 'An app needs to know users are 18 or over. What is the least it needs to store?', options: ['Their full birth date and a photo of their ID', 'A yes/no "verified adult" flag', 'Their age, updated yearly', 'Their birth year only'], answer: 1 },
+      { concept: "transaction", kind: "mc", q: "A checkout does three writes: create the order, take the payment, reduce stock. What stops a half-finished checkout if step 2 fails?", options: ["Running the steps faster", "Wrapping all three in one transaction, so they all commit or all roll back", "An index on orders", "Hashing the order"], answer: 1, why: "Atomicity: the three changes succeed together or not at all." },
+      { concept: "normalization", kind: "mc", q: "Which design stores each fact once?", options: ["orders(id, customer_name, customer_email, item)", "customers(id, name, email) + orders(id, customer_id, item)", "One table with every column", "A JSON file per order"], answer: 1, why: "Customer details live once; orders point to them by id." },
     ],
   },
 ]

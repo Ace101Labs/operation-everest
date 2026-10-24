@@ -7,7 +7,7 @@
     "dev": "node scripts/build-react-runtime.mjs && vite",
     "build": "node scripts/check-content.mjs && node scripts/build-react-runtime.mjs && vite build",
     "preview": "vite preview",
-    "check": "node scripts/check-content.mjs && node scripts/check-recall.mjs"
+    "check": "node scripts/check-content.mjs && node scripts/check-recall.mjs && node scripts/check-answers.mjs && node scripts/check-variety.mjs --strict 2,3,4"
   },
   "dependencies": {
     "@vercel/blob": "^2.8.2",
