@@ -40,7 +40,7 @@ export const OS_CAMPQ = {
   'Q-yeti#3': {
     mac: [
       { q: 'Mostly limits tokens per second', options: ['the temperature setting', 'memory bandwidth', 'internet speed', 'the prompt wording'], answer: 1 },
-      { q: 'On an M-series Mac, the GPU keeps the model\'s weights in…', options: ['unified memory, shared with the system', 'its own separate VRAM', 'the SSD, read for each token', 'a cloud server\'s memory'], answer: 0 },
+      { q: 'On an M-series Mac, the GPU keeps the model\'s weights in…', options: ['unified memory, shared with the system', 'its own separate VRAM chips', 'the SSD, read again for each token', 'a cloud server\'s GPU memory'], answer: 0 },
     ],
   },
 

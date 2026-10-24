@@ -5,8 +5,8 @@ export const OS_CAMP7 = {
   // npm list prints the project's folder, and a Mac home folder is in /Users, not /home.
   '7-1#4': {
     mac: [
-      { q: 'Which command shows what your project has installed?', options: ['npm show', 'npm list', 'npm outdated', 'npm run'], answer: 1, why: '`npm list` prints the dependency tree with exact versions.' },
-      { q: 'On your Mac, which command printed this?', code: 'weather-kit@1.0.0 /Users/climber/weather-kit\n└── dayjs@1.11.13', options: ['npm list', 'npm outdated', 'npm install dayjs', 'npm run start'], answer: 0, why: '`npm list` shows your project and its folder (on a Mac, inside /Users), then the packages it depends on with their exact versions.' },
+      { q: '`npm list` printed this on your Mac. Which statement is true?', code: 'cycle-club@1.0.0 /Users/fatou/cycle-club\n├── chalk@5.3.0\n└── dayjs@1.11.13', options: ['The project depends on two packages, chalk and dayjs', 'chalk is at version 1.0.0, the same as the project itself', 'dayjs needs chalk, so chalk was installed before it', 'The project folder is called chalk@5.3.0'], answer: 0, why: 'The first line is your project (name@version, then its folder; on a Mac, inside /Users). Each branch below is one package it depends on, with the exact installed version.' },
+      { q: 'On your Mac, which command printed this?', code: 'radio-playlist@1.0.0 /Users/oren/radio-playlist\n└── express@4.21.2', options: ['npm list', 'npm outdated', 'npm install dayjs', 'npm run start'], answer: 0, why: '`npm list` shows your project and its folder (on a Mac, inside /Users), then the packages it depends on with their exact versions.' },
     ],
   },
 
@@ -29,11 +29,11 @@ export const OS_CAMP7 = {
       { q: 'You installed Node inside WSL. Where do you run `node -v` to check it?', options: ['In the Ubuntu terminal', 'In PowerShell', 'In Command Prompt', 'In the Run box (Win+R)'], answer: 0, why: 'Node is installed inside WSL, so Ubuntu is where it answers.' },
     ],
     chromeos: [
-      { q: 'How do you get Node on your Chromebook?', options: ['Turn on the Linux development environment, then follow the Ubuntu/Debian steps (nvm is recommended)', 'Install Node from the Chrome Web Store', 'Nothing: Chrome already includes Node', 'Type `npm install node` into Chrome\'s address bar'], answer: 0, why: 'Node runs in the Linux development environment. It\'s Debian, so the Ubuntu/Debian steps work.' },
-      { q: 'In your Chromebook\'s Linux terminal, `sudo apt install nodejs npm` works. Why is nvm still recommended?', options: ['The apt version is often old; nvm installs the current one', 'apt can\'t install anything on a Chromebook', 'nvm is the only way to get npm', 'nvm makes Node run faster on a Chromebook'], answer: 0, why: 'apt\'s Node is often behind. nvm installs the current Node and npm.' },
+      { q: 'How do you get Node on your Chromebook?', options: ['Turn on the Linux environment, then follow the Debian steps', 'Install Node as an extension from the Chrome Web Store', 'Nothing: the Chrome browser already includes Node', 'Type `npm install node` into the Chrome address bar'], answer: 0, why: 'Node runs in the Linux development environment (turn it on in Settings). It is Debian, so the Ubuntu/Debian steps work, with nvm recommended.' },
+      { q: 'In your Chromebook\'s Linux terminal, `sudo apt install nodejs npm` works. Why is nvm still recommended?', options: ['The apt version is often old; nvm installs the current one', 'apt cannot install anything at all on a Chromebook', 'nvm is the only way to get npm onto a Chromebook', 'nvm makes Node run much faster than the apt version'], answer: 0, why: 'apt\'s Node is often behind. nvm installs the current Node and npm.' },
     ],
     phone: [
-      { q: 'You\'re on a phone. What\'s the most reliable way to use real Node and npm?', options: ['Log into a computer or server with an SSH app and run them there', 'Install Node from the iPhone App Store', 'Type `npm install node` into the phone browser', 'Phones can\'t use Node in any way'], answer: 0, why: 'An SSH app lets your phone run commands on a computer or server that has Node.' },
+      { q: 'You\'re on a phone. What\'s the most reliable way to use real Node and npm?', options: ['Log into a computer with an SSH app and run them there', 'Install the full Node app from the iPhone App Store', 'Type `npm install node` into the phone\'s web browser', 'Install it from the phone\'s settings, under Developer options'], answer: 0, why: 'An SSH app lets your phone run commands on a computer or server that has Node.' },
       { q: 'On an Android phone, which app can install real Node?', options: ['Termux, with `pkg install nodejs`', 'Chrome, with `npm install node`', 'The Files app, by downloading node.exe', 'Android Settings, under Developer options'], answer: 0, why: 'Termux gives Android a Linux-style terminal. `pkg install nodejs` installs Node, npm included.' },
     ],
   },
