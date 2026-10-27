@@ -29,8 +29,8 @@ CREATE TABLE climbs (
   date TEXT NOT NULL
 );
 INSERT INTO climbers (id, name, email) VALUES
-  (1, 'Ana', 'ana@example.com'),
-  (2, 'Ben', 'ben@example.com'),
+  (1, 'Bruna', 'bruna@example.com'),
+  (2, 'Iago', 'iago@example.com'),
   (3, 'Chen', 'chen@example.com');
 INSERT INTO climbs (id, climber_id, peak, height_m, summited, date) VALUES
   (1, 1, 'Island Peak', 6189, 1, '2026-04-02'),
@@ -102,7 +102,7 @@ export const campA = [
       { concept: 'requirements', kind: 'mc', q: 'Which is a well-written requirement for a library-loan tracker?', options: ['As a reader, I want the app to be quick and simple, so that I enjoy it. Done when: it feels fast and looks clean', 'As a developer, I want a for loop to filter the loans, so that the code is tidy. Done when: the loop is written', 'As a reader, I want to see books due this week, so I return them on time. Done when: GET /api/loans?due=week lists only those', 'As a reader, I want reminders, renewals, reviews and a wishlist, so the app is complete. Done when: all four features are built'], answer: 2, why: 'It names the user, one need, the reason, and a done line you can check. The others are vague, describe code, or bundle four features.' },
       { concept: 'requirements', kind: 'mc', q: '"Pages load in under 2 seconds on a phone." What kind of requirement is that?', options: ['A user story (a feature the user can see and tap)', 'A non-functional requirement (a quality, still measurable)', 'Not a requirement (speed is only a wish, and only features count)', 'A test (it has a number you can check)'], answer: 1, why: 'It describes a quality rather than a feature, and the number makes it checkable. A test is what checks it, not what it is.' },
       { concept: 'requirements', kind: 'mc', q: 'Which "done when" line covers a sad path?', options: ['A climb with all four fields filled in returns 201 and the saved climb', 'GET /api/climbs returns 200 with every climb inside { climbs: [...] }', 'A climb with no peak returns 400 with "peak is required"', 'A call to ?summited=true returns only the summited climbs'], answer: 2, why: 'Sad paths are what happens when input is wrong or missing. Real users send blanks.' },
-      { concept: 'requirements', kind: 'mc', q: 'Kirra expects a full user-story sentence. What does the terminal show instead?', code: 'const r = { who: "baker", want: "see tomorrow\'s orders", why: "I bake the right amount" }\nfunction story(r) {\n  `As a ${r.who}, I want to ${r.want}, so that ${r.why}.`\n}\nconsole.log(story(r))', options: ['As a baker, I want to see tomorrow\'s orders, so that I bake the right amount.', 'undefined', 'TypeError: story is not a function', 'An empty line, because the string is never printed'], answer: 1, why: 'The template string is built and thrown away: there is no `return`, so the function gives back undefined, and console.log prints the word undefined.' },
+      { concept: 'requirements', kind: 'mc', q: 'Gwen expects a full user-story sentence. What does the terminal show instead?', code: 'const r = { who: "baker", want: "see tomorrow\'s orders", why: "I bake the right amount" }\nfunction story(r) {\n  `As a ${r.who}, I want to ${r.want}, so that ${r.why}.`\n}\nconsole.log(story(r))', options: ['As a baker, I want to see tomorrow\'s orders, so that I bake the right amount.', 'undefined', 'TypeError: story is not a function', 'An empty line, because the string is never printed'], answer: 1, why: 'The template string is built and thrown away: there is no `return`, so the function gives back undefined, and console.log prints the word undefined.' },
       { concept: 'project-planning', kind: 'mc', q: 'Which item belongs in a brief\'s "Risks and unknowns"?', options: ['"IN: log, list, filter and delete climbs"', '"I have never deployed a database before"', '"User: someone logging climbs on a phone"', '"Done when: POST /api/climbs returns 201"'], answer: 1, why: 'Risks are what could go wrong or what you haven\'t done before. Name them early so you can test them in a small way first.' },
     ],
   },
@@ -518,7 +518,7 @@ function App() {
     id: 'A-7', type: 'sql', mode: 'phone', xp: 45, mins: 45,
     title: 'Ice-axe drill: the data model',
     uses: ['build-plan', 'requirements'],
-    prompt: 'Slice 1 of the build plan starts with the data. Design the Summit Log\'s two tables, then add sample rows.\n\n**`climbers`**: `id INTEGER PRIMARY KEY`, `name TEXT NOT NULL`, `email TEXT NOT NULL UNIQUE`\n\n**`climbs`**: `id INTEGER PRIMARY KEY`, `climber_id INTEGER NOT NULL REFERENCES climbers(id)`, `peak TEXT NOT NULL`, `height_m INTEGER NOT NULL CHECK (height_m BETWEEN 1 AND 8849)`, `summited INTEGER NOT NULL DEFAULT 0`, `date TEXT NOT NULL`\n\n(New words: `UNIQUE` refuses a second row with the same email. `REFERENCES climbers(id)` says each climb belongs to a real climber (a foreign key). `CHECK (…)` refuses impossible heights: nothing on Earth is taller than 8,849 m. `DEFAULT 0` fills summited in when an insert leaves it out. SQLite has no true/false type, so 1 means summited and 0 means not.)\n\nThen insert climber `1, \'Ana\', \'ana@example.com\'` and two climbs for her: `1, 1, \'Island Peak\', 6189, 1, \'2026-04-02\'` and `2, 1, \'Mera Peak\', 6476, 0, \'2026-04-20\'`.\n\nFinish with: `SELECT peak, height_m FROM climbs ORDER BY height_m DESC;`',
+    prompt: 'Slice 1 of the build plan starts with the data. Design the Summit Log\'s two tables, then add sample rows.\n\n**`climbers`**: `id INTEGER PRIMARY KEY`, `name TEXT NOT NULL`, `email TEXT NOT NULL UNIQUE`\n\n**`climbs`**: `id INTEGER PRIMARY KEY`, `climber_id INTEGER NOT NULL REFERENCES climbers(id)`, `peak TEXT NOT NULL`, `height_m INTEGER NOT NULL CHECK (height_m BETWEEN 1 AND 8849)`, `summited INTEGER NOT NULL DEFAULT 0`, `date TEXT NOT NULL`\n\n(New words: `UNIQUE` refuses a second row with the same email. `REFERENCES climbers(id)` says each climb belongs to a real climber (a foreign key). `CHECK (…)` refuses impossible heights: nothing on Earth is taller than 8,849 m. `DEFAULT 0` fills summited in when an insert leaves it out. SQLite has no true/false type, so 1 means summited and 0 means not.)\n\nThen insert climber `1, \'Bruna\', \'bruna@example.com\'` and two climbs for her: `1, 1, \'Island Peak\', 6189, 1, \'2026-04-02\'` and `2, 1, \'Mera Peak\', 6476, 0, \'2026-04-20\'`.\n\nFinish with: `SELECT peak, height_m FROM climbs ORDER BY height_m DESC;`',
     setup: '',
     starter: '-- 1. CREATE TABLE climbers ( ... );\n\n-- 2. CREATE TABLE climbs ( ... );\n\n-- 3. INSERT the climber, then the two climbs\n\n-- 4. SELECT peak, height_m FROM climbs ORDER BY height_m DESC;\n',
     expectRows: [['Mera Peak', 6476], ['Island Peak', 6189]],
@@ -533,17 +533,17 @@ function App() {
     ],
     hints: [
       'Each table is one statement: `CREATE TABLE climbers (id INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE);`. Columns are separated by commas, and the statement ends with `;`.',
-      'Inserts: `INSERT INTO climbers (id, name, email) VALUES (1, \'Ana\', \'ana@example.com\');` and `INSERT INTO climbs (id, climber_id, peak, height_m, summited, date) VALUES (1, 1, \'Island Peak\', 6189, 1, \'2026-04-02\'), (2, 1, \'Mera Peak\', 6476, 0, \'2026-04-20\');`',
+      'Inserts: `INSERT INTO climbers (id, name, email) VALUES (1, \'Bruna\', \'bruna@example.com\');` and `INSERT INTO climbs (id, climber_id, peak, height_m, summited, date) VALUES (1, 1, \'Island Peak\', 6189, 1, \'2026-04-02\'), (2, 1, \'Mera Peak\', 6476, 0, \'2026-04-20\');`',
     ],
   },
   {
     id: 'A-8', type: 'sql', mode: 'phone', xp: 45, mins: 45,
     title: 'Ice-axe drill: UPDATE, DELETE and JOIN',
     uses: ['requirements', 'integration'],
-    prompt: 'The Summit Log database already has climbers and climbs (see the tables above). Do three jobs, in order:\n\n1. Climb **5** (Ben on Lobuche East) actually reached the top: set its `summited` to `1`\n2. Climb **6** is the same climb logged twice by mistake: delete it\n3. The summit report: the **top 3 summited climbs by height**, highest first, showing the climber\'s `name`, the `peak` and `height_m`. You need a `JOIN` from climbs to climbers on `climbs.climber_id = climbers.id`\n\n(In the real API, the `5` and `6` would arrive from the request and go into the query as `?` placeholders, never glued into the SQL text.)',
+    prompt: 'The Summit Log database already has climbers and climbs (see the tables above). Do three jobs, in order:\n\n1. Climb **5** (Iago on Lobuche East) actually reached the top: set its `summited` to `1`\n2. Climb **6** is the same climb logged twice by mistake: delete it\n3. The summit report: the **top 3 summited climbs by height**, highest first, showing the climber\'s `name`, the `peak` and `height_m`. You need a `JOIN` from climbs to climbers on `climbs.climber_id = climbers.id`\n\n(In the real API, the `5` and `6` would arrive from the request and go into the query as `?` placeholders, never glued into the SQL text.)',
     setup: QUERY_SETUP,
     starter: '-- 1. mark climb 5 as summited\n\n-- 2. delete climb 6\n\n-- 3. top 3 summited climbs: name, peak, height_m\nSELECT * FROM climbs;\n',
-    expectRows: [['Ana', 'Ama Dablam', 6812], ['Ana', 'Island Peak', 6189], ['Ben', 'Lobuche East', 6119]],
+    expectRows: [['Bruna', 'Ama Dablam', 6812], ['Bruna', 'Island Peak', 6189], ['Iago', 'Lobuche East', 6119]],
     checks: [
       { label: 'Climb 5 is now summited', query: 'SELECT summited FROM climbs WHERE id = 5', equals: [[1]] },
       { label: 'Only climb 5 changed (Mera Peak is still 0)', query: 'SELECT count(*) FROM climbs WHERE summited = 0', equals: [[1]] },
