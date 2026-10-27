@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { AWAY_MS } from './Landing.jsx'
 
 // New versions. The service worker downloads a new build in the background and then waits
 // (public/sw.js). Opening the game always lands on the newest version with no question
 // asked (Ace, 2026-10-22: "the pop-up is only for people actively using the app"): a new
-// version found while the game is opening (a fresh load, or coming back after AWAY_MS)
-// switches over by itself. Only one found while the player is in the middle of playing
+// version found while the game is opening (a fresh load, or ANY return from the background:
+// on a phone, closing the app just hides it) switches over by itself. A switch that needs a
+// reload waits until the player is back on the map (setIdle), so a lesson is never thrown away. Only one found while the player is in the middle of playing
 // gets the card: reload now, or "Later", which applies on the next open.
 const CHECK_MS = 15 * 60 * 1000
 const SETTLE_MS = 6000
@@ -14,8 +14,27 @@ let openedAt = Date.now()
 let reg = null
 let ready = false // a new version is installed and waiting
 let reloading = false
+let idle = true // false while the player is mid-lesson/quiz/run (App tells us)
+let held = false // a silent switch is waiting for the player to get back to the map
 const subs = new Set()
 const tell = () => subs.forEach(f => f(ready))
+
+// App calls this: true on the map, false in a lesson, quiz, run or other screen with work in it.
+export function setIdle(v) {
+  idle = v
+  if (idle && held) { held = false; openApply() }
+}
+
+// Apply whatever is waiting, silently: an update the player postponed ("Later") or one found while opening.
+function openApply() {
+  if (ready) silent(true)
+  else if (reg?.waiting && navigator.serviceWorker.controller) switchOnOpen(reg)
+}
+
+function silent(reload) {
+  if (!idle) { held = true; return }
+  applyUpdate(reload)
+}
 
 function waiting(r) {
   if (!r.waiting || !navigator.serviceWorker.controller) return // first install: nothing to replace
@@ -39,8 +58,9 @@ async function pageIsNew(r) {
 // let the new worker take over quietly once the page has settled. Still the old page: reload
 // (the landing screen is up, so the player sees nothing but the game starting).
 async function switchOnOpen(r) {
-  if (await pageIsNew(r)) setTimeout(() => applyUpdate(false), Math.max(0, SETTLE_MS - (Date.now() - openedAt)))
-  else applyUpdate(true)
+  if (!idle) { held = true; return }
+  if (await pageIsNew(r)) setTimeout(() => silent(false), Math.max(0, SETTLE_MS - (Date.now() - openedAt)))
+  else silent(true)
 }
 
 // Hand over to the waiting version. With reload, the page reloads once it has taken over.
@@ -69,15 +89,14 @@ export function registerUpdates() {
     })
     const check = () => r.update().catch(() => {})
     setInterval(check, CHECK_MS)
-    let left = 0
+    let left = false
+    const opened = () => { openedAt = Date.now(); openApply() }
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') { left = Date.now(); return }
-      if (left && Date.now() - left >= AWAY_MS) { // back after a while: that is an open too
-        openedAt = Date.now()
-        if (ready) { applyUpdate(true); return } // apply "Later" (the landing is playing)
-      }
-      check()
+      if (document.visibilityState === 'hidden') { left = true; return }
+      if (left) { left = false; opened() } // any return from the background is an open
+      check() // a version found now lands inside the opening minute, so it switches silently
     })
+    addEventListener('pageshow', e => { if (e.persisted) opened() }) // restored from the back-forward cache
   }).catch(() => {})
 }
 

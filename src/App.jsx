@@ -8,6 +8,7 @@ import { useOffline } from './offline.js'
 import { useDeviceMode } from './device.js'
 import { Welcome } from './Welcome.jsx'
 import { Landing, Whiteout, AWAY_MS } from './Landing.jsx'
+import { setIdle } from './update.js'
 import { ACHIEVEMENTS, GEAR, patchesFor } from './rewards.js'
 import { UpdateCard } from './UpdateCard.jsx'
 import { cleanCode, getLink, linkWith, syncNow } from './sync.js'
@@ -132,6 +133,8 @@ export default function App() {
     document.title = APP_NAME
   }, [p.settings.accent, p.settings.reduceMotion, theme, term])
   const [view, setView] = useState({ name: 'map' })
+  // The update switch only reloads on the map; anywhere with work in it (lesson, quiz, run) it waits.
+  useEffect(() => { setIdle(view.name === 'map' && !!p.settings.platform) }, [view.name, p.settings.platform])
   // "Next" from a result screen: open the next pitch from the saved progress (or the map if none).
   useEffect(() => {
     if (view.name !== 'next') return
