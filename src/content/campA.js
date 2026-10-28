@@ -678,6 +678,14 @@ function App() {
       { label: 'Singular count: `1 climb, 1 summited`', selector: '#count', text: '1 climb, 1 summited' },
     ],
   },
+  {
+    // Capstone 2: the test kit is built from the player's own plan (src/kit.js); the stage UI is src/OwnStage.jsx.
+    id: 'A-own', type: 'keyboard', mode: 'keyboard', engine: 'own', lang: 'files', xp: 120, mins: 540,
+    title: 'Summit build III: your own app',
+    uses: ['modules', 'api-contract', 'integration', 'self-audit', 'requirements', 'status-codes-basics', 'json-api'],
+    hint: 'Build it one route at a time and press the button after each. Early requests turn green as you go.',
+    steps: [],
+  },
 
   // ───────────────────────────── Checks ─────────────────────────────
   {

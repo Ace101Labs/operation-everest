@@ -4,7 +4,7 @@
 // require('fs'|'path'|'./file'|'express'), a mock fetch, timers, and a tiny test runner.
 import { transform } from 'sucrase'
 
-const WORKER_SRC = String.raw`
+export const WORKER_SRC = String.raw`
 // Prints values the way Node's console.log does: [ 'rope', 'axe' ], { name: 'Ana', age: 3 }.
 const ID = /^[A-Za-z_$][\w$]*$/
 const inspect = (v, depth = 0, seen = []) => {
@@ -188,7 +188,7 @@ self.onmessage = async (e) => {
       for (const cb of finish) try { cb() } catch {}
     }
   }
-  self.postMessage({ ok: !error, out, error, results, responses, exit, files: vfs })
+  self.postMessage({ ok: !error, out, error, results, responses, exit, files: vfs, loaded: Object.keys(modules) })
 }`
 
 // opts: { checks, files, api, argv, env, requests, lang }

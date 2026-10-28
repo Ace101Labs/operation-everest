@@ -659,3 +659,11 @@ code.ref { cursor: pointer; text-decoration: underline dotted; padding: 2px 4px;
 .plan .good { border: 1px solid #3fae6a; border-radius: 12px; padding: 8px 12px; margin: 12px 0; }
 .plan .btn.subtle { min-height: 44px; }
 @media (min-width: 900px) { .plan { max-width: 720px; margin: 0 auto; width: 100%; } }
+
+/* Capstone 2: build your own app (OwnStage). Tables scroll inside their box so the page never scrolls sideways. */
+.own { max-width: 100%; min-width: 0; } .own h3 { margin: 14px 0 6px; font-size: 15px; }
+.own-scroll { overflow-x: auto; max-width: 100%; margin: 6px 0; border: 1px solid var(--line); border-radius: 8px; }
+.own table { border-collapse: collapse; width: 100%; font-size: 13px; } .own th, .own td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; } .own th { color: var(--mut); font-weight: 600; }
+.own td code { overflow-wrap: anywhere; white-space: normal; }
+.own-rules { padding-left: 18px; margin: 8px 0; font-size: 14px; }
+.own-tabs { display: flex; gap: 5px; margin: 10px 0 6px; } .own-tabs button { flex: 1; min-width: 0; }

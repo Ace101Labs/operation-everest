@@ -155,6 +155,15 @@ tryit|stage: { kind|type: 'react', prompt, starter, lang?: 'jsx'|'tsx', hints,
 - **avalanche / yeti:** `{ type, rules, questions: [8 for avalanche, 6 for yeti] }`
 - **boss:** `{ type: 'boss', title: '<named boss>', questions }` (camps.js reads the boss name from this title automatically)
 
+## Your own app: the test kit (A-own, Capstone 2)
+`A-own` has no `requests` in its content. `src/kit.js` builds them from the player's plan (`recordName`, `recordFields`), and `src/OwnStage.jsx` runs them in the practice Express. Rules, all in `kit.js`:
+- Words are lower-cased letters and digits from what was typed. The record is singular (`person`), the path is plural kebab-case (`/api/people`), the JSON key is camelCase (`people`, `tripNotes`). Small irregular list: person, child, man, woman, mouse, foot, tooth, goose.
+- Field names become camelCase keys. `id` and repeats are skipped. At most 8 fields, at least 2.
+- A field is a **number** when its last word means an amount (rating, count, year, age, price, cost, total, score, minutes, hours, height, weight, page, ...), a **date** (`YYYY-MM-DD`) when its last word is date, birthday, dob or deadline, otherwise **text**.
+- 17 requests: health, list, three bad bodies, wrong-kind values (only if the plan has number or date fields), valid create with a sneaky `id` and extra field, list, get one, second create, get missing (404), get `abc` (400), list, delete missing, delete, get deleted, list. Errors are `<field> is required`, `<field> must be a number`, `<field> must look like YYYY-MM-DD`; the not-found message is `<Record> not found`.
+- The files are `server.js`, `routes.js`, `validate.js`, joined with `require`. The worker reports which modules it loaded; the stage also checks the `require` lines.
+- Saved on pass as `{ files }` JSON with lang `files` (the practice-terminal shape), so step 13 can deploy them. `node scripts/check-kit.mjs` (part of `npm run check`) proves a correct app passes and broken ones fail the right requests for three sample plans.
+
 ## Predict-first stops (worked examples)
 Reading code comes before writing it, so lessons don't just show a worked example: they make the player trace it.
 `src/content/predict-camp<ID>.js` holds stops keyed by lesson id:
