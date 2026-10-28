@@ -97,6 +97,7 @@ console.log(addAltitude(typed, 450))
     teaches: ['interface-type', 'union-type'],
     idea: [
       { h: 'Describing an object with an interface', b: 'Real programs pass around **objects**: a climber, a tent, a weather report. An **interface** describes an object\'s shape once (which properties, which types) so every function that uses it is checked against the same description.\n\nSome values should only ever be one of a few options. For example, weather might be only `"clear"`, `"windy"` or `"storm"`. A **union type** lists the allowed options.' },
+      { h: "Under the hood: types disappear before the code runs", b: "TypeScript checks your types while you build, then **erases** them. What actually runs is ordinary JavaScript with no interfaces and no unions in it. That's why TypeScript can promise that your own code is consistent, but can't tell whether JSON arriving from a network really has the shape you described. Data from outside has to be checked with real code at runtime.\n\nUnion types work because the compiler follows your code like a flowchart. After `if (typeof x === \"string\")`, it knows that inside the block `x` is a string, and outside it, something else. This is called **narrowing**. It's why a check you write for the program also tells the compiler what is safe." },
     ],
     example: {
       intro: 'An interface, a union, and a function that uses both. Tap through it.',
@@ -207,6 +208,7 @@ console.log(tentLabel(7))
     idea: [
       { h: 'Why use React', b: 'In Camp III every click meant updating the button, its class, its aria attribute AND the count. Forget one and the page lied. **React** flips this around: you write **components**, functions that describe what the screen should look like for the current data. When the data changes, React works out what\'s different and updates the DOM for you.\n\nA component is reusable: write it once, then use it as many times as you need.' },
       { h: 'JSX: HTML-like tags inside JavaScript', b: 'Components return **JSX**, tags that look like HTML written straight into JavaScript: `return <h1>Camp {n}</h1>`. Curly braces mean "JavaScript goes here." A build step turns the tags into ordinary function calls. In this game the React preview compiles it for you; on a real computer, a tool like **Vite** does.' },
+      { h: "Under the hood: React compares before it changes", b: "Changing a real page element is slow compared with running JavaScript. So when a component runs, React doesn't touch the page. Your function returns a light description of what the screen should look like, a tree of plain objects. React compares that with the description from last time, finds the exact differences, and changes only those real elements. Finding the differences is called **reconciliation**.\n\nJSX isn't magic either. A build step turns `<h1>Camp {n}</h1>` into an ordinary function call that creates one of those description objects. That's also why a component must return a single parent element: a function returns one value." },
     ],
     example: {
       intro: 'Three components working together. Tap through it.',
@@ -403,6 +405,7 @@ function App() {
     teaches: ['lists-keys', 'use-effect'],
     idea: [
       { h: 'Lists, keys and effects', b: 'Real screens show **lists** from data: gear, messages, camps. In React you `.map()` the array into elements, and give each a **key**, like an ID number, so React can tell the items apart when the list changes.\n\nSometimes a component also has to reach **outside** React: set the browser tab\'s title, start a timer, connect to a server. That\'s what **effects** (`useEffect`) are for: code that runs after the screen updates, to keep the outside world in sync.' },
+      { h: "Under the hood: what keys and effects are for", b: "When a list changes, React must decide which new item matches which old one. It uses the **key**. Items with the same key are treated as the same item, so their state is kept. Items with new keys are created, and missing ones are removed. If you use the array position as the key and then reorder the list, a key stays with its position while the data moves away from it, so state can end up attached to the wrong item.\n\nAn **effect** runs *after* React has updated the screen, so slow work never delays drawing. The **dependency array** lists the values the effect uses. After each render React compares them with last time, and only re-runs the effect if one changed. Leave a value out and the effect keeps working with a stale copy." },
     ],
     example: {
       intro: 'A list from data, a derived count, and an effect. Tap through it.',

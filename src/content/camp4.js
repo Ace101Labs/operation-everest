@@ -314,6 +314,7 @@ export const camp4 = [
     teaches: ['nested-data', 'map-filter'],
     idea: [
       { h: 'Nested data, map and filter', b: 'Data can nest: a **team** is an array; each climber is an object; each climber has an array of gear. Lists inside objects inside lists. That\'s **nested data**, and it\'s how nearly every app stores and sends information.\n\nTo work with lists of objects, two methods do most of the work: **map** (turn every item into something new) and **filter** (keep only the items that pass a test). You hand each one a small arrow function, and it uses it on every item.' },
+      { h: "Under the hood: functions you can pass around", b: "`map` and `filter` take a **function as an argument**. That works because in JavaScript a function is a value, like a number or a string, so you can store it in a variable and hand it to other code. Functions that take or return functions are called **higher-order functions**. Inside, `map` is just a loop: it walks the array once, calls your function on each item, and collects the results in a **new** array. The original is left alone.\n\nOne catch: the new array holds the same objects, not copies. If your function changes an object inside the array, the change shows up in both arrays, because both point at the same object in memory. Returning a fresh object (`{ ...climber, age: 30 }`) keeps them apart." },
     ],
     example: {
       intro: 'A team roster. Tap through.',

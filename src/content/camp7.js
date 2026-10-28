@@ -107,6 +107,7 @@ export const camp7 = [
     teaches: ['semver', 'node-modules'],
     idea: [
       { h: 'Version numbers: MAJOR.MINOR.PATCH', b: 'Packages change. A small fix shouldn\'t break your code; a big redesign might. **Semantic versioning** packs that warning into the version number itself: `1.11.13` = MAJOR.MINOR.PATCH.\n\nYou\'ll also meet **node_modules**, the heavy folder where packages actually live, and **scripts**, the shortcuts in package.json that `npm run` uses.' },
+      { h: "Under the hood: why node_modules is so big", b: "Your project lists a handful of packages. Each of those has packages of its own, and so do they, so you end up with a **tree** of dependencies that can reach hundreds of folders. Two packages may need different versions of the same helper, so npm can keep several copies in different places. The exact versions it chose are written to `package-lock.json`, so another computer installs the same tree.\n\nWhen your code says `require(\"express\")`, Node looks for a `node_modules` folder next to your file, then in the folder above, then above that, until it finds one. That's how the right package is found without any path written in your code. It's also why `node_modules` belongs in `.gitignore`: it can be rebuilt from the lock file any time." },
     ],
     example: {
       intro: 'A real project\'s package.json. Tap through it.',
@@ -168,6 +169,7 @@ export const camp7 = [
     teaches: ['modules'],
     idea: [
       { h: 'Split code into files', b: 'A good pack has pockets: first aid in one, food in another, so you can find things fast. Big programs work the same way: each file does one job and **shares** what others need.\n\nIn Node, a file shares with `module.exports`, and another file brings it in with `require`. It\'s the same `require` you\'ll use for npm packages and for built-ins like `fs`.' },
+      { h: "Under the hood: every file is a function", b: "Node wraps each file in a function before running it. That is why a variable you declare in one file isn't visible in another: it's local to that wrapper, not global. The wrapper also hands the file `module` and `require`, the tools that let it share and import.\n\nThe first time a file is `require`d, Node runs it and **caches** what it exported. Every later `require` of the same file returns the same object without running the file again. So two files that import the same module share one copy, including any data stored in it. Handy for a shared setting, surprising if you expected a fresh copy each time." },
     ],
     example: {
       intro: 'Two files working together. Tap through them.',

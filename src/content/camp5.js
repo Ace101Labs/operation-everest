@@ -187,6 +187,7 @@ export const camp5 = [
     teaches: ['reference-error', 'type-error'],
     idea: [
       { h: 'Unknown name, or wrong kind of value', b: 'Two errors cause most crashes:\n• **ReferenceError**: "I don\'t know that **name**." Usually a typo, or a variable used outside the place it was made.\n• **TypeError**: "I know that name, but its **value** can\'t do that." Usually something is `undefined` (meaning "nothing here") when you expected a real value.\n\nOnce you know what these two messages mean, most crashes take seconds to fix.' },
+      { h: "Under the hood: how JavaScript looks up a name", b: "When your code uses a name, the engine looks for it in the current **scope**, then the scope around it, then the one around that, up to the outermost. That chain is the **scope chain**. If the name is nowhere on the chain, the engine throws a `ReferenceError`. If it finds the name but the value can't do what you asked (calling `undefined` as a function, or reading a property of `undefined`), that is a `TypeError`.\n\nA thrown error doesn't just stop one line. The engine unwinds the **call stack**, the list of functions that are waiting for each other to finish, one level at a time, looking for a `try`/`catch`. If none catches it, the program ends. The stack trace you see on a crash is that list, printed from the line that threw it back to where the program began." },
     ],
     example: {
       intro: 'A trip program with a hidden typo. Tap through it to see where it breaks and why.',
@@ -293,6 +294,7 @@ export const camp5 = [
     teaches: ['type-conversion', 'nan'],
     idea: [
       { h: 'Everything typed arrives as text', b: 'When someone types `node planner.js 12 4`, your program doesn\'t receive the numbers 12 and 4. It receives the **text** "12" and "4". Same for web forms and most files.\n\nIf you forget, JavaScript joins them as text: "12" + "4" is "124". And when a conversion fails, it doesn\'t crash. It quietly gives you **NaN** ("Not a Number"), which then spreads through every calculation. This trail shows you how to convert on purpose, and how to catch NaN.' },
+      { h: "Under the hood: what a number really is", b: "Text and numbers are stored differently. The text `\"12\"` is two characters, each saved as a code. The number 12 is a pattern of bits that a processor can add directly. Converting means reading the characters and working out the value they spell, which is why `Number(\"12\")` can succeed and `Number(\"twelve\")` cannot.\n\nWhen it cannot, you get `NaN`. Every JavaScript number is a 64-bit **floating-point** value defined by an international standard (IEEE 754), and that standard reserves special bit patterns for \"not a number\". The same standard says any comparison with `NaN` is false, even `NaN === NaN`, so use `Number.isNaN(x)` to test. The same format is why `0.1 + 0.2` gives `0.30000000000000004`: some decimals have no exact binary form." },
     ],
     example: {
       intro: 'Two distances arrive as text, the way command-line input does. Tap through each line.',
@@ -413,6 +415,7 @@ export const camp5 = [
     teaches: ['process-argv', 'cli-tool', 'exit-codes'],
     idea: [
       { h: 'What a command-line tool is', b: '`ls -a notes` and `node hello.js` are both commands with extra words after them. Your own programs can read extra words too: `node planner.js 9 17`. That\'s a **command-line tool**: input in, result (or a helpful error) out.\n\nThree pieces make one: **process.argv** (the words that were typed), **validation** (everything you just learned about edge cases), and an **exit code**: the silent number that tells the shell whether it worked.' },
+      { h: "Under the hood: how a program gets its arguments", b: "When you press Enter on `node planner.js 9 17`, the **shell** splits the line into words. It asks the operating system to start the `node` program and hands over those words as a list of strings. Node puts them in `process.argv`: the first is where Node lives, the second is your script, and the rest are what you typed. That is why every argument arrives as **text**, even when it looks like a number.\n\nWhen a program ends, it gives its parent a small whole number, the **exit code**. `0` means success and anything else means failure. The shell keeps the last one so that `&&` can decide whether to run the next command. `process.exit(1)` is how your tool says \"something went wrong\" to whatever launched it." },
     ],
     example: {
       intro: 'pack.js: tell it how many days you\'ll climb, and it says how many snack bars to pack (three a day). Tap through.',

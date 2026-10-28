@@ -190,6 +190,7 @@ export const camp3 = [
     idea: [
       { h: 'Running code only sometimes', b: 'Until now, every line of your programs ran, every time, top to bottom. An `if` statement asks a yes/no question and only runs a block of code when the answer is true. `else` gives the program a different block to run when the answer is false.' },
       { h: 'Order matters', b: 'With `else if` you can have as many paths as you like. JavaScript checks them top to bottom and takes the **first** one that\'s true. Put the checks in the wrong order and the right path can never be reached. The Field Guide shows exactly how that goes wrong.' },
+      { h: "Under the hood: the computer jumps", b: "A processor runs instructions one after another, with a counter that points at the next one. An `if` becomes a **conditional jump**: the processor tests the condition, and if it is false it skips ahead past the block. A loop is the same trick in reverse, a jump **back** to an earlier instruction. Every `if`, `else` and `while` you write ends up as jumps like these.\n\nModern processors even **guess** which way a jump will go and start working before the answer is known (**branch prediction**). Guess right and nothing is lost. Guess wrong and the work is thrown away, which costs a few tiny moments. You never see it, but it is one reason the order of your checks can matter for speed as well as for correctness." },
     ],
     example: {
       intro: 'The morning oxygen check. Tap through to see which path runs.',
