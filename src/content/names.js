@@ -11,6 +11,7 @@ export const TYPE = {
   radio:    { icon: '📻', name: 'Radio check' },
   audit:    { icon: '🌨️', name: 'Weather check' },
   read:     { icon: '🔍', name: 'Code reading' },
+  plan:     { icon: '🗺️', name: 'Project plan' },
   avalanche:{ icon: '❄️', name: "Don't cause an avalanche" },
   yeti:     { icon: '💤', name: "Don't wake the Yeti" },
   boss:     { icon: '🧊', name: 'Whiteout boss' },

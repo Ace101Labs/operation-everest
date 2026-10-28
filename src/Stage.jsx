@@ -14,6 +14,7 @@ import { emit } from './events.js'
 import { deal } from './deal.js'
 import { SymKeys } from './SymKeys.jsx'
 import { useDeviceMode } from './device.js'
+import { PlanStage } from './PlanStage.jsx'
 
 const SURPRISES = ['🦅 Tip: read an error message from the top line first.', '☕ Nice work. Take a short break if you like.', '🧭 Fun fact: the first website (1991) is still online.']
 
@@ -487,7 +488,13 @@ function Boss({ stage, finish, p, onAnswer }) {
   )
 }
 
-export function Stage({ p, stage, close, recordResult, recordCode, knockBack, saveJournal, recordAnswer }) {
+function PlanRoute({ stage, finish, p, savePlan }) {
+  const [done, setDone] = useState(false)
+  if (done) return <Result p={p} score={1} stage={stage} onDone={finish} retry={() => setDone(false)} />
+  return <PlanStage p={p} savePlan={savePlan} onPass={() => setDone(true)} alreadyPassed={isPassed(p, stage.id)} />
+}
+
+export function Stage({ p, stage, close, recordResult, recordCode, knockBack, saveJournal, savePlan, recordAnswer }) {
   const t0 = useRef(Date.now())
   useEffect(() => { try { sessionStorage.setItem('everest.lastStage', stage.id) } catch {} }, [stage.id]) // for the suggestion box
   const finish = (score, code) => {
@@ -496,7 +503,7 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
     const next = wantNext; wantNext = false
     close(true, next) // the next pitch, or back to the mountain where the climber moves
   }
-  const props = { stage, finish, p, saveJournal, close, recordCode, knockBack, onAnswer: recordAnswer, alreadyPassed: isPassed(p, stage.id) }
+  const props = { stage, finish, p, saveJournal, savePlan, close, recordCode, knockBack, onAnswer: recordAnswer, alreadyPassed: isPassed(p, stage.id) }
   return (
     <div className="screen stage-screen">
       <Range still calm />
@@ -508,6 +515,7 @@ export function Stage({ p, stage, close, recordResult, recordCode, knockBack, sa
         {stage.type === 'radio' && <RadioStage {...props} />}
         {stage.type === 'audit' && <Audit {...props} />}
         {stage.type === 'read' && <ReadStage {...props} />}
+        {stage.type === 'plan' && <PlanRoute {...props} />}
         {stage.type === 'boss' && <Boss {...props} />}
         {(stage.type === 'avalanche' || stage.type === 'yeti') && <Challenge {...props} />}
       </div>

@@ -587,6 +587,12 @@ function App() {
     file: 'summit-log/validate.js',
   },
 
+  // ───────────────────────────── Your own app: the plan ─────────────────────────────
+  {
+    id: 'A-plan', type: 'plan', mode: 'phone', xp: 40, mins: 45,
+    title: 'Plan your own app',
+  },
+
   // ───────────────────────────── Camp builds ─────────────────────────────
   {
     id: 'A-10', type: 'keyboard', mode: 'keyboard', engine: 'server', xp: 120, mins: 540,

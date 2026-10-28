@@ -33,7 +33,7 @@ const Chase = later(() => import('./Chase.jsx'), 'Chase')
 const STORM_CHANCE = 0.3
 
 export default function App() {
-  const { p: saved, recordResult: saveResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, setSetting, replace, reset } = useProgress()
+  const { p: saved, recordResult: saveResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, savePlan, setSetting, replace, reset } = useProgress()
   const mode = useDeviceMode()
   const stormNext = useRef(false)
   const recordResult = (stage, score, ...rest) => {
@@ -149,7 +149,7 @@ export default function App() {
   else if (view.name === 'guide') screen = <FieldGuide p={p} back={() => setView({ name: 'map' })} />
   else if (view.name === 'review') screen = <Acclimatize p={p} recordAnswer={recordAnswer} back={() => setView({ name: 'map' })} />
   else if (view.name === 'settings') screen = <Settings p={p} back={() => setView({ name: 'map' })} replace={replace} reset={reset} setSetting={setSetting} net={net} sync={{ state: syncState, setState: setSyncState, run: runSync }} openLocker={() => setView({ name: 'pack', tab: 'locker' })} />
-  else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} recordAnswer={recordAnswer}
+  else if (view.name === 'stage') screen = <Stage p={p} stage={view.stage} recordResult={recordResult} recordCode={recordCode} knockBack={knockBack} saveJournal={saveJournal} savePlan={savePlan} recordAnswer={recordAnswer}
     close={(done, next) => { const finished = done === true, storm = finished && stormNext.current; stormNext.current = false; setView({ name: storm ? 'storm' : finished ? (next ? 'next' : 'map') : (view.from || 'camp'), camp: view.camp, next }) }} />
   else if (view.name === 'storm') screen = <Storm p={p} recordAnswer={recordAnswer} recordEvent={recordEvent} close={() => setView({ name: view.next ? 'next' : 'map' })} />
   else if (view.name === 'next') screen = null // the effect below opens the next pitch
