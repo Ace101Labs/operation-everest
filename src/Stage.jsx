@@ -112,6 +112,27 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
   const [shown, setShown] = useState(false)
   const [right, setRight] = useState(0)
   const q = questions[i]
+  // Multi-file reading: `file:line` references in the question are buttons that open that file.
+  const [jump, setJump] = useState(null)
+  const qtext = useRef(null)
+  useEffect(() => {
+    if (!q.files) return
+    qtext.current?.querySelectorAll('code').forEach(c => {
+      if (!REF.test(c.textContent)) {
+        c.classList.remove('ref'); c.removeAttribute('role'); c.removeAttribute('tabindex'); c.removeAttribute('aria-label')
+        return
+      }
+      c.classList.add('ref'); c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0')
+      c.setAttribute('aria-label', `Show ${c.textContent} in the file box`)
+    })
+  })
+  const tapRef = e => {
+    const c = e.target.closest?.('code.ref')
+    const m = c && c.textContent.match(REF)
+    if (!m) return
+    e.preventDefault()
+    setJump({ file: m[1], from: +m[2], to: +(m[3] || m[2]), n: (jump?.n || 0) + 1 })
+  }
   const correct = q.kind === 'mc' ? pick === q.answer
     : q.accept.some(a => a.trim().toLowerCase() === typed.trim().toLowerCase().replace(/\s+/g, ' '))
   const fail = () => {
@@ -173,8 +194,8 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
         </div>
       )}
       {challenge === 'boss' && QUESTIONS[q.qid] && QUESTIONS[q.qid].camp.id !== stage.id.split('-')[0] && <small className="from-old">🔙 Flashback · from {QUESTIONS[q.qid].camp.name}</small>}
-      {q.file && <FileView file={q.file} />}
-      <div className="q-text" role="heading" aria-level="3" data-qid={q.qid}><Md text={q.q} /></div>
+      {(q.file || q.files) && <FileView file={q.file} files={q.files} jump={jump} />}
+      <div className="q-text" role="heading" aria-level="3" data-qid={q.qid} ref={qtext} onClick={q.files ? tapRef : undefined} onKeyDown={q.files ? e => { if (e.key === 'Enter' || e.key === ' ') tapRef(e) } : undefined}><Md text={q.q} /></div>
       {q.code && <pre><code>{q.code}</code></pre>}
       {q.kind === 'mc' ? (
         <div className="options">
@@ -273,12 +294,45 @@ function RadioStage({ stage, finish, p, saveJournal }) {
   return <Radio key={round} stage={stage} onFinish={setScore} journal={p.journal?.[stage.id]} saveJournal={t => saveJournal(stage.id, t)} />
 }
 
-// Someone else's file, with line numbers, so questions can say "line 7".
-export function FileView({ file, tall }) {
+// Someone else's file, with line numbers, so questions can say "line 7". A project has
+// `files: [{ name, code }]`: tabs switch files, and `jump` ({ file, from, to, n }) opens a
+// file and highlights lines (set by tapping a `file:line` reference in a question).
+export const REF = /^([\w./-]+\.\w+):(\d+)(?:-(\d+))?$/
+export function FileView({ file, files, tall, jump }) {
+  const list = files || [file]
+  const [tab, setTab] = useState(0)
+  const box = useRef(null)
+  const pre = useRef(null)
+  const at = Math.min(tab, list.length - 1)
+  const f = list[at]
+  const hl = jump && jump.file === f.name ? jump : null
+  useEffect(() => {
+    if (!jump) return
+    const k = list.findIndex(x => x.name === jump.file)
+    if (k >= 0) setTab(k)
+  }, [jump])
+  useEffect(() => {
+    if (!hl || !pre.current) return
+    const row = pre.current.querySelector('.hl')
+    if (row) pre.current.scrollTop = Math.max(0, row.offsetTop - pre.current.clientHeight / 3)
+    box.current?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' })
+  }, [jump, at])
+  const keys = e => {
+    const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+    if (!d) return
+    e.preventDefault()
+    const k = (at + d + list.length) % list.length
+    setTab(k)
+    e.currentTarget.parentElement.children[k]?.focus()
+  }
   return (
-    <div className={`readfile ${tall ? 'tall' : ''}`}>
-      <div className="readfile-name">📄 {file.name}</div>
-      <pre><code>{file.code.split('\n').map((l, i) => <div key={i}><span className="ln">{i + 1}</span>{l || ' '}</div>)}</code></pre>
+    <div className={`readfile ${tall ? 'tall' : ''}`} ref={box}>
+      {files ? (
+        <div className="readfile-tabs" role="tablist" aria-label="Files in this project">
+          {list.map((x, k) => <button key={x.name} role="tab" aria-selected={k === at} tabIndex={k === at ? 0 : -1} className={k === at ? 'on' : ''} onClick={() => setTab(k)} onKeyDown={keys}>{x.name}</button>)}
+        </div>
+      ) : <div className="readfile-name">📄 {f.name}</div>}
+      <pre ref={pre} tabIndex={0} aria-label={`${f.name}, ${f.code.split('\n').length} lines`}><code>{f.code.split('\n').map((l, i) => <div key={i} className={hl && i + 1 >= hl.from && i + 1 <= hl.to ? 'hl' : ''}><span className="ln">{i + 1}</span>{l || ' '}</div>)}</code></pre>
     </div>
   )
 }
@@ -307,8 +361,8 @@ function ReadStage({ stage, finish, p, onAnswer }) {
   )
   return (
     <div className="audit">
-      <FileView file={stage.file} tall />
-      <p className="note">Read the whole file first. It stays on screen during the questions.</p>
+      <FileView file={stage.file} files={stage.files} tall />
+      <p className="note">{stage.files ? 'Open every tab and read each file first. The files stay on screen during the questions, and a file:line in a question is a button that jumps there.' : 'Read the whole file first. It stays on screen during the questions.'}</p>
       <button className="btn primary wide" onClick={() => { setView('quiz'); window.scrollTo(0, 0) }}>I've read it: questions</button>
     </div>
   )

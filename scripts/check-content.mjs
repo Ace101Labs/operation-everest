@@ -60,10 +60,26 @@ for (const camp of CAMPS) {
     // Code reading: someone else's file, read before the camp's drills. Questions point at its lines.
     if (s.type === 'read') {
       const n = s.file?.code?.split('\n').length || 0
+      if (s.files) {
+        // Multi-file project: every `file:line` (or file:from-to) reference must name a real file and a line inside it.
+        const lens = new Map(s.files.map(f => [f.name, f.code?.split('\n').length || 0]))
+        if (s.files.length < 2 || lens.size !== s.files.length || [...lens.values()].some(x => !x)) problems.push(`${where}: files needs 2+ uniquely named { name, code } entries`)
+        if (s.file) problems.push(`${where}: use either file or files, not both`)
+        const FILE_REF = /(?<![\w./-])(\.?[\w-]+(?:\/[\w.-]+)*\.[a-z]\w*):(\d+)(?:-(\d+))?/gi
+        for (const [i, q] of (s.questions || []).entries()) for (const v of [q, ...(q.alts || [])])
+          for (const m of `${v.q} ${(v.options || []).join(' ')} ${v.why || ''}`.matchAll(FILE_REF)) {
+            const len = lens.get(m[1])
+            const last = +(m[3] || m[2])
+            if (len == null) problems.push(`${where} Q${i + 1}: reference ${m[0]} names a file that is not in this project (${[...lens.keys()].join(', ')})`)
+            else if (+m[2] < 1 || last > len || +m[2] > last) problems.push(`${where} Q${i + 1}: reference ${m[0]} is outside ${m[1]} (${len} lines)`)
+          }
+        if ((s.questions || []).length < 6) problems.push(`${where}: a code-reading stage needs at least 6 questions`)
+      } else {
       if (!s.file?.name || !n) problems.push(`${where}: a code-reading stage needs file: { name, lang, code }`)
       if ((s.questions || []).length < 6) problems.push(`${where}: a code-reading stage needs at least 6 questions`)
       for (const [i, q] of (s.questions || []).entries()) for (const v of [q, ...(q.alts || [])])
         for (const m of `${v.q} ${(v.options || []).join(' ')} ${v.why || ''}`.matchAll(/\blines? (\d+)/gi)) if (+m[1] > n) problems.push(`${where} Q${i + 1}: mentions line ${m[1]} but ${s.file.name} has ${n} lines`)
+      }
     }
     const nowTaught = new Set([...taught, ...(s.teaches || [])])
     for (const c of s.uses || []) if (!nowTaught.has(c)) problems.push(`${where}: uses "${c}" before any lesson teaches it`)

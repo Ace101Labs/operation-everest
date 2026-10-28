@@ -3,6 +3,7 @@
 // them into one full method. All projects, people and services are invented, and every
 // web address uses the reserved .example domain. The practice terminal can't fake git
 // history, so dates come from the seeded CHANGELOG.md (real `git log` is on the cards).
+import { READ2_K } from './multiread.js'
 
 // ─────────────── The audited project: TrailPost (a pretend repo you "cloned") ───────────────
 const TP = '/home/climber/trailpost'
@@ -628,6 +629,7 @@ module.exports = { summitCall, fetchReadings }` },
       { concept: 'package-hallucination', kind: 'mc', q: 'Line 4 requires `wind-smooth-pro`, but line 2 lists only `dayjs` and `express`. What should the reviewer do?', options: ['Approve it: the tests pass, so the package must exist and be fine', 'Check it exists, is trusted and kept up, and is listed, before approving', 'Add the name to the line 2 comment so the list matches, then approve', 'Ask the AI assistant to confirm the package exists, then approve'], answer: 1, why: 'AI tools sometimes invent package names. A name missing from the project\'s own list needs checking on the registry first, and the assistant\'s own answer isn\'t evidence.' },
     ],
   },
+  READ2_K,
 
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {

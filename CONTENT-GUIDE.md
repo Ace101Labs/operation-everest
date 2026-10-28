@@ -144,6 +144,11 @@ tryit|stage: { kind|type: 'react', prompt, starter, lang?: 'jsx'|'tsx', hints,
   sees (may be the planted bug or risk), at most 1 trace whose answer is text or behaviour. **No answer may be a number,
   count, sum or calculation.**
   Questions may say "line N" (`npm run check` fails if N is past the end) and may carry `code` (output, an error, a diff).
+  **Multi-file read** (`10-read2`, `K-read2`, `A-read2` in `src/content/multiread.js`): use `files: [{ name, lang, code }]`
+  instead of `file`. The game shows one tab per file (44px tap targets) with line numbers. Write references in questions as
+  `` `server.js:20` `` or `` `db.js:14-19` `` (backticks, exact file name as in `files`): the player can tap one to jump to that
+  file and highlight the lines, and `npm run check` fails if a reference names a missing file or a line past its end. Ask how the
+  files fit together (where a request goes next, which file to change for X, what breaks if Y). No new concepts, no predict stops.
 - **Real output:** from Camp 6 on, quizzes should include questions whose `code` is genuine tool output to read (errors,
   stack traces, diffs, logs, compiler and test output), exactly as the tool prints it. Produce it for real where you can.
 - **audit:** `{ type: 'audit', teaches?: [...], primer: [{ h, b }], scenario, questions }`

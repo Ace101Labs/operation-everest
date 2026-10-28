@@ -27,12 +27,13 @@ import { ALTS_CAMPJ } from './alts-campJ.js'
 import { ALTS_CAMPQ } from './alts-campQ.js'
 import { ALTS_CAMPK } from './alts-campK.js'
 import { ALTS_CAMPA } from './alts-campA.js'
+import { ALTS_MULTI } from './multiread.js'
 
 import { OS_QUESTIONS } from './os-questions.js'
 import { PREDICT } from './predict.js'
 
 // Other versions of quiz questions, keyed by question id. Retries deal a different one.
-export const ALTS = { ...ALTS_CAMP2, ...ALTS_CAMP3, ...ALTS_CAMP4, ...ALTS_CAMP5, ...ALTS_CAMP6, ...ALTS_CAMP7, ...ALTS_CAMP8, ...ALTS_CAMP9, ...ALTS_CAMP10, ...ALTS_CAMPJ, ...ALTS_CAMPQ, ...ALTS_CAMPK, ...ALTS_CAMPA }
+export const ALTS = { ...ALTS_CAMP2, ...ALTS_CAMP3, ...ALTS_CAMP4, ...ALTS_CAMP5, ...ALTS_CAMP6, ...ALTS_CAMP7, ...ALTS_CAMP8, ...ALTS_CAMP9, ...ALTS_CAMP10, ...ALTS_CAMPJ, ...ALTS_CAMPQ, ...ALTS_CAMPK, ...ALTS_CAMPA, ...ALTS_MULTI }
 
 export const CAMPS = [
   { id: 'T', card: '🥾', n: 0, name: 'The Trek', topic: 'Lukla to Base Camp: your first steps', trek: true, stages: campT },
@@ -63,6 +64,7 @@ for (const camp of CAMPS) for (const s of camp.stages || []) (s.questions || [])
   q.qid = `${s.id}#${i}`
   if (ALTS[q.qid]) q.alts = ALTS[q.qid]
   if (OS_QUESTIONS[q.qid]) q.os = OS_QUESTIONS[q.qid]
+  if (s.files) q.files = s.files
   if (s.file) q.file = s.file // code-reading questions keep their file on screen, in review too
   QUESTIONS[q.qid] = { q, stage: s, camp }
 })

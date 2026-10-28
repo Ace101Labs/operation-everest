@@ -3,6 +3,7 @@
 // row and error message was checked against real sqlite3 3.45 and the in-game engine.
 // JavaScript marked "real computer" (better-sqlite3, bcrypt) was run in real Node.
 // All names are fictional; example.com-style domains are reserved and never real.
+import { READ2_10 } from './multiread.js'
 
 // ─────────── The expedition database, shared by most SQL stages ───────────
 const EXPEDITION_SQL = `CREATE TABLE camps (id INTEGER PRIMARY KEY, name TEXT NOT NULL, altitude INTEGER NOT NULL);
@@ -491,6 +492,7 @@ module.exports = { pendingPermits, permitsFor, searchClimbers, approvePermit, ap
       { concept: "sql-injection", kind: "mc", q: "Why is line 27 a security problem?", options: ["LIKE is far too slow on large tables","Typed text is glued into the SQL string","It reads the wrong table for a permit office","A % sign in a name crashes the whole server"], answer: 1, why: "Text a user types must travel as a ? value, as line 21 does, never be joined into the query string. Here someone can type SQL into the search box and the database runs it." },
     ],
   },
+  READ2_10,
 
   // ───────────────────────────── Drills, build, checks ─────────────────────────────
   {

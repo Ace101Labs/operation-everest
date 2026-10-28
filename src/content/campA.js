@@ -3,6 +3,7 @@
 // for logging climbs. Requirements → MVP → data model (sql) → API (server) → UI (react)
 // → tests (code) → self-audit → ship it off-app → present it.
 // See CONTENT-GUIDE.md. Reference solutions: scripts/solutions/campA.js.
+import { READ2_A } from './multiread.js'
 
 const SEED_CLIMBS = `const climbs = [
   { id: 1, peak: 'Island Peak', heightM: 6189, summited: true, date: '2026-04-02' },
@@ -518,6 +519,7 @@ function App() {
       { concept: 'api-contract', kind: 'mc', q: 'A teammate renames the `climbs` key on line 16 to `items` and changes nothing else. What does the user see?', options: ['Everything works, because the screen only needs some list', 'The list is empty, but the summary line still shows', 'It crashes after loading: the screen still reads `data.climbs`', 'A not-found message comes back from the server'], answer: 2, why: 'Line 53 stores `data.climbs`, which is now undefined, so line 71 can\'t loop over it. The server and screen share a contract: the shape of the reply.' },
     ],
   },
+  READ2_A,
 
   // ───────────────────────────── Drills ─────────────────────────────
   {
