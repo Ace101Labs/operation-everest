@@ -28,4 +28,8 @@ export const PREDICT_CAMPK = {
     { line: 8, q: 'The test that was removed checked that a missing name is rejected. What follows?', options: ['No test now catches a missing name', 'The bug is fixed for good', 'The other tests catch it instead'], answer: 0 },
     { line: 11, q: 'The assistant deleted a test. If `npm test` now passes, what does that prove?', options: ['Little: a deleted test cannot fail', 'That the code is correct', 'That the assistant followed instructions'], answer: 0 },
   ],
+  'K-15': [
+    { line: 2, q: 'Why does line 2 name only two fields instead of using everything in the request?', options: ['Whatever is never read is never stored, so it cannot leak later', 'The server refuses to read more than two fields at once', 'Short lines run faster than long ones'], answer: 0 },
+    { line: 4, q: 'Why does the log line hold an id instead of the email?', options: ['Logs spread to more places than the database, so personal details stay out of them', 'An id is easier for people to type', 'Logs cannot hold text that has an at sign in it'], answer: 0 },
+  ],
 }

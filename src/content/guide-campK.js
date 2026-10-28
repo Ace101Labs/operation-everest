@@ -299,6 +299,63 @@ export const GUIDE_CAMPK = {
     related: ['audit-method', 'claims-evidence', 'threat-model'],
   },
 
+  // ─────────────── Building responsibly ───────────────
+  'data-minimization': {
+    term: 'Data minimization', short: 'Collect, store and log only what a feature needs. Data you never collected cannot leak.',
+    what: "**Data minimization** means every piece of personal data you handle must earn its place. Before adding a field to a form, a table or a log line, ask which feature stops working without it. If the answer is none, leave it out.\n\nIt pairs with **consent**: tell people in plain words what you collect and why, and let them refuse the extras. Privacy laws such as the EU's GDPR make minimization a core rule, but it is also just good engineering: less data means less to protect, less to lose and less to delete.",
+    how: "1. List what the feature does (\"text a reminder\").\n2. For each field, write the feature that needs it. No feature, no field.\n3. In code, read only the fields you need from the request, store only those, and keep personal details out of logs and error messages.\n4. Say what you collect, in plain words, where the person fills it in.",
+    usage: [
+      { code: "const { email, firstName } = req.body\ndb.save({ email, firstName })", note: 'Reads and saves two fields. Whatever else the form sent is never touched.' },
+      { code: "log('new signup, id ' + id)      // good\nlog('new signup: ' + email)       // spreads the email into every log reader", note: 'Log an id and what happened, not the person.' },
+    ],
+    uses: ['Designing a signup or checkout form.', 'Deciding what a log line or error report may contain.', 'Reviewing a new analytics or tracking request.'],
+    when: ['Before adding any field, table column or log line that holds personal details.', 'When a feature changes and a field is no longer used: remove it.'],
+    whenNot: ["Don't use it as a reason to skip data the law or a feature really requires, such as an address for a delivery."],
+    mistakes: [
+      { prose: 'Collecting a field "in case we need it later".', why: 'You carry its risk from day one and may never use it. Add it when a real feature needs it.' },
+      { prose: 'Printing the whole request body into the logs while debugging, and leaving it in.', why: 'Logs travel to more places and last longer than the database. Remove it, or log only safe fields.' },
+    ],
+    tips: ['Test it by deleting a field from the form: if nothing breaks, it was not needed.', 'Review old fields now and then. Features change, and fields get left behind.'],
+    related: ['harm-review', 'owning-mistakes', 'secrets-management'],
+  },
+
+  'harm-review': {
+    term: 'Harm review', short: 'Before you ship, ask who could be locked out, treated unfairly or exposed by your code.',
+    what: "A **harm review** is a short, honest check, done before you build or ship, of who your code could hurt. Four questions cover most of it: **Who is locked out?** (a button no keyboard or screen reader can use, text too small or too faint to read) **Who is treated unfairly?** (a rule or a dataset that fits some people better than others) **Whose data is at risk** if this leaks? **What is the worst realistic misuse?**\n\nThe point is not to be perfect. It is to find the problem while it still costs one conversation, not a recall.",
+    how: "1. Write down who will use it, including people unlike you.\n2. Walk through the four questions. Write one line per answer.\n3. Test it that way: use only the keyboard, zoom the text, try names and addresses from other places, try empty and very long input.\n4. Fix what you can, and write down what you chose not to fix and why.",
+    usage: [
+      { code: '<button aria-label="Pay now"><img src="card.png" alt=""></button>', note: 'A real button: the Tab key reaches it and a screen reader says "Pay now".' },
+      { code: "if (!/^[A-Za-z]+ [A-Za-z]+$/.test(name)) reject()\n// refuses: Zoë Brandt, Siobhan O'Neill, Wanjiru", note: 'A rule that fits one kind of name. Test with names unlike yours.' },
+    ],
+    uses: ['Reviewing a new form, rule or feature before launch.', 'Checking a dataset or scoring rule for who it favours.', 'Planning who can see which data.'],
+    when: ['Before building a feature that decides things about people.', 'Before releasing anything that handles other people\'s data.'],
+    whenNot: ["Don't let it turn into a reason never to ship. Aim to find and fix the serious problems, not all of them."],
+    mistakes: [
+      { prose: 'Testing only with your own name, device and abilities.', why: 'Your case is one of many. Try keyboard-only use, other names and slow phones.' },
+      { prose: 'Assuming a rule is fair because it treats every input the same way.', why: 'The same rule can still fail some people far more often. Look at who it turns away.' },
+    ],
+    tips: ['Use real controls (`<button>`, `<label>`, `<a>`): they bring keyboard and screen reader support for free.', 'Ask someone unlike you to try it for five minutes.'],
+    related: ['data-minimization', 'owning-mistakes', 'threat-model'],
+  },
+
+  'owning-mistakes': {
+    term: 'Owning mistakes', short: 'Stop the harm, tell people early, write it up without blame, and change something so it cannot repeat.',
+    what: "Everyone ships a bug that hurts someone sooner or later. **Owning it** means acting on it fast and openly. In order: **stop the harm** (take the page down, revoke the key, turn off the feature), **tell** the people affected and your team plainly and early, then **write it up** and **fix the cause**.\n\nA good write-up is **blameless**. It records what happened and when, who was affected, and what let it through (a missing check, an unclear process). It ends with a change that makes a repeat less likely, such as a new test or an alert. People slip, so the system should catch it.",
+    how: "1. **Contain:** stop the exposure or the damage first.\n2. **Tell:** say what happened, who is affected and what you are doing. Update as you learn more.\n3. **Write up:** timeline, impact, cause, fix.\n4. **Prevent:** add a test, a check or an alert, and put an owner and a date on it.",
+    usage: [
+      { code: "What happened: 14:05 a deploy made /export public.\nImpact: emails of 212 users visible for 50 minutes.\nCause: no test checked that /export needs a login.\nFix: route closed 14:55; users told by email.\nPrevent: test added; deploys now fail without it.", note: 'A short blameless write-up. No names, a clear cause, a change at the end.' },
+    ],
+    uses: ['After an outage, a leak or a bad release.', 'Reviewing a near miss, before it becomes a real one.'],
+    when: ['As soon as you find a mistake that touched real people or their data.'],
+    whenNot: ["Don't use \"blameless\" to mean nobody is accountable. Someone still owns each follow-up fix."],
+    mistakes: [
+      { prose: 'Fixing it quietly and hoping nobody noticed.', why: 'People who were exposed deserve to know, and hidden problems come back bigger.' },
+      { prose: 'Ending the write-up with "be more careful".', why: 'That changes nothing. Add a check, a test or an alert that works even on a bad day.' },
+    ],
+    tips: ['Write the timeline while it is fresh.', 'If a key or password was exposed, treat it as leaked: revoke it and make a new one.'],
+    related: ['harm-review', 'data-minimization', 'secrets-management'],
+  },
+
   // ─────────────── Working with an AI coding assistant ───────────────
   'ai-coding-assistant': {
     term: 'AI coding assistant', short: 'A tool that writes or changes code from your description. It is fast, and you are still the one who checks and ships the result.',

@@ -475,6 +475,68 @@ export const campK = [
     ],
   },
 
+  // ───── Trail 8 (id K-15): Building responsibly ─────
+  {
+    id: 'K-15', type: 'learn', mode: 'phone', xp: 30, mins: 12,
+    title: 'Building responsibly: privacy, people and mistakes',
+    teaches: ['data-minimization', 'harm-review', 'owning-mistakes'],
+    idea: [
+      { h: 'Collect only what you need', b: "Every field you collect is something you now have to store, protect and eventually delete. The habit is **data minimization**: before you add a field to a form, a table or a log line, ask what feature breaks without it. If the answer is \"none yet\", leave it out.\n\nAsk for **consent** too: tell people what you collect and why, in plain words, and let them say no to the extras." },
+      { h: 'Who can your code hurt?', b: "Your code runs on people you will never meet. Before you ship, run a quick **harm review**: who uses this, who might be locked out (a button a keyboard or screen reader can't reach, a form that rejects real names), who might be treated unfairly (rules or data that fit some people better than others), and whose data is at risk if this leaks.\n\nThe cheapest time to ask is before you build it." },
+      { h: 'When it goes wrong: own it', b: "Everyone ships a bug eventually. What counts is the next hour. **Stop the harm first**, then tell the people affected and your team early and plainly, then write down what happened. A good write-up is **blameless**: it asks what let the mistake through (a missing check, a vague process), not who to blame, and ends with a change that stops it happening again." },
+      { h: 'Under the hood: why unstored data is safe data', b: "Data you never collected cannot be leaked, stolen, handed over or misused later. That is why privacy laws such as the EU's GDPR list **data minimization** as a core principle, and why breaches hurt most where companies kept everything \"just in case\".\n\nDeleting is harder than it sounds. A row you delete from the database can live on in backups, in log files and in copies other systems made. So the safest place to remove data is **before it arrives**, and logs deserve the same care as tables: a log line that holds an email address spreads it to every system that reads logs." },
+    ],
+    example: {
+      intro: 'A signup route for a trip-reminder app. The form sends five fields, but the feature only needs two. Tap through the choices.',
+      lang: 'js',
+      code: "app.post('/signup', (req, res) => {\n  const { email, firstName } = req.body\n  const id = db.save({ email, firstName })\n  log('new signup, id ' + id)\n  res.json({ ok: true })\n})",
+      steps: [
+        { line: 1, note: 'A route that runs when someone submits the signup form. Everything in `req.body` is whatever the browser sent, which can be more than you asked for.' },
+        { line: 2, note: 'It picks out **only the two fields the reminders need**. Birthday, phone and location may arrive in `req.body`, but nothing here reads them, so nothing stores them.' },
+        { line: 3, note: 'It saves just those two. A future leak of this table can only leak an email and a first name.' },
+        { line: 4, note: 'The log line holds an **id, not the email**. Logs get copied to more places than databases and are kept longer, so keep personal details out of them.' },
+        { line: 5, note: 'The reply says only that it worked. It does not echo the person\'s data back.' },
+      ],
+    },
+    tryit: {
+      kind: 'code',
+      prompt: "The signup form sends five fields, but trip reminders only need `firstName` and `email`. Finish `keepOnly(record, fields)`: return a **new** object that holds just the listed fields (and leave the original record unchanged). The code below uses it to build what gets stored.\n\nExpected output:\n`{\"firstName\":\"Mei\",\"email\":\"mei@mail.example\"}`\n`{\"firstName\":\"Tomas\",\"email\":\"tomas@mail.example\"}`\n`3 fields never stored per signup`",
+      starter: "const NEEDED = ['firstName', 'email']\n\n// return a NEW object with only the keys listed in fields\nfunction keepOnly(record, fields) {\n}\n\nconst signups = [\n  { firstName: 'Mei', email: 'mei@mail.example', birthday: '1992-04-02', phone: '555-0101', location: '47.6,-122.3' },\n  { firstName: 'Tomas', email: 'tomas@mail.example', birthday: '1985-11-30', phone: '555-0102', location: '40.7,-74.0' },\n]\n\nconst stored = signups.map(s => keepOnly(s, NEEDED))\nstored.forEach(s => console.log(JSON.stringify(s)))\nconsole.log(Object.keys(signups[0]).length - Object.keys(stored[0]).length + ' fields never stored per signup')\n",
+      expect: ['{"firstName":"Mei","email":"mei@mail.example"}', '{"firstName":"Tomas","email":"tomas@mail.example"}', '3 fields never stored per signup'],
+      checks: [
+        { expr: "JSON.stringify(keepOnly({ a: 1, b: 2, c: 3 }, ['a', 'c']))", equals: '{"a":1,"c":3}', label: 'only the listed fields are kept' },
+        { expr: "JSON.stringify(keepOnly({ a: 1 }, ['a', 'z']))", equals: '{"a":1}', label: 'a listed field that is missing is skipped' },
+        { expr: "(() => { const r = { a: 1, b: 2 }; keepOnly(r, ['a']); return Object.keys(r).length })()", equals: 2, label: 'the original record is left unchanged' },
+      ],
+      hints: [
+        'Start with an empty object: `const out = {}`. Then loop over `fields` with `for (const f of fields)`.',
+        'Inside the loop, copy the field only if the record has it: `if (f in record) out[f] = record[f]`. Then `return out`.',
+        'One-line version: `return Object.fromEntries(fields.filter(f => f in record).map(f => [f, record[f]]))`.',
+      ],
+    },
+    mistakes: [
+      { wrong: "console.log('login failed for ' + email + ' with password ' + attempt)", result: "(every log reader now sees real passwords)", why: 'A log is a copy of your data that lives somewhere else, often for months. Log events and ids, never passwords, tokens or full personal details.' },
+      { wrong: 'if (!/^[A-Za-z]+ [A-Za-z]+$/.test(name)) reject()', result: "(\"Siobhan O'Neill\", \"José Alvarez\" and \"Madonna\" are all refused)", why: 'The rule assumes every name is two plain words. Real names have apostrophes, accents, hyphens and sometimes a single word. Validate for what you truly need, and test with names unlike yours.' },
+      { wrong: '<div onclick="pay()"><img src="card.png"></div>', result: '(a keyboard cannot reach it and a screen reader announces nothing)', why: 'Use a real `<button>` with a text label or `aria-label`. Native elements come with keyboard and screen reader support built in.' },
+    ],
+    recap: [
+      '**Data minimization:** collect, store and log only what a feature needs. Data you never collected cannot leak. Ask for consent in plain words.',
+      'Do a **harm review** before shipping: who might be locked out, treated unfairly, or exposed if this leaks.',
+      'Keep personal details **out of logs**: they spread further and last longer than a database row.',
+      'Test with people unlike you: unusual names, keyboard-only use, slow phones, other languages.',
+      'When it goes wrong: **stop the harm, tell people early, write it up without blame, and change something so it cannot repeat**.',
+    ],
+    questions: [
+      { concept: 'data-minimization', kind: 'mc', q: 'A bike-share app only texts riders "your bike is ready". Which signup form follows data minimization?', options: ['Name, phone, home address and birthday, in case a later feature wants them', 'Phone number and first name, and nothing else', 'Phone number plus a photo of their ID, to confirm the number is theirs', 'Phone number plus their contacts list, so friends can be invited'], answer: 1, why: 'The text needs a phone number and a name to greet them. Everything else is stored, protected and possibly leaked for no benefit.' },
+      { concept: 'data-minimization', kind: 'mc', q: 'A teammate says: "Collect everything now, we may need it someday." What is the strongest argument against?', options: ['Forms with many fields always load slowly on phones', 'Stored data can leak or be misused, and a field never collected cannot', 'Databases refuse to save more than a few columns per user', 'Users can always read every column of a database themselves'], answer: 1, why: 'Every field is a risk you carry from the day you store it. Add a field when a real feature needs it, not before.' },
+      { concept: 'data-minimization', kind: 'mc', q: 'What is the problem with this line?', code: "console.log('reset requested by ' + user.email + ', password was ' + user.password)", options: ['Logs are plain text, so a structured JSON format should have been used', 'It copies private details into logs that spread widely and last long', 'The log message is too long and many servers will cut it off early', 'It prints text, and a log is only meant to hold numbers and codes'], answer: 1, why: 'Logs are read by tools, teammates and other services, and kept for months. A password or email in them is a leak waiting to happen. Log an id and what happened.' },
+      { concept: 'harm-review', kind: 'mc', q: 'A signup form runs this check on the name field. Who does it turn away?', code: "if (!/^[A-Za-z]+ [A-Za-z]+$/.test(name)) {\n  showError('Please enter a valid name')\n}", options: ['Only people whose name is longer than two words in total', 'Only people who happen to type their name in capital letters', 'People with a one-word name, or an apostrophe, hyphen or accent', 'Nobody at all, because a name check cannot refuse a real person'], answer: 2, why: 'The pattern accepts two plain A to Z words and nothing else. "Siobhan O\'Neill" and "Zoë Brandt" fail, and so does a single name. A harm review asks who the rule leaves out.' },
+      { concept: 'harm-review', kind: 'mc', q: 'A teammate builds the Pay button as a clickable `<div>` with only an icon in it. Who is most likely unable to use it?', options: ['People on slow connections, since icons are larger files', 'People who use a keyboard or a screen reader', 'People who have never used a card before', 'People on large screens, where the icon looks too small'], answer: 1, why: 'A plain div cannot be reached with the Tab key and tells a screen reader nothing. A real `<button>` with a label fixes both.' },
+      { concept: 'owning-mistakes', kind: 'mc', q: 'You find that your last deploy exposed users\' email addresses to anyone with the link. What is the best first move?', options: ['Quietly fix it tonight and say nothing, since nobody has complained', 'Stop the exposure now, then tell your team and the affected people what happened', 'Work out which teammate caused it before telling anyone', 'Wait until you know every detail, so your first message is complete'], answer: 1, why: 'Stop the harm first, then tell people early. Silence and waiting leave people exposed longer, and the details can follow in an update.' },
+      { concept: 'owning-mistakes', kind: 'mc', q: 'Which sentence belongs in a blameless write-up of an outage?', options: ['"Dev Kofi pushed bad code again and needs to be more careful."', '"No check caught the missing setting, so we added one that fails the build."', '"This was simply bad luck, so no process change is called for."', '"The cause is still unknown, so the report is now closed for good."'], answer: 1, why: 'A blameless write-up names what let the mistake through and ends with a change that stops a repeat. People can slip; a good process catches it.' },
+    ],
+  },
+
   // ───── Code reading ─────
   {
     id: 'K-read', type: 'read', mode: 'phone', xp: 30, mins: 20,

@@ -94,11 +94,21 @@ function LandingView({ calm, onDone, extra }) {
     return { 'data-piece': id, className: `landing-${id}-at${ed && ed.sel === id ? ' picked' : ''}`, style: p ? { transform: `translate(${(p.x || 0) * k}px, ${(p.y || 0) * k}px) scale(${p.s || 1})` } : undefined }
   }
 
+  // Keyboard: start focus on the landing and keep the app behind it out of the Tab order while it shows.
+  const root = useRef(null)
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    el.focus({ preventScroll: true })
+    const others = [...(el.parentElement?.children || [])].filter(n => n !== el && !n.classList.contains('toasts'))
+    others.forEach(n => n.setAttribute('inert', ''))
+    return () => others.forEach(n => n.removeAttribute('inert'))
+  }, [])
   const ready = loaded === WARM.length
   const pct = Math.round((loaded / WARM.length) * 100)
   const shaking = phase === 'rumble' || phase === 'slide'
   return (
-    <div className={`landing phase-${phase}${calm && !held ? ' still' : ''}${ed ? ed.cls : ''}`} onClick={go} {...ed?.handlers} role="button" aria-label={`${APP_NAME}: tap to begin`}>
+    <div ref={root} className={`landing phase-${phase}${calm && !held ? ' still' : ''}${ed ? ed.cls : ''}`} onClick={go} tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go() } }} {...ed?.handlers} role="button" aria-label={`${APP_NAME}: tap to begin`}>
       <LandingScene still={calm && !held} layout={layout} sel={ed ? ed.sel : null} wide={isWide()} />
       {!calm && <Snow count={45} front={6} />}
       <div {...html('title')}><div className="landing-title"><span>OPERATION</span><b>EVEREST</b></div></div>

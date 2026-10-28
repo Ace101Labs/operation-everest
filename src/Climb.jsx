@@ -6,6 +6,8 @@ import { altAt } from './progress.js'
 // The mountain is the game board. Each camp is a marker on one route up the face, the
 // player's own climber stands where their progress really is, and it climbs (or slides
 // back after an avalanche) the next time the map is shown.
+// Keyboard activation for the clickable SVG groups (Enter or Space), so the map works without a mouse.
+const keyTap = fn => fn && (e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fn(e) } })
 const SEEN = 'everest.seenClimb' // where the map last showed the climber (not progress)
 const FLOWN = 'everest.flown' // the flight into Lukla has been shown on this device
 // The flight in: a long, shallow approach from the right, a flare, touchdown, then a roll-out to Lukla.
@@ -114,7 +116,7 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPi
           const left = k < 13 && x < 180 // labels point away from the route
           const tap = !isLukla && (st === 'open' || st === 'done') ? () => onCamp(k) : null
           return (
-            <g key={k} className={`mk ${st} ${tap ? 'tap' : ''}`} onClick={tap || undefined} role={tap ? 'button' : undefined} aria-label={tap ? `Open ${camp.name}` : undefined}>
+            <g key={k} className={`mk ${st} ${tap ? 'tap' : ''}`} onClick={tap || undefined} onKeyDown={keyTap(tap)} tabIndex={tap ? 0 : undefined} role={tap ? 'button' : undefined} aria-label={tap ? `Open ${camp.name}` : undefined}>
               {tap && <circle cx={x} cy={y} r="18" fill="transparent" />}
               <circle cx={x} cy={y} r={k === 13 ? 9 : 7.5} className="mk-dot" />
               <text x={x} y={y + 0.5} className="mk-card" textAnchor="middle" dominantBaseline="central">{isLukla ? '✈' : k === 13 ? '🚩' : st === 'done' ? '✓' : ''}</text>
@@ -138,13 +140,14 @@ export function ClimbScene({ t, statuses, avatar, still, paused, gear = 0, canPi
         })()}
         {flight === null && Array.from({ length: Math.min(gear, GEAR.length) }, (_, j) => {
           const [gx, gy] = pointAt(Math.max(0, t - 0.32 * (j + 1)))
-          return <g key={j} className="dropped" transform={`translate(${gx.toFixed(1)} ${(gy - 4).toFixed(1)})`} onClick={onGear} role="button" aria-label={canPick ? 'Dropped gear: tap to pick it up' : 'Dropped gear: a pick-up comes at a random time'}>
+          return <g key={j} className="dropped" transform={`translate(${gx.toFixed(1)} ${(gy - 4).toFixed(1)})`} onClick={onGear} onKeyDown={keyTap(onGear)} tabIndex={0} role="button" aria-label={canPick ? 'Dropped gear: tap to pick it up' : 'Dropped gear: a pick-up comes at a random time'}>
             <title>{canPick ? 'A pick-up is here: tap to try every dropped item.' : 'Dropped gear: a question you missed. A pick-up turns up at random times during the day.'}</title>
             <circle r="13" fill="transparent" /><text fontSize="15" textAnchor="middle" dominantBaseline="central" style={{ animationDelay: `${j * 0.3}s` }}>{GEAR[j]}</text>
           </g>
         })}
         {/* you */}
-        {flight === null && <g className={`me ${moving ? 'moving' : ''} ${landed ? 'landed' : ''}`} transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)})`} onClick={onClimber} role="button" aria-label="Your climber (tap to change)">
+        {flight === null && <g className={`me ${moving ? 'moving' : ''} ${landed ? 'landed' : ''}`} transform={`translate(${cx.toFixed(1)} ${cy.toFixed(1)})`} onClick={onClimber} onKeyDown={keyTap(onClimber)} tabIndex={0} role="button" aria-label="Your climber (tap to change)">
+          <rect x="-32" y="-52" width="64" height="68" fill="transparent" />
           <circle r="22" fill="url(#c-glow)" />
           <g className="me-body"><text y="-12" fontSize="22" textAnchor="middle" dominantBaseline="central">{avatar}</text></g>
           <g transform="translate(0 -35)"><rect x="-14" y="-7" width="28" height="13" rx="6.5" className="me-tag" /><text y="0" className="me-tag-t" textAnchor="middle" dominantBaseline="central">YOU</text></g>
