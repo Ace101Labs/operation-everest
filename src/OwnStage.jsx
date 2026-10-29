@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { SherpaSays } from './Sherpa.jsx'
 import { Md } from './md.jsx'
 import { Editor } from './Engines.jsx'
@@ -36,11 +36,26 @@ function Contract({ kit, plan }) {
   )
 }
 
-export function OwnStage({ p, onPass, goStage }) {
+// Your files, newest first: the work-in-progress draft or the build you passed. The draft is kept
+// under '<id> tryit' (A-own has no try-it, so the Summit Pack never lists it) and syncs with the save.
+const DRAFT = 'A-own tryit'
+function savedFiles(p) {
+  const pick = [p.code?.[DRAFT], p.code?.['A-own']].filter(Boolean).sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+  for (const c of pick) { try { const f = JSON.parse(c.code).files; if (f && typeof f === 'object') return f } catch {} }
+  return null
+}
+
+export function OwnStage({ p, onPass, goStage, saveDraft }) {
   const plan = p.plan
   const ready = isPassed(p, 'A-plan') && plan && checkPlan(plan).length === 0
   const kit = useMemo(() => (ready ? buildKit(plan) : null), [ready, plan?.recordName, plan?.recordFields, plan?.name])
-  const [files, setFiles] = useState(null)
+  const [files, setFiles] = useState(() => savedFiles(p))
+  const [edited, setEdited] = useState(false)
+  useEffect(() => {
+    if (!edited || !files) return
+    const t = setTimeout(() => saveDraft?.(DRAFT, JSON.stringify({ files }), 'files'), 800)
+    return () => clearTimeout(t)
+  }, [files, edited])
   const [tab, setTab] = useState(0)
   const [res, setRes] = useState(null)
   const [passed, setPassed] = useState(null)
@@ -90,7 +105,7 @@ export function OwnStage({ p, onPass, goStage }) {
       <div className="readfile-tabs own-tabs" role="tablist" aria-label="Your project files">
         {FILE_NAMES.map((n, k) => <button key={n} role="tab" aria-selected={k === tab} tabIndex={k === tab ? 0 : -1} className={k === tab ? 'on' : ''} onClick={() => setTab(k)} onKeyDown={keys}>{n}</button>)}
       </div>
-      <Editor key={name} value={cur[name]} onChange={v => setFiles({ ...cur, [name]: v })} lang="js" rows={14} />
+      <Editor key={name} value={cur[name]} onChange={v => { setEdited(true); setFiles({ ...cur, [name]: v }) }} lang="js" rows={14} />
       <div className="row"><button className="btn primary" onClick={run}>▶ Start the server and send test requests</button></div>
       {res && <div className={`console ${res.error ? 'err' : ''}`}><small>Server log</small><pre>{res.out.join('\n') || ' '}{res.error ? `\n${res.error}` : ''}</pre></div>}
       {res && <Report items={res.items} />}

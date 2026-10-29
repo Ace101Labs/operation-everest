@@ -489,10 +489,10 @@ function Boss({ stage, finish, p, onAnswer }) {
   )
 }
 
-function OwnRoute({ stage, finish, p, goStage }) {
+function OwnRoute({ stage, finish, p, goStage, recordCode }) {
   const [code, setCode] = useState(null)
   if (code !== null) return <Result p={p} score={1} stage={stage} onDone={sc => finish(sc, code)} retry={() => setCode(null)} />
-  return <OwnStage p={p} onPass={setCode} goStage={goStage} />
+  return <OwnStage p={p} onPass={setCode} goStage={goStage} saveDraft={recordCode} />
 }
 
 function PlanRoute({ stage, finish, p, savePlan }) {
