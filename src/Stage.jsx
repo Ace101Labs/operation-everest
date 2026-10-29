@@ -117,6 +117,7 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
   // Multi-file reading: `file:line` references in the question are buttons that open that file.
   const [jump, setJump] = useState(null)
   const qtext = useRef(null)
+  const opts = useRef(null)
   useEffect(() => {
     if (!q.files) return
     qtext.current?.querySelectorAll('code').forEach(c => {
@@ -127,6 +128,8 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
       c.classList.add('ref'); c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0')
       c.setAttribute('aria-label', `Show ${c.textContent} in the file box`)
     })
+    // In answer options the ref sits inside the option button: tapping it shows the line (not a pick).
+    opts.current?.querySelectorAll('code').forEach(c => c.classList.toggle('ref', REF.test(c.textContent)))
   })
   const tapRef = e => {
     const c = e.target.closest?.('code.ref')
@@ -200,9 +203,9 @@ export function Questions({ stage, questions: given, onFinish, challenge, onAnsw
       <div className="q-text" role="heading" aria-level="3" data-qid={q.qid} ref={qtext} onClick={q.files ? tapRef : undefined} onKeyDown={q.files ? e => { if (e.key === 'Enter' || e.key === ' ') tapRef(e) } : undefined}><Md text={q.q} /></div>
       {q.code && <pre><code>{q.code}</code></pre>}
       {q.kind === 'mc' ? (
-        <div className="options">
+        <div className="options" ref={opts}>
           {q.options.map((o, j) => (
-            <button key={j} disabled={shown} onClick={() => setPick(j)}
+            <button key={j} disabled={shown} onClick={e => { if (q.files && e.target.closest?.('code.ref')) tapRef(e); else setPick(j) }}
               className={`opt ${pick === j ? 'picked' : ''} ${shown && j === q.answer ? 'right' : ''} ${shown && pick === j && j !== q.answer ? 'wrong' : ''}`}>
               <Md text={o} />
             </button>
