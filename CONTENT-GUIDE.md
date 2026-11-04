@@ -164,6 +164,14 @@ tryit|stage: { kind|type: 'react', prompt, starter, lang?: 'jsx'|'tsx', hints,
 - The files are `server.js`, `routes.js`, `validate.js`, joined with `require`. The worker reports which modules it loaded; the stage also checks the `require` lines.
 - Saved on pass as `{ files }` JSON with lang `files` (the practice-terminal shape), so step 13 can deploy them. `node scripts/check-kit.mjs` (part of `npm run check`) proves a correct app passes and broken ones fail the right requests for three sample plans.
 
+## Putting it online (A-live, Capstone 3)
+`A-live` has `type: 'live'`, `mode: 'keyboard'` (it needs the app built in `A-own`, so it never blocks a phone-only climb) and a `primer` list of `{ h, b }` lesson cards (plain Markdown, five cards: free host, repo, secrets out of git, deploy log and status codes, why the game visits for you). No `requests`: the stage UI is `src/LiveStage.jsx`. Pass rules:
+- The player types the address of the app they deployed. `api/sitecheck.js` (the game's own server) visits it; the rules live in `api/_sitecheck.js` and the network half in `api/_sitenet.js`. A browser cannot read most other sites, and could not say why it failed, so the server visits.
+- "Up" means `GET /api/health` is `200` JSON `{ "ok": true }`, then `GET /api/<records path>` is `200` JSON `{ "<recordsKey>": [ ... ] }` (path and key from the player's kit, `src/kit.js`). Four checklist rows: address, found the site, health, records.
+- Guards, all unit-tested without a network in `scripts/check-live.mjs` (part of `npm run check`): https and port 443 only, a real name not a number, every address the name resolves to must be public (checked again on every redirect, and the request connects to the checked address), at most 3 redirects, GET only, no cookies, 5 s per visit, 64 KB cap, JSON only, 10 checks per address and 10 per site per 10 minutes. What the site answered is never sent back, only our own plain reason; nothing is stored on the server.
+- Saved like the plan: `progress.live = { url, at }` (the address only), written on pass, synced newest-wins.
+- Never add a new reason without a plain, one-line message in `SAY` or in `checkSite` and a case in the check script. Keep every reason free of the site's own text.
+
 ## Predict-first stops (worked examples)
 Reading code comes before writing it, so lessons don't just show a worked example: they make the player trace it.
 `src/content/predict-camp<ID>.js` holds stops keyed by lesson id:

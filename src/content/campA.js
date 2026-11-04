@@ -686,6 +686,20 @@ function App() {
     hint: 'Build it one route at a time and press the button after each. Early requests turn green as you go.',
     steps: [],
   },
+  {
+    // Capstone 3: the game's own server visits the player's live address (api/sitecheck.js); the stage UI is src/LiveStage.jsx.
+    id: 'A-live', type: 'live', mode: 'keyboard', xp: 80, mins: 120,
+    title: 'Summit build IV: put it online',
+    uses: ['hosting', 'deployment', 'environment-variables', 'health-check', 'cors', 'https', 'final-testing'],
+    primer: [
+      { h: '1. Pick a free host', b: 'A **host** is a computer that is always on and always connected. Vercel and Render both have free plans that need no card. Make an account, then follow the host\'s own short guide for a **Node + Express** app. Your app must listen on the port the host gives it: `app.listen(process.env.PORT || 3000)`.' },
+      { h: '2. Put your files in a repo', b: 'Your three files (`server.js`, `routes.js`, `validate.js`) go in a Git repository with a `package.json` that lists `express` and has `"start": "node server.js"`. Push it to GitHub, then connect the repo to the host. Every push deploys again.' },
+      { h: '3. Keep secrets out of git', b: 'Anything secret (an API key, a password) goes in an **environment variable**, never in the code. Locally it lives in a file called `.env`, and `.env` goes in `.gitignore` **before** your first commit. On the host you type the same names and values into its dashboard (look for "Environment Variables"). Once a secret is pushed to GitHub, treat it as stolen and replace it.' },
+      { h: '4. Read the deploy log', b: 'The host shows a **deploy log**: what it installed and started. When something is wrong, the first red line is usually the answer. Then try your address in a browser. `200` means it worked. `404` means the route is not there (is it deployed?). `500` means your code crashed (read the log). A free host may **sleep** when nobody visits, so the first visit can be slow: that is a cold start, not a bug.' },
+      { h: '5. Why the game visits for you', b: 'A web page in a browser may only read another site if that site sends a permission header (**CORS**). When it is missing, the browser just says "failed" and never says why. So the game\'s own server visits your site and tells you exactly what it saw. Your real front end will need CORS later: the browser will ask your API for permission, and your API must say yes to your own site.' },
+    ],
+    steps: [],
+  },
 
   // ───────────────────────────── Checks ─────────────────────────────
   {

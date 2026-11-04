@@ -667,3 +667,15 @@ code.ref { cursor: pointer; text-decoration: underline dotted; padding: 2px 4px;
 .own td code { overflow-wrap: anywhere; white-space: normal; }
 .own-rules { padding-left: 18px; margin: 8px 0; font-size: 14px; }
 .own-tabs { display: flex; gap: 5px; margin: 10px 0 6px; } .own-tabs button { flex: 1; min-width: 0; }
+
+/* Go live (A-live) */
+.live { padding-bottom: 24px; }
+.live h3 { margin: 16px 0 2px; }
+.live-card { border: 1px solid var(--line); border-radius: 12px; padding: 4px 12px 8px; margin: 10px 0; overflow-wrap: anywhere; }
+.live-card p, .live-card li { font-size: 14px; line-height: 1.5; }
+.live-label { display: block; margin: 16px 0 4px; font-weight: 600; }
+.live input.typed { width: 100%; box-sizing: border-box; font-family: inherit; min-height: 44px; margin: 4px 0; }
+.live-result { overflow-wrap: anywhere; }
+.live-ok { border: 1px solid #3fae6a; border-radius: 12px; padding: 8px 12px; margin: 10px 0 0; }
+.live-bad { border: 1px solid var(--or); border-radius: 12px; padding: 8px 12px; margin: 10px 0 0; background: #1a0f08; } .live-bad .md p { margin: 0; }
+@media (min-width: 900px) { .live { max-width: 720px; margin: 0 auto; width: 100%; } }
