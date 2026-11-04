@@ -150,6 +150,9 @@ export function useProgress() {
   const savePlan = useCallback(plan => update(s => { s.plan = { ...plan, at: new Date().toISOString() }; return s }), [update])
   // The live address the game visited and found working (the address only, never what the site said).
   const saveLive = useCallback(url => update(s => { s.live = { url, at: new Date().toISOString() }; return s }), [update])
+  // The audit stage: the proof code the game made for this player (24 letters and digits) and the
+  // address that was audited. Never what the site said.
+  const saveAudit = useCallback(patch => update(s => { s.audit = { ...s.audit, ...patch, at: new Date().toISOString() }; return s }), [update])
   const saveJournal = useCallback((id, text) => update(s => { s.journal ??= {}; s.journal[id] = text; return s }), [update])
   // Failing an avalanche or Yeti challenge knocks you back: these lessons must be passed again.
   const knockBack = useCallback(ids => update(s => { for (const id of ids) if (s.stages[id]) s.stages[id] = { ...s.stages[id], passed: false, knockedBack: new Date().toISOString() }; return s }), [update])
@@ -180,7 +183,7 @@ export function useProgress() {
   const replace = useCallback(obj => setP({ ...fresh(), ...obj, settings: { ...DEFAULT_SETTINGS, ...obj.settings } }), [])
   const reset = useCallback(() => setP(fresh()), [])
 
-  return { p, recordResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, savePlan, saveLive, setSetting, replace, reset }
+  return { p, recordResult, recordAnswer, recordDaily, saveStreak, celebrateMilestone, recordEvent, recordCode, knockBack, saveJournal, savePlan, saveLive, saveAudit, setSetting, replace, reset }
 }
 
 // ---- rules ----
@@ -327,6 +330,7 @@ export function cleanProgress(o) {
     sessions: Array.isArray(o.sessions) ? o.sessions.slice(-400).filter(x => x && day(x.date) && clamp(x.mins, 0, 1440) !== undefined).map(x => ({ date: x.date, mins: clamp(x.mins, 0, 1440) })) : undefined,
     missed: pick(o.missed, 5000, k => k.length <= 120, v => v && day(v.due) && Number.isInteger(v.box) && v.box >= 0 && v.box <= 2 ? { box: v.box, due: v.due } : undefined),
     plan: cleanPlan(o.plan),
+    audit: o.audit && typeof o.audit === 'object' ? drop({ token: /^[A-Za-z0-9]{24}$/.test(o.audit.token) ? o.audit.token : undefined, url: /^https:\/\/[^\s]{4,292}$/.test(o.audit.url) ? o.audit.url : undefined, at: when(o.audit.at) }) : undefined,
     live: o.live && typeof o.live === 'object' && /^https:\/\/[^\s]{4,292}$/.test(o.live.url) ? drop({ url: o.live.url, at: when(o.live.at) }) : undefined,
     journal: pick(o.journal, 500, k => ID.test(k), v => str(v, 4000)),
     events: pick(o.events, 200, k => /^[\w-]{1,40}$/.test(k), v => clamp(v, 0, 1e6)),
@@ -375,6 +379,8 @@ export function mergeProgress(a, raw, { keepLocalCode = false } = {}) {
   if (a.plan || b.plan) out.plan = !b.plan ? a.plan : !a.plan ? b.plan : (b.plan.at || '') > (a.plan.at || '') ? b.plan : a.plan
   // the live address: the more recent visit wins
   if (a.live || b.live) out.live = !b.live ? a.live : !a.live ? b.live : (b.live.at || '') > (a.live.at || '') ? b.live : a.live
+  // the audit proof code and address: the more recent save wins
+  if (a.audit || b.audit) out.audit = !b.audit ? a.audit : !a.audit ? b.audit : (b.audit.at || '') > (a.audit.at || '') ? b.audit : a.audit
   // saved code: keep the newest version of each
   out.code = { ...b.code }; for (const [id, c] of Object.entries(a.code || {})) if (keepLocalCode || !out.code[id] || (c.at || '') >= (out.code[id].at || '')) out.code[id] = c
   return out

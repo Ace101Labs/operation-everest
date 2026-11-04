@@ -13,6 +13,7 @@ export const TYPE = {
   read:     { icon: '🔍', name: 'Code reading' },
   plan:     { icon: '🗺️', name: 'Project plan' },
   live:     { icon: '🌐', name: 'Go live' },
+  siteaudit:{ icon: '🔎', name: 'Audit your site' },
   avalanche:{ icon: '❄️', name: "Don't cause an avalanche" },
   yeti:     { icon: '💤', name: "Don't wake the Yeti" },
   boss:     { icon: '🧊', name: 'Whiteout boss' },

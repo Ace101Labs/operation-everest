@@ -678,4 +678,9 @@ code.ref { cursor: pointer; text-decoration: underline dotted; padding: 2px 4px;
 .live-result { overflow-wrap: anywhere; }
 .live-ok { border: 1px solid #3fae6a; border-radius: 12px; padding: 8px 12px; margin: 10px 0 0; }
 .live-bad { border: 1px solid var(--or); border-radius: 12px; padding: 8px 12px; margin: 10px 0 0; background: #1a0f08; } .live-bad .md p { margin: 0; }
+/* Audit your site (A-audit) */
+.audit-code { background: #0e1116; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 13px; line-height: 1.45; overflow-x: auto; white-space: pre; }
+.audit-ok, .audit-hit small { display: block; opacity: .85; overflow-wrap: anywhere; }
+.audit-hit { border-left: 3px solid var(--or); padding: 2px 0 2px 8px; margin: 6px 0; font-size: 14px; }
+.audit-hit .md p { margin: 0; }
 @media (min-width: 900px) { .live { max-width: 720px; margin: 0 auto; width: 100%; } }

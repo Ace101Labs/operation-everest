@@ -700,6 +700,20 @@ function App() {
     ],
     steps: [],
   },
+  {
+    // Capstone 4: the game's own server audits the player's live site (api/siteaudit.js); the stage UI is src/AuditStage.jsx.
+    id: 'A-audit', type: 'siteaudit', mode: 'keyboard', xp: 80, mins: 90,
+    title: 'Summit build V: audit your site',
+    uses: ['self-audit', 'environment-variables', 'accessibility', 'cors', 'stack-trace', 'health-check'],
+    primer: [
+      { h: '1. Look from the outside', b: 'You know your own code, so you see what you meant. A stranger sees only what the server sends. An **audit** is that stranger\'s walk-through, written down. Today the game plays the stranger, on your real live site.' },
+      { h: '2. What the game will look at', b: '- **Picture descriptions**: every `<img>` needs `alt` text so people using a screen reader know what it shows.\n- **Secret keys**: anything the browser downloads can be read by anyone. A secret key in there is a stolen key.\n- **Open files**: `/.env` holds your secrets and `/.git` holds your whole history. Neither may be downloadable.\n- **Safety headers**: small instructions your server sends with each page that make browsers safer.\n- **CORS**: your API must not let any other website act as your logged-in user.\n- **Error pages**: a wrong address should get a plain error, never file names from your code.\n- **Source maps**: public `.map` files let anyone read your original code.' },
+      { h: '3. Red, warning, green', b: '**Red** blocks the pass: fix it, deploy and audit again. A **warning** is advice. It never blocks you, but a real team would read it. Fixing, deploying and checking again is the real loop of the job.' },
+      { h: '4. How the game knows the site is yours', b: 'Auditing other people\'s sites without permission is not allowed, and the game will not do it. So your site must show a code the game made for **you** at `/api/health`. Only the owner of the site can change what it says. Until the code matches, the game asks for nothing else.' },
+      { h: '5. What the game will not do', b: 'It visits only the address you typed, over `https`, with a handful of requests. It never follows you to other sites, never logs in, and never keeps what your site said. It tells you only what it found and where.' },
+    ],
+    steps: [],
+  },
 
   // ───────────────────────────── Checks ─────────────────────────────
   {

@@ -172,6 +172,15 @@ tryit|stage: { kind|type: 'react', prompt, starter, lang?: 'jsx'|'tsx', hints,
 - Saved like the plan: `progress.live = { url, at }` (the address only), written on pass, synced newest-wins.
 - Never add a new reason without a plain, one-line message in `SAY` or in `checkSite` and a case in the check script. Keep every reason free of the site's own text.
 
+## Auditing your site (A-audit, Capstone 4)
+`A-audit` has `type: 'siteaudit'`, `mode: 'keyboard'` and a `primer` list of `{ h, b }` cards. It needs `A-live` passed (it audits `progress.live.url`). The stage UI is `src/AuditStage.jsx`; every sentence the player reads is in `src/content/auditText.js`, keyed by check id and hit kind, because the server sends only ids, states and validated file paths.
+- The game's server (`api/siteaudit.js`, rules in `api/_siteaudit.js`, shared network half in `api/_sitenet.js` and `visit` in `api/_sitecheck.js`) first asks only `/api/health`. The player's site must answer `{ "ok": true, "everest": "<the player's 24-character code>" }`; the code is made in the browser and saved as `progress.audit.token`. Until it matches, nothing else is requested.
+- Eight checks: owner, images, secrets, files, headers, cors, errors, maps. States: ok, fail, warn (a tip, never blocks), na, skipped (blocks). The audit passes when no check is fail or skipped.
+- Every step 13 guard holds on every hop, and redirects must stay on the same host. Scripts on other hosts are counted, never fetched. Files are cut at fixed sizes and a cut file gets a `partial` note.
+- Tests (offline, planted strings, connect log): `scripts/check-audit.mjs`, part of `npm run check`. Never put a real-looking key in a committed file: build it from joined pieces.
+- A new hit kind needs words in `auditText.js` (found + fix) and a case in the check script. Never put the site's own text in a message.
+- Saved like the live address: `progress.audit = { token, url, at }`, newest wins.
+
 ## Predict-first stops (worked examples)
 Reading code comes before writing it, so lessons don't just show a worked example: they make the player trace it.
 `src/content/predict-camp<ID>.js` holds stops keyed by lesson id:

@@ -97,6 +97,7 @@ export const SAY = {
   refused: 'The site refused the connection. Is it deployed and running?',
   cert: 'The site\'s security certificate is not valid.',
   redirects: 'The site sent the game around in circles (more than 3 redirects).',
+  otherhost: 'The site sent the game to a different site. Audit the address your app really lives at.',
   'hop-http': 'The site sent the game to an address that is not https.',
   toobig: 'The answer was bigger than 64 KB, which is more than the game reads.',
   notjson: 'The site answered, but not with JSON.',
@@ -137,7 +138,7 @@ export function makeLimiter({ max, windowMs, now = Date.now }) {
 
 // ---------- the visit ----------
 const REDIRECT = new Set([301, 302, 303, 307, 308])
-const fail = (code, say = SAY[code]) => ({ ok: false, code, say })
+export const fail = (code, say = SAY[code]) => ({ ok: false, code, say })
 
 const withDeadline = (p, ms, code) => new Promise((resolve, reject) => {
   const t = setTimeout(() => reject(Object.assign(new Error(code), { code })), Math.max(1, ms))
@@ -145,9 +146,12 @@ const withDeadline = (p, ms, code) => new Promise((resolve, reject) => {
 })
 
 // One GET, following at most 3 redirects, with every guard re-run on every hop.
-// deps.resolve(host) -> [ip, ...]; deps.get({ ip, host, path, deadline, maxBytes }) -> { status, headers, body }
-async function visit(startUrl, deps, now) {
-  const deadline = now() + LIMITS.timeoutMs
+// deps.resolve(host) -> [ip, ...]; deps.get({ ip, host, path, deadline, maxBytes, accept, headers, truncate }) -> { status, headers, body, truncated? }
+// opts (the site audit, api/_siteaudit.js; the site check passes none): maxBytes, accept, timeoutMs,
+// headers (only Origin is ever sent), truncate (cut a long answer off instead of failing) and
+// sameHost (a redirect to any other host stops the visit), samePath (so does one to any other path).
+export async function visit(startUrl, deps, now, opts = {}) {
+  const deadline = now() + (opts.timeoutMs || LIMITS.timeoutMs)
   let url = startUrl
   for (let hop = 0; hop <= LIMITS.redirects; hop++) {
     let ips
@@ -159,7 +163,7 @@ async function visit(startUrl, deps, now) {
     const order = [...ips.filter(ip => parseIPv4(ip)), ...ips.filter(ip => !parseIPv4(ip))]
     let res
     for (const ip of order) {
-      try { res = await deps.get({ ip, host: url.hostname, path: url.pathname + url.search, deadline, maxBytes: LIMITS.maxBytes }); break }
+      try { res = await deps.get({ ip, host: url.hostname, path: url.pathname + url.search, deadline, maxBytes: opts.maxBytes || LIMITS.maxBytes, accept: opts.accept, headers: opts.headers, truncate: opts.truncate === true }); break }
       catch (e) { if (e.code !== 'refused') return fail(SAY[e.code] ? e.code : 'failed') }
     }
     if (!res) return fail('refused')
@@ -167,10 +171,12 @@ async function visit(startUrl, deps, now) {
       let next
       try { next = parseTarget(new URL(res.headers.location, url).href) } catch { return fail('failed') }
       if (!next.ok) return fail(next.code === 'private' || next.code === 'ip-literal' ? 'private' : next.code === 'not-https' ? 'hop-http' : 'failed')
+      if (opts.sameHost && next.url.hostname !== startUrl.hostname) return fail('otherhost')
+      if (opts.samePath && next.url.pathname !== startUrl.pathname) return fail('health')
       url = next.url
       continue
     }
-    return { ok: true, status: res.status, headers: res.headers || {}, body: res.body, url }
+    return { ok: true, status: res.status, headers: res.headers || {}, body: res.body, truncated: res.truncated === true, url }
   }
   return fail('redirects')
 }
