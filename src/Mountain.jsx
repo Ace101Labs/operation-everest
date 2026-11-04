@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CAMPS } from './content/camps.js'
 import { SUMMIT, TYPE } from './content/names.js'
-import { campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, isPassed, stageOpen, highestCamp, nextPitch, liveStreak, streakAtRisk } from './progress.js'
+import { buildsLeft, campStatus, campFraction, estimate, altitude, climbPos, APP_NAME, dueReviews, score, MAX_POINTS, isPassed, stageOpen, highestCamp, nextPitch, liveStreak, streakAtRisk } from './progress.js'
 import { Snow } from './Snow.jsx'
 import { ClimbScene } from './Climb.jsx'
 import { RECALL } from './content/recall.js'
@@ -32,6 +32,7 @@ export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, open
   const camps = CAMPS.map((c, i) => ({ c, i, status: campStatus(p, i), frac: campFraction(p, c) }))
   const current = camps[highestCamp(p)] // the furthest camp you've reached, never an older one
   const next = current.status === 'open' ? nextPitch(p, current.c) : null
+  const openBuilds = buildsLeft(p).length
   const [arrived, setArrived] = useState(null) // camp index just reached (-1 = knocked back)
   const pts = score(p).points
   return (
@@ -61,7 +62,7 @@ export function Mountain({ p, net, paused, saveStreak, openCamp, openStage, open
               <small>{TYPE[next.type].icon} {next.title} · ~{next.mins} min · {next.xp} ⭐</small>
             </button>
           : current.status === 'done' && camps.every(x => x.status === 'done' || x.status === 'coming')
-            ? <div className="climb-btn done">🚩 Summit reached. Every camp cleared.</div>
+            ? <div className="climb-btn done">🚩 Summit reached. Every camp cleared.{openBuilds > 0 && <small>{openBuilds} computer build{openBuilds === 1 ? '' : 's'} left for the full certificate.</small>}</div>
             : <button className="btn primary wide climb-btn" onClick={() => openCamp(current.i)}><span className="climb-go">▶ {current.c.name}</span></button>}
         <div className="side-btns">
           <button className={`side-btn ${dailyDone ? 'daily-done' : 'daily-ready'}`} onClick={openDaily}

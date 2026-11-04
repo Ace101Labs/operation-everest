@@ -46,7 +46,7 @@ export const ACHIEVEMENTS = [
   { id: 'database-builder', icon: '🗄️', title: 'Database Builder', desc: 'Beat the Camp IV boss (databases and security).', done: 'You can store data in a database and keep it safe.', test: bossOf('10') },
   { id: 'ai-engineer', icon: '🤖', title: 'AI Engineer', desc: 'Beat the South Summit boss (AI, agents, local models).', done: 'You can build with AI models and run them on your own machine.', test: bossOf('Q') },
   { id: 'auditor', icon: '🔎', title: 'Auditor', desc: 'Beat the Hillary Step boss (judging any project or code).', done: 'You can judge whether a project, tool or piece of AI-written code holds up.', test: bossOf('K') },
-  { id: 'summiteer', icon: '🚩', title: 'Summiteer', desc: 'Clear the final camp.', done: 'You cleared the final camp: built, shipped and audited your own app.', test: p => !!finalCamp().stages && campClear(p, finalCamp()) },
+  { id: 'summiteer', icon: '🚩', title: 'Summiteer', desc: 'Clear the final camp.', done: 'You cleared the final camp and beat the Whiteout.', test: p => !!finalCamp().stages && campClear(p, finalCamp()) },
   { id: 'storm-breaker', icon: '🌫️', title: 'Storm Breaker', desc: 'Beat the final boss, the Whiteout itself.', done: 'You beat the Whiteout: hype, bad advice and "just trust me" have no hold on you.', test: p => !!finalCamp().stages && campBossPassed(p, finalCamp()) },
   { id: 'full-summit', icon: '📜', title: 'Full Summit', desc: 'Clear the final camp AND finish every computer build.', done: 'You finished every camp and every computer build. The full summit certificate is yours.', test: p => !!finalCamp().stages && campClear(p, finalCamp()) && buildsLeft(p).length === 0 },
 ]
