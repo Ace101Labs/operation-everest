@@ -28,7 +28,7 @@ export function FieldGuide({ p, back }) {
         <button className="icon" onClick={back}>‹</button>
         <div><small>📖 Field Guide · {have.size} of {total} unlocked</small><strong>Concepts you've unlocked</strong></div>
       </header>
-      <input className="typed" placeholder="Search the Field Guide (try: cd, string, path)" value={q} onChange={e => setQ(e.target.value)} autoCapitalize="off" autoCorrect="off" />
+      <input className="typed" aria-label="Search the Field Guide" placeholder="Search the Field Guide (try: cd, string, path)" value={q} onChange={e => setQ(e.target.value)} autoCapitalize="off" autoCorrect="off" />
       {sections.map(({ camp, ids }) => (
         <div key={camp.id} className="guide-section">
           <h3>Camp {camp.n} · {camp.name}</h3>

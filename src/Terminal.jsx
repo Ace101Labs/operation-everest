@@ -58,7 +58,7 @@ export function TerminalStage({ stage: task, onPass, passLabel = '⛑️ All ste
   if (editing) return (
     <div className="editor">
       <div className="editor-bar"><span>✏️ {short(editing)}</span></div>
-      <textarea autoFocus value={draft} onChange={e => setDraft(e.target.value)} rows={10} spellCheck="false" autoCapitalize="off" autoCorrect="off" />
+      <textarea autoFocus aria-label="Your code" value={draft} onChange={e => setDraft(e.target.value)} rows={10} spellCheck="false" autoCapitalize="off" autoCorrect="off" />
       <div className="keys">{['console.log(', '"', '(', ')', ';', '\n'].map(k => (
         <button key={k} onClick={() => setDraft(d => d + k)}>{k === '\n' ? '↵' : k}</button>))}</div>
       <div className="row">

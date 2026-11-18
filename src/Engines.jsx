@@ -22,7 +22,7 @@ export function Editor({ value, onChange, lang = 'js', rows = 8 }) {
     requestAnimationFrame(() => { el.focus(); el.selectionStart = el.selectionEnd = a + s.length })
   }
   return <>
-    <textarea ref={ta} value={value} onChange={e => onChange(e.target.value)} rows={rows} spellCheck="false" autoCapitalize="off" autoCorrect="off" autoComplete="off" />
+    <textarea ref={ta} aria-label="Code editor" value={value} onChange={e => onChange(e.target.value)} rows={rows} spellCheck="false" autoCapitalize="off" autoCorrect="off" autoComplete="off" />
     <div className="keys-label">Shortcut keys (swipe for more)</div>
     <div className="keys">{(KEYS[lang] || KEYS.js).map(k => <button key={k} onClick={() => insert(k)} aria-label={k === '\n' ? 'new line' : k}>{k === '\n' ? '↵' : k.trim() || k}</button>)}</div>
   </>

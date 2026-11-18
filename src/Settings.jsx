@@ -88,9 +88,9 @@ export function Settings({ p, back, replace, reset, setSetting, net, sync, openL
           <p className="note">Not needed if you link your devices above. A backup code is a one-time copy of your progress, as text. Save it somewhere safe, or paste it on another device. Pasting combines it with the progress already there, so nothing is lost.</p>
           <button className="btn primary wide" onClick={doCopy}>📋 Copy backup code</button>
           {canShare && <button className="btn wide" onClick={doShare}>📤 Share backup code</button>}
-          <details><summary className="note">Show the backup code</summary><textarea readOnly rows={3} value={exportCode} onFocus={e => e.target.select()} /></details>
+          <details><summary className="note">Show the backup code</summary><textarea readOnly aria-label="Your backup code" rows={3} value={exportCode} onFocus={e => e.target.select()} /></details>
           <h3>Paste a backup code</h3>
-          <textarea rows={3} value={code} onChange={e => setCode(e.target.value)} placeholder="paste a backup code" />
+          <textarea rows={3} aria-label="Paste a backup code" value={code} onChange={e => setCode(e.target.value)} placeholder="paste a backup code" />
           <button className="btn wide" disabled={!code.trim()} onClick={doImport}>Combine with progress on this device</button>
           {msg && <p className="note">{msg}</p>}
         </details>

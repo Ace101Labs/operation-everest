@@ -31,7 +31,7 @@ export function SuggestBox() {
   return <div className="suggest">
     <p className="note">Found a bug, a wrong answer, a confusing lesson, or have an idea? Tell us. No name or email needed{where ? `, and the last pitch you opened (${where}) is sent along so we can find it` : ''}.</p>
     <div className="suggest-kinds">{KINDS.map(([k, label]) => <button key={k} className={kind === k ? 'on' : ''} onClick={() => setKind(k)}>{label}</button>)}</div>
-    <textarea rows={5} maxLength={1000} value={text} onChange={e => setText(e.target.value)} placeholder="What happened, and where? (Please don't include personal details.)" />
+    <textarea rows={5} maxLength={1000} aria-label="Describe what happened" value={text} onChange={e => setText(e.target.value)} placeholder="What happened, and where? (Please don't include personal details.)" />
     {/* never shown to people: only bots fill this in */}
     <input className="hp" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={e => setHp(e.target.value)} name="website" />
     <small className="note">{text.trim().length}/1000</small>

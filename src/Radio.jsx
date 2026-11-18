@@ -26,7 +26,7 @@ export function Radio({ stage, onFinish, journal, saveJournal }) {
   if (part === 0) return (
     <div className="radio">
       <div className="lesson-card"><h3>📻 {stage.prompt}</h3><p className="note">Optional warm-up: explain it in your own words. This part isn't graded. It stays on your devices: if you link devices it travels encrypted, and only your devices can read it.</p></div>
-      <textarea rows={5} value={note} onChange={e => setNote(e.target.value)} placeholder="Type your explanation here" />
+      <textarea rows={5} aria-label="Your explanation" value={note} onChange={e => setNote(e.target.value)} placeholder="Type your explanation here" />
       <button className="btn primary wide" onClick={() => { saveJournal(note); setPart(1) }}>{note.trim() ? 'Save and start the radio check' : 'Skip to the radio check'}</button>
     </div>
   )
